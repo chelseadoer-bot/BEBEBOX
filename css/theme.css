@@ -1,0 +1,59 @@
+/* Catch Table–inspired polish layer */
+
+/* ── 성장 정원 (sketch garden) ── */
+#quest-guide-view.active{
+  background:linear-gradient(180deg,#dceefb 0%,#eef8e8 28%,#e8f5e9 55%,#f1f8e9 100%)!important;
+}
+.journey-top h2{color:#33691e!important;font-weight:800!important}
+.journey-gift-btn{
+  background:linear-gradient(135deg,#66bb6a,#43a047)!important;
+  border-radius:14px!important;
+  font-weight:700!important;
+  box-shadow:0 4px 14px rgba(67,160,71,.28)!important;
+}
+.guide-top h2{letter-spacing:-.02em}
+
+/* ── 모달 · 시트 ── */
+.modal-backdrop{background:rgba(0,0,0,.45)!important;backdrop-filter:blur(2px)}
+.modal-content{border-radius:var(--radius-lg)!important;padding:24px!important;box-shadow:var(--shadow-md)!important}
+.modal-content h3{font-size:16px!important;font-weight:700!important;letter-spacing:-.02em}
+.modal-desc{color:var(--color-text-secondary)!important;font-size:14px!important}
+.modal-btn{border-radius:var(--radius-md)!important;font-weight:600!important;font-size:14px!important}
+.modal-btn.primary{background:var(--color-primary)!important;color:#fff!important}
+.amount-btn{border-radius:var(--radius-md)!important;border-color:var(--color-border)!important;font-weight:600!important}
+.amount-btn.active{border-color:var(--color-primary)!important;background:var(--color-bg-muted)!important}
+.contribute-content input,.modal-content input{
+  border-radius:var(--radius-md)!important;
+  border-color:var(--color-border)!important;
+  font-family:var(--font);
+}
+.comment-panel{border-radius:20px 20px 0 0!important;box-shadow:0 -4px 24px rgba(0,0,0,.08)!important}
+.comment-header h3{font-weight:700!important;letter-spacing:-.02em}
+.comment-send-btn.active{background:var(--color-primary)!important}
+.toast{
+  background:rgba(25,25,25,.92)!important;
+  border-radius:var(--radius-md)!important;
+  font-weight:500!important;
+  font-size:13px!important;
+  backdrop-filter:blur(8px);
+}
+
+/* ── 위시리스트 ── */
+.wishlist-title{letter-spacing:-.02em;font-size:18px!important}
+.stage-tab{border-radius:var(--radius-full)!important;border:1px solid transparent!important}
+.stage-tab.active{border-color:var(--color-border)!important;box-shadow:var(--shadow-sm)!important}
+.stage-arrow{border-radius:var(--radius-sm)!important;background:var(--color-bg)!important;border:1px solid var(--color-border)!important;color:var(--color-text)!important}
+.wish-card{border-radius:var(--radius-md)!important;border:1px solid var(--color-border-light)!important;background:var(--color-bg)!important;box-shadow:var(--shadow-sm)!important}
+.wish-card.has-item{border-color:#c8e6d0!important;background:var(--color-bg)!important;box-shadow:var(--shadow-sm)!important}
+.product-picker-content{border-radius:20px 20px 0 0!important}
+.add-product-submit,.funding-submit{background:var(--color-primary)!important;color:#fff!important;border-radius:var(--radius-md)!important}
+
+/* ── IG 뷰 ── */
+.ig-banner{border-radius:var(--radius-md)!important}
+.ig-section-title{font-weight:700!important;letter-spacing:-.02em}
+.ig-grid-item{border-radius:var(--radius-md)!important;border:1px solid var(--color-border-light)!important}
+.ig-cta-black{background:var(--color-primary)!important;border-radius:var(--radius-md)!important;font-weight:600!important}
+.ig-fab{border-radius:var(--radius-full)!important;box-shadow:var(--shadow-md)!important}
+
+/* ── 사진 상세 ── */
+.detail-username{font-weight:700!important}
