@@ -12,10 +12,28 @@ dist
 dist-ssr
 *.local
 
+# Python
+__pycache__/
+*.pyc
+
 # API KEY 등 비밀 설정 (절대 커밋하지 마세요)
 .env
 .env.*
 !.env.example
+
+# 업로드된 사진 (로컬 저장)
+uploads/*
+!uploads/.gitkeep
+
+# 로컬 데이터베이스 (SQLite) + 레거시/디버그 파일
+data/*.db
+data/*.db-wal
+data/*.db-shm
+data/*.log
+data/photos.json
+data/sessions.json
+data/families/*
+!data/families/.gitkeep
 
 # Editor directories and files
 .vscode/*

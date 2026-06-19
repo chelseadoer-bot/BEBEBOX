@@ -371,7 +371,7 @@ function load(){
   if(new URLSearchParams(location.search).get("map")==="1")requestAnimationFrame(()=>openQuestGuide());
   if(photoVerChanged)save();
 }
-function save(){
+function saveLocalCache(){
   localStorage.setItem(STORAGE_KEYS.photos,JSON.stringify(state.photos));
   localStorage.setItem(STORAGE_KEYS.friends,JSON.stringify(state.friends));
   localStorage.setItem(STORAGE_KEYS.inbox,JSON.stringify(state.inbox));
@@ -389,6 +389,11 @@ function save(){
   localStorage.setItem(STORAGE_KEYS.wishlist+"_journey_memories",JSON.stringify(state.journeyMemories));
   localStorage.setItem(STORAGE_KEYS.wishlist+"_parent_quest_photos",JSON.stringify(state.parentQuestPhotos));
 }
+function save(){
+  saveLocalCache();
+  if(typeof schedulePushFamilyData==="function")schedulePushFamilyData();
+}
+window.saveLocalCache=saveLocalCache;
 function showToast(m){const t=$("#toast");t.textContent=m;t.classList.remove("hidden");clearTimeout(showToast._t);showToast._t=setTimeout(()=>t.classList.add("hidden"),2500);}
 const TAB_VIEWS={home:"#profile-view",puzzle:"#puzzle-tab-view",game:"#game-tab-view",settings:"#settings-tab-view"};
 let currentMainTab="home";
@@ -457,6 +462,17 @@ function renderSettingsTab(){
   $("#settings-baby-name").value=state.profile.babyName||"";
   $("#settings-baby-age").value=state.profile.currentAge??9;
   $("#settings-kidikidi-id").value=state.profile.kidikidiId||"";
+  const kakao=typeof getStoredKakaoUser==="function"?getStoredKakaoUser():null;
+  const accountSection=$("#settings-account-section");
+  if(accountSection){
+    accountSection.hidden=!kakao?.kakaoId;
+    if(kakao?.kakaoId){
+      const av=$("#settings-kakao-avatar");
+      const nm=$("#settings-kakao-name");
+      if(av){av.src=kakao.profileImage||state.profile.avatar||"";av.hidden=!kakao.profileImage&&!state.profile.avatar;}
+      if(nm)nm.textContent=kakao.nickname||"카카오 계정";
+    }
+  }
   const codeEl=$("#settings-invite-code");
   const inviteSection=$("#settings-invite-section");
   if(inviteSection){
@@ -637,29 +653,69 @@ function migratePhotoQuestLinks(){
     });
   });
 }
-function addPhotosFromFiles(files){
+async function syncPhotosFromServer(){
+  if(typeof fetchPhotosFromServer!=="function")return;
+  try{
+    const serverPhotos=await fetchPhotosFromServer();
+    if(serverPhotos===null)return;
+    const localById={};
+    state.photos.filter(p=>isServerPhotoId(p.id)).forEach(p=>{localById[p.id]=p;});
+    const uploaded=serverPhotos.map(p=>{
+      const local=localById[p.id];
+      if(!local)return ensurePhotoMeta(p);
+      return ensurePhotoMeta({
+        ...p,
+        likes:local.likes,
+        liked:local.liked,
+        comments:local.comments,
+        caption:local.caption||p.caption,
+        ageMonth:local.ageMonth??p.ageMonth,
+        questLink:local.questLink
+      });
+    });
+    const demo=state.photos.filter(p=>String(p.id).startsWith("d"));
+    const seen=new Set();
+    state.photos=[...uploaded,...demo].filter(p=>{
+      if(seen.has(p.id))return false;
+      seen.add(p.id);
+      return true;
+    }).sort((a,b)=>b.createdAt-a.createdAt);
+    save();
+  }catch(_){}
+}
+async function addPhotosFromFiles(files){
   if(!files||!files.length)return;
   const imgs=Array.from(files).filter(f=>f.type.startsWith("image/"));
   if(!imgs.length){showToast("이미지 파일을 선택해 주세요");return;}
-  let done=0;
-  const pending=[];
-  imgs.forEach((file,i)=>{
-    const reader=new FileReader();
-    reader.onload=()=>{
-      const photo={id:"p"+Date.now()+i,src:reader.result,createdAt:Date.now(),ageMonth:state.profile.currentAge||9,likes:0,liked:false,comments:[],caption:""};
-      state.photos.unshift(photo);
-      pending.push(tryLinkPhotoToQuest(photo,file.name));
-      done++;
-      if(done===imgs.length){
-        Promise.all(pending).finally(()=>{
-          save();renderFeed();showToast(`${done}장의 사진을 추가했어요`);addPuzzlePieces(1,"photo");
-        });
-      }
-    };
-    reader.readAsDataURL(file);
-  });
+  if(typeof uploadPhotoToServer!=="function"){
+    showToast("server.py 로 실행해야 사진을 저장할 수 있어요");
+    return;
+  }
+  showToast("사진을 저장하는 중...");
+  let ok=0;
+  for(const file of imgs){
+    try{
+      const uploaded=await uploadPhotoToServer(file);
+      const photo={...uploaded,ageMonth:state.profile.currentAge||9,likes:0,liked:false,comments:[],caption:""};
+      state.photos.unshift(ensurePhotoMeta(photo));
+      await tryLinkPhotoToQuest(photo,file.name);
+      ok++;
+    }catch(e){
+      showToast("사진 저장 실패. server.py 가 실행 중인지 확인해 주세요");
+      break;
+    }
+  }
+  if(ok){
+    save();renderFeed();showToast(`${ok}장의 사진을 저장했어요`);addPuzzlePieces(1,"photo");
+  }
 }
-function deletePhoto(id){state.photos=state.photos.filter(p=>p.id!==id);save();renderFeed();}
+async function deletePhoto(id){
+  if(isServerPhotoId(id)&&typeof deletePhotoFromServer==="function"){
+    await deletePhotoFromServer(id).catch(()=>{});
+  }
+  state.photos=state.photos.filter(p=>p.id!==id);
+  save();renderFeed();
+}
 function getPhoto(id){return state.photos.find(p=>p.id===id);}
 function updateDetailUI(){
   const p=getPhoto(state.viewingPhotoId);
@@ -1145,17 +1201,23 @@ function saveJourneyMemoryEdits(){
   showToast("성장 저니 추억을 저장했어요");
   renderJourneyMap();
 }
-function onJourneyPhotoFileChange(e){
+async function onJourneyPhotoFileChange(e){
   if(isGuest()||$("#journey-done-edit")?.classList.contains("hidden"))return;
   const file=e.target.files?.[0];
   e.target.value="";
   if(!file||!file.type.startsWith("image/"))return;
-  const reader=new FileReader();
-  reader.onload=()=>{
-    $("#journey-done-img").src=reader.result;
+  if(typeof uploadPhotoToServer!=="function"){
+    showToast("server.py 로 실행해야 사진을 저장할 수 있어요");
+    return;
+  }
+  try{
+    showToast("사진을 저장하는 중...");
+    const uploaded=await uploadPhotoToServer(file);
+    $("#journey-done-img").src=uploaded.src;
     showToast("미리보기가 바뀌었어요. 저장하기를 눌러주세요");
-  };
-  reader.readAsDataURL(file);
+  }catch(_){
+    showToast("사진 저장에 실패했어요");
+  }
 }
 function openJourneyActiveModal(node){
   state.pendingJourneyNode=node;
@@ -1438,6 +1500,9 @@ function bindEvents(){
   $("#settings-notify-gift")?.addEventListener("change",saveNotifySettings);
   $("#btn-settings-wishlist")?.addEventListener("click",openWishlist);
   $("#btn-settings-journey")?.addEventListener("click",openQuestGuide);
+  $("#btn-kakao-logout")?.addEventListener("click",()=>{
+    if(typeof logoutKakao==="function")logoutKakao();
+  });
   $("#btn-copy-invite-code")?.addEventListener("click",copyInviteCode);
   if(typeof bindMinigameEvents==="function")bindMinigameEvents();
   $("#btn-share")?.classList.remove("active");
@@ -1544,8 +1609,20 @@ window.ensureInviteCode=ensureInviteCode;
 window.getInviteCode=getInviteCode;
 window.isValidInviteCode=isValidInviteCode;
 window.copyInviteCode=copyInviteCode;
-function bootApp(){
+async function bootApp(){
   load();
+  if(typeof initKakaoAuth==="function")await initKakaoAuth();
+  if(typeof syncFamilyDataFromServer==="function"){
+    const synced=await syncFamilyDataFromServer();
+    if(synced){
+      initFundingGauge();
+      initCollectQuests();
+      Object.keys(FUNDING_ITEMS).forEach(k=>{
+        if(!state.funding[k])state.funding[k]=FUNDING_ITEMS[k].pieces.map(p=>({...p,filled:!!p.from}));
+      });
+    }
+  }
+  await syncPhotosFromServer();
   migratePuzzleMissionImage();
   migratePhotoQuestLinks();
   bindEvents();

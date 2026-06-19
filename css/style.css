@@ -117,6 +117,10 @@ body{display:flex;justify-content:center;min-height:100vh}
 .settings-toggle{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--color-border-light);font-size:14px;font-weight:600;cursor:pointer}
 .settings-toggle input{width:18px;height:18px;accent-color:var(--color-accent)}
 .settings-link-btn{display:block;width:100%;text-align:left;padding:14px 16px;margin-bottom:8px;border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-bg);font-size:14px;font-weight:600;cursor:pointer}
+.settings-account{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.settings-kakao-avatar{width:44px;height:44px;border-radius:50%;object-fit:cover;background:var(--color-border-light)}
+.settings-kakao-name{font-size:14px;font-weight:700}
+.settings-logout-btn{width:100%;padding:12px;border:1px solid var(--color-border);border-radius:var(--radius-md);background:#fff;color:#666;font-size:14px;font-weight:600;cursor:pointer}
 .invite-code-card{display:flex;align-items:center;gap:10px;padding:14px 16px;border:2px dashed #ffb199;border-radius:var(--radius-md);background:var(--color-accent-soft)}
 .invite-code-value{flex:1;font-size:22px;font-weight:900;letter-spacing:.18em;font-family:ui-monospace,Consolas,monospace;color:var(--color-primary)}
 .invite-code-copy-btn{flex-shrink:0;padding:10px 14px;border:none;border-radius:var(--radius-md);background:var(--color-primary);color:#fff;font-size:13px;font-weight:700;cursor:pointer}

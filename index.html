@@ -23,8 +23,6 @@
 <div class="ob-social-wrap">
 <p class="ob-social-label">간편 로그인으로 시작해요</p>
 <button type="button" class="ob-btn ob-btn-kakao" id="btn-login-kakao"><span class="ob-btn-icon">💬</span>카카오로 시작하기</button>
-<button type="button" class="ob-btn ob-btn-naver" id="btn-login-naver"><span class="ob-btn-icon ob-naver-n">N</span>네이버로 시작하기</button>
-<button type="button" class="ob-btn ob-btn-apple" id="btn-login-apple"><span class="ob-btn-icon">&#63743;</span>Apple로 시작하기</button>
 </div>
 <p class="ob-terms">로그인 시 <a href="#">서비스 이용약관</a> 및 <a href="#">개인정보처리방침</a>에 동의합니다</p>
 </div>
@@ -297,6 +295,14 @@
 <p>프로필과 쿠폰을 관리해요</p>
 </header>
 <div class="settings-scroll">
+<section class="settings-section" id="settings-account-section" hidden>
+<h3>내 계정</h3>
+<div class="settings-account">
+<img class="settings-kakao-avatar" id="settings-kakao-avatar" alt="" width="44" height="44"/>
+<span class="settings-kakao-name" id="settings-kakao-name">카카오 계정</span>
+</div>
+<button type="button" class="settings-logout-btn" id="btn-kakao-logout">로그아웃</button>
+</section>
 <section class="settings-section">
 <h3>내 프로필</h3>
 <label class="settings-field"><span>아기 이름</span><input type="text" id="settings-baby-name" maxlength="12"/></label>
@@ -590,7 +596,10 @@
 <script src="js/puzzle-mission.js?v=3"></script>
 <script src="js/minigame.js?v=2"></script>
 <script src="js/photo-quest-detect.js?v=1"></script>
-<script src="js/onboarding.js?v=6"></script>
-<script src="js/app.js?v=35"></script>
+<script src="js/photo-storage.js?v=2"></script>
+<script src="js/family-data.js?v=1"></script>
+<script src="js/kakao-auth.js?v=1"></script>
+<script src="js/onboarding.js?v=7"></script>
+<script src="js/app.js?v=38"></script>
 </body>
 </html>

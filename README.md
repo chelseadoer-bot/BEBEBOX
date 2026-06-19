@@ -4,15 +4,18 @@
 
 ## 요구 사항
 
-- Python 3.8 이상
-- Google Gemini API KEY ([발급 링크](https://aistudio.google.com/apikey))
+- Python 3.8 이상 (표준 라이브러리만 사용 — 추가 설치 없음)
+- (선택) Google Gemini API KEY ([발급 링크](https://aistudio.google.com/apikey))
+
+> 백엔드는 **외부 계정/서비스 없이** 로컬에서 동작합니다.
+> 데이터는 `data/bebebox.db`(SQLite)에, 사진 파일은 `uploads/`에 저장됩니다.
 
 ## 실행 방법
 
 ### Windows
 
 1. `start.bat` 더블클릭
-2. 처음 실행 시 Gemini API KEY 입력
+2. 처음 실행 시 안내에 따라 키 입력(모두 선택 — Enter로 건너뛰기 가능)
 3. 브라우저에서 http://localhost:8080 접속
 
 ### Mac / Linux
@@ -25,22 +28,47 @@ python server.py
 
 ## API KEY 안내
 
-- **`.env` 파일은 Git에 올라가지 않습니다.** 각자 로컬에서만 사용하세요.
-- `.env.example` 은 템플릿이며, 실제 키는 넣지 않습니다.
-- 키디키디 상품 검색은 별도 API KEY 없이 동작합니다 (서버 프록시 사용).
+- **`.env` 파일은 Git에 올라가지 않습니다.**
+- 모든 키는 선택 사항입니다. 없어도 사진 저장/공유/위시리스트 등 기본 기능은 모두 동작합니다.
+- 카카오 로그인: [docs/KAKAO_SETUP.md](docs/KAKAO_SETUP.md)
+
+## 카카오 로그인
+
+1. [카카오 개발자](https://developers.kakao.com)에서 앱 생성
+2. Redirect URI: `http://localhost:8080/auth/kakao/callback`
+3. `.env`에 `KAKAO_REST_API_KEY`, `KAKAO_CLIENT_SECRET` 입력
+4. `python server.py` 실행 후 **카카오로 시작하기** 클릭
 
 ## 프로젝트 구조
 
 ```
 ├── index.html          # 메인 UI
-├── server.py           # 정적 파일 + 키디키디 API 프록시
+├── server.py           # HTTP 서버 + API 라우팅 + 키디키디 프록시
+├── db.py               # SQLite 데이터 계층 (photos / family_data / sessions)
+├── kakao_auth.py       # 카카오 OAuth
 ├── start.bat           # Windows 실행 (API KEY 입력)
 ├── .env.example        # 환경변수 템플릿
 ├── css/                # 스타일
 ├── js/                 # 앱 로직
 ├── public/             # 아이콘, 데모 사진
-└── scripts/            # 키디키디 API 탐색 스크립트
+├── data/               # SQLite DB (자동 생성)
+└── uploads/            # 업로드된 사진 파일
 ```
+
+## 백엔드 / 데이터 저장
+
+별도 클라우드 계정 없이 로컬에서 완결됩니다.
+
+| 데이터 | 저장 위치 |
+|--------|-----------|
+| 사진 메타데이터 | `data/bebebox.db` (SQLite, `photos` 테이블) |
+| 사진 이미지 파일 | `uploads/` |
+| 가족 앱 상태(위시리스트·펀딩·프로필 등) | `data/bebebox.db` (`family_data` 테이블) |
+| 로그인 세션 | `data/bebebox.db` (`sessions` 테이블) |
+
+- 같은 초대 코드(가족 코드)를 쓰면 같은 서버에 접속한 기기끼리 사진/데이터가 공유됩니다.
+- DB와 업로드 파일은 `.gitignore`로 커밋에서 제외됩니다.
+- 외부에 공유하려면 이 서버를 호스팅하거나 같은 네트워크에서 접속하면 됩니다.
 
 ## 주의
 
