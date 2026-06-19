@@ -18,6 +18,7 @@ API
   POST   /api/auth/logout             로그아웃
 """
 import json
+import mimetypes
 import os
 import re
 import time
@@ -29,7 +30,8 @@ import db
 import kakao_auth as ka
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
-UPLOAD_DIR = os.path.join(ROOT, "uploads")
+# 배포 시 영구 디스크 경로를 환경변수로 지정할 수 있다(없으면 로컬 uploads/).
+UPLOAD_DIR = os.environ.get("BEBEBOX_UPLOAD_DIR") or os.path.join(ROOT, "uploads")
 MAX_UPLOAD_BYTES = 15 * 1024 * 1024
 ALLOWED_TYPES = {"image/jpeg", "image/png", "image/webp", "image/gif"}
 EXT_BY_TYPE = {
@@ -288,6 +290,8 @@ class H(SimpleHTTPRequestHandler):
     # ------------------------------------------------------------ GET
     def do_GET(self):
         path = urllib.parse.urlparse(self.path).path
+        if path.startswith("/uploads/"):
+            return self._serve_upload(path)
         if path == "/api/config":
             return json_response(self, 200, {
                 "storage": "sqlite",
@@ -367,6 +371,24 @@ class H(SimpleHTTPRequestHandler):
         if not remove_photo(photo_id, family):
             return json_response(self, 404, {"error": "not_found"})
         return json_response(self, 200, {"ok": True, "id": photo_id})
+
+    def _serve_upload(self, path):
+        rel = urllib.parse.unquote(path[len("/uploads/"):])
+        safe = os.path.normpath(rel).replace("\\", "/")
+        if not safe or safe.startswith("..") or os.path.isabs(safe):
+            return self.send_error(404)
+        full = os.path.join(UPLOAD_DIR, safe)
+        if not os.path.isfile(full):
+            return self.send_error(404)
+        ctype = mimetypes.guess_type(full)[0] or "application/octet-stream"
+        with open(full, "rb") as f:
+            data = f.read()
+        self.send_response(200)
+        self.send_header("Content-Type", ctype)
+        self.send_header("Content-Length", str(len(data)))
+        self.send_header("Cache-Control", "public, max-age=86400")
+        self.end_headers()
+        self.wfile.write(data)
 
     # ------------------------------------------------------- helpers
     def _query(self, key, default=None):

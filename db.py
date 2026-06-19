@@ -12,7 +12,8 @@ import time
 import uuid
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
-DATA_DIR = os.path.join(ROOT, "data")
+# 배포 시 영구 디스크 경로를 환경변수로 지정할 수 있다(없으면 로컬 data/).
+DATA_DIR = os.environ.get("BEBEBOX_DATA_DIR") or os.path.join(ROOT, "data")
 DB_PATH = os.path.join(DATA_DIR, "bebebox.db")
 
 SCHEMA = """

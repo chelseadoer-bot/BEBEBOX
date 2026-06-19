@@ -1,0 +1,12 @@
+.git
+.gitignore
+__pycache__/
+*.pyc
+.env
+.env.*
+!.env.example
+data/
+uploads/
+docs/
+scripts/__pycache__/
+*.md
