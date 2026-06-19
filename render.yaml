@@ -1,0 +1,27 @@
+# Render.com Blueprint - BEBEBOX
+# 대시보드에서 "New +" > "Blueprint" > 이 저장소 선택 시 자동으로 읽힌다.
+services:
+  - type: web
+    name: bebebox
+    runtime: docker
+    plan: starter            # 영구 디스크는 유료 플랜에서만 가능
+    region: singapore        # 한국에서 가장 가까운 Render 리전
+    dockerfilePath: ./Dockerfile
+    autoDeploy: true         # GitHub main 에 push 하면 자동 재배포
+    healthCheckPath: /api/config
+    disk:
+      name: bebebox-data
+      mountPath: /data       # DB(bebebox.db) + 업로드 사진 보존
+      sizeGB: 1
+    envVars:
+      - key: BEBEBOX_DATA_DIR
+        value: /data
+      - key: BEBEBOX_UPLOAD_DIR
+        value: /data/uploads
+      # 아래 3개는 대시보드에서 직접 값 입력(보안상 코드에 넣지 않음)
+      - key: KAKAO_REST_API_KEY
+        sync: false
+      - key: KAKAO_CLIENT_SECRET
+        sync: false
+      - key: KAKAO_REDIRECT_URI
+        sync: false

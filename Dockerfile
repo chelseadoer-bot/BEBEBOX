@@ -5,8 +5,8 @@ WORKDIR /app
 COPY . .
 
 # 영구 디스크(볼륨)를 /data 에 마운트해서 DB/업로드를 보존한다.
-ENV PORT=8080 \
-    BEBEBOX_DATA_DIR=/data \
+# PORT 는 호스팅 플랫폼이 주입한다(없으면 server.py 가 8080 기본값 사용).
+ENV BEBEBOX_DATA_DIR=/data \
     BEBEBOX_UPLOAD_DIR=/data/uploads
 
 EXPOSE 8080
