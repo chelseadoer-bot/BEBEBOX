@@ -14,9 +14,15 @@
 
 ## 2. Blueprint 로 배포
 
+**가장 빠른 방법:** README의 **Deploy to Render** 버튼을 누르면 곧장 Blueprint 화면으로 갑니다.
+
+또는 수동으로:
+
 1. Render 대시보드 → **New +** → **Blueprint**
 2. **BEBEBOX** 저장소 선택 → Render가 `render.yaml` 을 자동으로 읽음
 3. **Apply** 클릭 → 웹 서비스 + 디스크가 자동 생성됨
+
+> Render가 `main` 브랜치의 `render.yaml` 을 읽습니다(영구 디스크 `/data`, 헬스체크 `/api/config`, push 시 자동 재배포 포함). 별도 환경변수 없이 그대로 배포되며, 카카오 로그인을 쓸 때만 아래 3개 값을 넣으면 됩니다.
 
 ## 3. 카카오 환경변수 입력
 

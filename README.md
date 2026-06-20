@@ -2,6 +2,16 @@
 
 아기 성장 기록, 가족 공유, 위시리스트, 퍼즐 미션을 담은 웹 앱입니다.
 
+## 🚀 한 번에 배포하기 (여러 사람과 공유)
+
+다른 가족·지인과 사진·위시리스트를 **함께** 쓰려면 서버를 한 곳에 올려야 합니다.
+아래 버튼을 누르면 Render가 이 저장소의 `render.yaml` 을 읽어 웹 서비스 + 영구 디스크를 자동으로 만들어 줍니다.
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/chelseadoer-bot/bebebox)
+
+> 영구 디스크(사진·DB 보존)는 Render 유료 **Starter** 플랜(약 $7/월)이 필요합니다.
+> 카카오 로그인 없이도 **가족 코드**만 같으면 사진·데이터가 공유됩니다. 자세한 절차는 [docs/DEPLOY.md](docs/DEPLOY.md).
+
 ## 요구 사항
 
 - Python 3.8 이상 (표준 라이브러리만 사용 — 추가 설치 없음)
