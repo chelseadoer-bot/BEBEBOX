@@ -54,7 +54,8 @@ const AVATAR=AI_PHOTOS[0];
 const BACKGROUND=AI_PHOTOS[1];
 const DEFAULT_PHOTOS=Array.from({length:18},(_,i)=>AI_PHOTOS[i%AI_PHOTOS.length]);
 const DEFAULT_FRIENDS=[{id:"f1",name:"민지"},{id:"f2",name:"준호"},{id:"f3",name:"수연"}];
-const DEFAULT_PROFILE={name:"다엘이의 일기",babyName:"다엘이",status:"9개월",currentAge:9,avatar:AVATAR,background:BACKGROUND};
+// 가입 시 배경은 비워둔다(검정). 배경은 설정에서 직접 추가/변경한다.
+const DEFAULT_PROFILE={name:"다엘이의 일기",babyName:"다엘이",status:"9개월",currentAge:9,avatar:AVATAR,background:""};
 // 연령 칩 단계: 0~24개월은 월 단위, 이후 3~14세는 연 단위(15세 전까지).
 const AGE_STEPS=(()=>{
   const s=[];
@@ -512,6 +513,11 @@ function renderSettingsTab(){
   $("#settings-baby-age").value=state.profile.currentAge??9;
   $("#settings-kidikidi-id").value=state.profile.kidikidiId||"";
   const ap=$("#settings-avatar-preview");if(ap)ap.src=state.profile.avatar;
+  const bp=$("#settings-bg-preview");
+  if(bp){
+    if(state.profile.background){bp.style.backgroundImage=`url("${state.profile.background}")`;bp.classList.remove("is-empty");bp.textContent="";}
+    else{bp.style.backgroundImage="none";bp.classList.add("is-empty");bp.textContent="배경 없음";}
+  }
   const wlBtn=$("#btn-settings-wishlist");if(wlBtn)wlBtn.textContent=`🎁 ${babyName()} 옷장 (위시리스트)`;
   const kakao=typeof getStoredKakaoUser==="function"?getStoredKakaoUser():null;
   const accountSection=$("#settings-account-section");
@@ -559,7 +565,11 @@ function renderProfile(){
   $("#profile-status").textContent=state.profile.status||`${state.profile.currentAge}개월`;
   $("#avatar-img").src=state.profile.avatar;
   $("#closet-avatar").src=state.profile.avatar;
-  $(".bg-image").style.backgroundImage=`url("${state.profile.background}")`;
+  const bgEl=$(".bg-image");
+  if(bgEl){
+    if(state.profile.background){bgEl.style.backgroundImage=`url("${state.profile.background}")`;bgEl.style.backgroundColor="";}
+    else{bgEl.style.backgroundImage="none";bgEl.style.backgroundColor="#111";}
+  }
   $(".profile-header").classList.add("compact");
   renderAgeTabs();
   updateQuestBanner();
@@ -776,6 +786,34 @@ async function changeAvatar(file){
       showToast("프로필 사진을 변경했어요");
     }else{showToast("프로필 사진 변경 실패");}
   }catch(_){showToast("프로필 사진 변경 실패");}
+}
+async function changeBackground(file){
+  if(!file||!file.type.startsWith("image/")){showToast("이미지 파일을 선택해 주세요");return;}
+  if(typeof uploadPhotoToServer!=="function"){showToast("server.py 로 실행해야 사진을 올릴 수 있어요");return;}
+  showToast("배경 사진 올리는 중...");
+  try{
+    const up=await uploadPhotoToServer(file);
+    if(up?.src){
+      state.profile.background=up.src;
+      save();
+      renderProfile();renderSettingsTab();
+      showToast("배경 사진을 변경했어요");
+    }else{showToast("배경 사진 변경 실패");}
+  }catch(_){showToast("배경 사진 변경 실패");}
+}
+let _addProductImage="";
+async function pickAddProductImage(file){
+  if(!file||!file.type.startsWith("image/"))return;
+  if(typeof uploadPhotoToServer!=="function"){showToast("server.py 로 실행해야 사진을 올릴 수 있어요");return;}
+  showToast("상품 사진 올리는 중...");
+  try{
+    const up=await uploadPhotoToServer(file);
+    if(up?.src){
+      _addProductImage=up.src;
+      const pv=$("#add-product-image-preview");
+      if(pv){pv.src=up.src;pv.style.display="";}
+    }
+  }catch(_){showToast("상품 사진 업로드 실패");}
 }
 /* ----------------------------------------------- 프로필 게이미피케이션 */
 function journeyProgress(){
@@ -1133,13 +1171,16 @@ function addProduct(){
     id:itemId+"-c"+Date.now(),
     brand,name,price,
     emoji:item.emoji,
+    image:_addProductImage||"",
     rating:null,reviews:null,
     custom:true
   });
   save();
+  _addProductImage="";
   $("#add-product-brand").value="";
   $("#add-product-name").value="";
   $("#add-product-price").value="";
+  const pv=$("#add-product-image-preview");if(pv){pv.style.display="none";pv.src="";}
   $("#add-product-form").classList.add("hidden");
   $("#btn-toggle-add-product").textContent="+ 상품 추가";
   openProductPicker(stageId,itemId);
@@ -1736,6 +1777,9 @@ function bindEvents(){
   $("#btn-share")?.classList.remove("active");
   $("#btn-gift").onclick=openWishlist;
   $("#btn-back-guide")?.addEventListener("click",()=>switchMainTab("home"));
+  // 성장 저니 상단: 선물하기/선물 퍼즐 바로가기
+  $("#btn-journey-gift-shortcut")?.addEventListener("click",openWishlist);
+  $("#btn-journey-puzzle-shortcut")?.addEventListener("click",()=>{openWishlist();setTimeout(()=>$("#btn-new-gift-puzzle")?.scrollIntoView({behavior:"smooth",block:"center"}),200);});
   $("#btn-add-feed-photo").onclick=openComposer;
   // 글쓰기(인스타식) 모달
   $("#btn-composer-cancel")?.addEventListener("click",closeComposer);
@@ -1745,6 +1789,12 @@ function bindEvents(){
   // 프로필 사진 변경
   $("#btn-change-avatar")?.addEventListener("click",()=>$("#avatar-input")?.click());
   $("#avatar-input")?.addEventListener("change",e=>{changeAvatar(e.target.files[0]);e.target.value="";});
+  // 메인 배경 사진 변경
+  $("#btn-change-bg")?.addEventListener("click",()=>$("#bg-input")?.click());
+  $("#bg-input")?.addEventListener("change",e=>{changeBackground(e.target.files[0]);e.target.value="";});
+  // 옷장 상품 사진 추가
+  $("#btn-add-product-image")?.addEventListener("click",()=>$("#add-product-image-input")?.click());
+  $("#add-product-image-input")?.addEventListener("change",e=>{pickAddProductImage(e.target.files[0]);e.target.value="";});
   // 프로필 → 게이미피케이션
   $(".profile-row")?.addEventListener("click",openProfileStats);
   $("#btn-pstats-close")?.addEventListener("click",closeProfileStats);
