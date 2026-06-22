@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>베베박스 · 리워드(알 🥚) 미리보기</title>
+<style>
+:root{
+  --font:"Pretendard",-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+  --color-bg:#fff;--color-bg-subtle:#f7f7f8;--color-text:#191919;
+  --color-text-secondary:#6b6b6b;--color-text-tertiary:#9e9e9e;
+  --color-border:#ebebeb;--color-border-light:#f3f3f5;--color-accent:#ff5722;
+  --color-accent-soft:#fff4ef;--radius-md:12px;--radius-lg:16px;--radius-full:999px;
+  --shadow-sm:0 1px 2px rgba(0,0,0,.04);
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:var(--font);background:#eceef1;color:var(--color-text);padding:28px 16px 60px}
+h1{text-align:center;font-size:20px;font-weight:800;letter-spacing:-.02em}
+.sub{text-align:center;color:#6b6b6b;font-size:13px;margin:6px 0 28px}
+.row{display:flex;gap:22px;justify-content:center;flex-wrap:wrap;align-items:flex-start}
+.phone{width:300px;background:#fff;border-radius:26px;box-shadow:0 12px 40px rgba(0,0,0,.14);overflow:hidden;border:1px solid #e3e3e6}
+.cap{text-align:center;font-size:12.5px;font-weight:700;color:#444;margin:10px 0 14px}
+/* 공통 */
+.tab-page-header{padding:26px 20px 16px;background:#fff;border-bottom:1px solid var(--color-border-light)}
+.tab-page-header h2{margin:0;font-size:20px;font-weight:800;letter-spacing:-.03em}
+.tab-page-header p{font-size:13px;color:var(--color-text-tertiary);margin:4px 0 0;font-weight:500}
+/* 알 카드 */
+.point-balance-card{display:flex;align-items:center;gap:12px;margin:16px;padding:16px;border-radius:var(--radius-lg);background:linear-gradient(135deg,#fff4ef,#ffe9df);border:1px solid #ffd9c7;box-shadow:var(--shadow-sm)}
+.point-balance-icon{font-size:30px;line-height:1}
+.point-balance-info{display:flex;flex-direction:column;flex:1;min-width:0}
+.point-balance-label{font-size:12px;font-weight:600;color:var(--color-text-tertiary)}
+.point-balance-value{font-size:22px;font-weight:800;letter-spacing:-.02em;color:#c45c2e}
+.point-exchange-btn{flex-shrink:0;padding:11px 14px;border:none;border-radius:var(--radius-full);background:#e3ddd8;color:#fff;font-size:13px;font-weight:800;cursor:pointer}
+.point-exchange-btn.ready{background:linear-gradient(135deg,#ff7043,#ff5722);box-shadow:0 4px 14px rgba(255,87,34,.3)}
+/* 퍼즐 */
+.mission-puzzle-wrap{padding:8px 16px 8px}
+.mission-board-title{font-size:13px;font-weight:700;color:var(--color-text-secondary);margin:0 0 10px}
+.mission-puzzle-board{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;background:#dcc8b8;border-radius:14px;padding:8px;margin-bottom:14px}
+.mission-piece{aspect-ratio:1;border-radius:8px;overflow:hidden;position:relative;display:flex;align-items:center;justify-content:center;font-size:20px}
+.mission-piece.filled{background:linear-gradient(135deg,#ffd0b5,#ffb088)}
+.mission-piece.empty{background:repeating-linear-gradient(45deg,#ece0d6,#ece0d6 6px,#e4d6ca 6px,#e4d6ca 12px)}
+.mission-piece.empty::after{content:"🧩";opacity:.35;filter:grayscale(1)}
+.mission-progress-text{font-size:14px;font-weight:700;color:#c45c2e;margin:0 0 8px}
+.puzzle-progress-track{height:8px;border-radius:999px;background:#f0e6dd;overflow:hidden}
+.puzzle-progress-fill{height:100%;background:linear-gradient(90deg,#ff7043,#ff5722);border-radius:999px}
+.mission-bonus-hint{font-size:12.5px;font-weight:600;color:#c45c2e;text-align:center;margin:10px 0 0}
+.mission-actions{padding:8px 16px 22px}
+.mission-actions-title{font-size:13px;font-weight:700;color:var(--color-text-secondary);margin:0 0 10px}
+.mission-action-btn{display:block;width:100%;text-align:left;padding:14px 16px;margin-bottom:8px;border:1px solid var(--color-border);border-radius:var(--radius-md);background:#fff;font-size:14px;font-weight:600;color:var(--color-text)}
+/* 게임 탭 */
+.ig-scroll{padding-bottom:18px}
+.ig-point-chip{margin:14px 16px 0;padding:9px 14px;border-radius:var(--radius-full);background:var(--color-accent-soft);color:#c45c2e;font-size:12.5px;font-weight:700;text-align:center}
+.ig-banner{margin:14px 16px;border-radius:var(--radius-lg);background:linear-gradient(135deg,#fff4ef,#ffe2d3);padding:18px;display:flex;justify-content:space-between;align-items:center}
+.ig-banner strong{display:block;font-size:15px;font-weight:800}
+.ig-banner span{font-size:12px;color:#7a5a4a}
+.ig-banner .visual{font-size:34px}
+.ig-title{font-size:15px;font-weight:800;margin:6px 16px 10px}
+.ig-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 16px}
+.ig-item{display:flex;align-items:center;gap:8px;padding:12px;border:1px solid var(--color-border);border-radius:var(--radius-md);font-size:13px;font-weight:600;background:#fff}
+.ig-item .ic{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center}
+.ig-soon{margin-left:auto;font-size:10.5px;color:#9e9e9e;font-weight:600}
+/* 게임 결과 */
+.game-screen{padding:22px 18px 26px;text-align:center}
+.game-result-label{font-size:14px;font-weight:700;color:#6b6b6b;margin:0 0 14px}
+.game-result-hint{font-size:14px;font-weight:600;color:var(--color-text-secondary);margin:0 0 12px}
+.gift-btn{width:100%;padding:15px;border:none;border-radius:var(--radius-md);background:linear-gradient(135deg,#ff7043,#ff5722);color:#fff;font-size:15px;font-weight:800;box-shadow:0 4px 14px rgba(255,87,34,.3);cursor:pointer}
+.game-result-score{font-size:40px;font-weight:800;color:#191919;margin:6px 0 16px}
+.game-result-score span{color:#ff5722}
+.retry-btn{width:100%;margin-top:10px;padding:13px;border:1px solid var(--color-border);border-radius:var(--radius-md);background:#fff;font-weight:700;color:#444}
+.divider{margin:18px 16px 6px;text-align:center;font-size:11px;color:#aaa;font-weight:700;letter-spacing:.04em}
+.flow{max-width:760px;margin:34px auto 0;background:#fff;border-radius:16px;padding:20px 22px;box-shadow:var(--shadow-sm);border:1px solid #e7e7ea}
+.flow h3{margin:0 0 12px;font-size:15px;font-weight:800}
+.flow .chips{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:13px;font-weight:700}
+.chip{padding:8px 12px;border-radius:999px;background:#fff4ef;color:#c45c2e;border:1px solid #ffd9c7}
+.chip.spend{background:#eef3ff;color:#3a59b8;border-color:#d4def8}
+.chip.goal{background:#191919;color:#fff;border:none}
+.arrow{color:#bbb}
+</style>
+</head>
+<body>
+<h1>🥚 베베박스 · 통합 리워드(알) 미리보기</h1>
+<p class="sub">기록·공유로 <b>알</b>을 모으고 → 게임 결과를 보고 → 1,000알이면 쿠폰으로 교환하는 하나의 흐름</p>
+
+<div class="row">
+  <div>
+    <div class="cap">① 리워드 탭 — 알 잔액 · 오늘의 미션판</div>
+    <div class="phone">
+      <div class="tab-page-header"><h2>리워드</h2><p>기록하고 공유해서 알을 모으고, 쿠폰으로 바꿔요</p></div>
+      <div class="point-balance-card">
+        <span class="point-balance-icon">🥚</span>
+        <div class="point-balance-info"><span class="point-balance-label">내 알</span><strong class="point-balance-value">240 알</strong></div>
+        <button class="point-exchange-btn">🎟️ 쿠폰까지 760알</button>
+      </div>
+      <div class="mission-puzzle-wrap">
+        <p class="mission-board-title">오늘의 미션 달성판</p>
+        <div class="mission-puzzle-board">
+          <div class="mission-piece filled">👶</div><div class="mission-piece filled">🍼</div><div class="mission-piece filled">🧸</div>
+          <div class="mission-piece filled">📷</div><div class="mission-piece filled">🌙</div><div class="mission-piece filled">⭐</div>
+          <div class="mission-piece empty"></div><div class="mission-piece empty"></div><div class="mission-piece empty"></div>
+        </div>
+        <p class="mission-progress-text">🧩 9조각 중 6조각 완성!</p>
+        <div class="puzzle-progress-track"><div class="puzzle-progress-fill" style="width:66%"></div></div>
+        <p class="mission-bonus-hint">9칸을 다 채우면 보너스 +100알! 🎉</p>
+      </div>
+      <div class="mission-actions">
+        <p class="mission-actions-title">오늘의 미션</p>
+        <button class="mission-action-btn">📷 기록하고 +10알</button>
+        <button class="mission-action-btn">🔗 사진첩 공유하고 +30알</button>
+        <button class="mission-action-btn">🎮 게임하고 결과 확인하기</button>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="cap">② 게임 탭 — 상단 알 잔액 칩</div>
+    <div class="phone">
+      <div class="ig-scroll">
+        <div class="ig-point-chip">🥚 240 알 · 결과 보기엔 20알이 필요해요</div>
+        <div class="ig-banner"><div><strong>모던하우스 빨대컵 특가</strong><span>최대 더블쿠폰 ~10%</span></div><div class="visual">🍼</div></div>
+        <div class="ig-title">가장 많이 찾고 있어요</div>
+        <div class="ig-grid">
+          <div class="ig-item"><span class="ic" style="background:#fff3e0">🌐</span>글로벌 작명소<span class="ig-soon">곧 공개</span></div>
+          <div class="ig-item"><span class="ic" style="background:#f3e8ff">✏️</span>낙서 심리<span class="ig-soon">곧 공개</span></div>
+          <div class="ig-item"><span class="ic" style="background:#e8f8ef">📈</span>탭 챌린지<span class="ig-soon" style="color:#ff5722">▶ 플레이</span></div>
+          <div class="ig-item"><span class="ic" style="background:#e8eeff">🎭</span>성향 분석<span class="ig-soon">곧 공개</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="cap">③ 미니게임 결과 — 20알로 잠금 해제</div>
+    <div class="phone">
+      <div class="game-screen">
+        <p class="game-result-label">게임 종료!</p>
+        <p class="game-result-hint">🥚 20알을 쓰고 결과를 확인하세요</p>
+        <button class="gift-btn">🥚 20알 쓰고 결과 보기</button>
+        <button class="retry-btn">다시 하기</button>
+      </div>
+      <div class="divider">— 알을 쓰면 ↓ 결과 공개 —</div>
+      <div class="game-screen" style="padding-top:6px">
+        <p class="game-result-score"><span>42</span>점</p>
+        <button class="gift-btn">결과 공유하고 +30알 받기 🚀</button>
+        <button class="retry-btn">다시 하기</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="flow">
+  <h3>한눈에 보는 포인트 경제</h3>
+  <div class="chips">
+    <span class="chip">📷 기록 +10</span>
+    <span class="chip">🔗 공유 +30</span>
+    <span class="chip">🧩 미션 9칸 +100</span>
+    <span class="arrow">→</span>
+    <span class="chip spend">🎮 게임 결과 −20</span>
+    <span class="arrow">→</span>
+    <span class="chip goal">🎟️ 1,000알 = 1,000원 쿠폰</span>
+  </div>
+</div>
+
+</body>
+</html>

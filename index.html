@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
 <title>베베박스</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css"/>
-<link rel="stylesheet" href="css/style.css?v=21"/>
+<link rel="stylesheet" href="css/style.css?v=22"/>
 <link rel="stylesheet" href="css/onboarding.css?v=5"/>
 <link rel="stylesheet" href="css/theme.css?v=4"/>
 </head>
@@ -215,26 +215,36 @@
 </div>
 <div id="puzzle-tab-view" class="view tab-view">
 <header class="tab-page-header">
-<h2>조각 채우기</h2>
-<p>미션을 완료하고 퍼즐을 모아 쿠폰을 받아요</p>
+<h2>리워드</h2>
+<p>기록하고 공유해서 알을 모으고, 쿠폰으로 바꿔요</p>
 </header>
+<div class="point-balance-card">
+<span class="point-balance-icon">🥚</span>
+<div class="point-balance-info">
+<span class="point-balance-label">내 알</span>
+<strong class="point-balance-value"><span class="js-point-balance">0</span> 알</strong>
+</div>
+<button type="button" class="point-exchange-btn" id="btn-claim-coupon">🎟️ 1,000알 → 쿠폰 교환</button>
+</div>
 <div class="mission-puzzle-wrap">
+<p class="mission-board-title">오늘의 미션 달성판</p>
 <div class="mission-puzzle-board" id="mission-puzzle-board"></div>
 <div class="mission-progress">
 <p class="mission-progress-text" id="mission-progress-text">🧩 현재 9조각 중 0조각 완성!</p>
 <div class="puzzle-progress-track"><div class="puzzle-progress-fill" id="mission-progress-bar"></div></div>
 </div>
-<button type="button" class="mission-coupon-btn hidden" id="btn-claim-coupon">✨ 1,000원 장바구니 쿠폰 받기</button>
+<p class="mission-bonus-hint" id="mission-bonus-hint">9칸을 다 채우면 보너스 +100알! 🎉</p>
 </div>
 <div class="mission-actions">
 <p class="mission-actions-title">오늘의 미션</p>
-<button type="button" class="mission-action-btn" id="btn-mission-photo">📷 기록하고 1조각 얻기</button>
-<button type="button" class="mission-action-btn" id="btn-mission-share">🔗 사진첩 공유하고 3조각 얻기</button>
-<button type="button" class="mission-action-btn" id="btn-mission-game">🎮 게임하고 2조각 얻기</button>
+<button type="button" class="mission-action-btn" id="btn-mission-photo">📷 기록하고 +10알</button>
+<button type="button" class="mission-action-btn" id="btn-mission-share">🔗 사진첩 공유하고 +30알</button>
+<button type="button" class="mission-action-btn" id="btn-mission-game">🎮 게임하고 결과 확인하기</button>
 </div>
 </div>
 <div id="game-tab-view" class="view tab-view">
 <div class="ig-scroll">
+<div class="ig-point-chip">🥚 <strong class="js-point-balance">0</strong> 알 · 결과 보기엔 20알이 필요해요</div>
 <div class="ig-banner" id="ig-banner">
 <div class="ig-banner-slide active" data-slide="0">
 <div class="ig-banner-text">
@@ -378,8 +388,14 @@
 </div>
 <div id="game-result-screen" class="game-screen hidden">
 <p class="game-result-label">게임 종료!</p>
+<div id="game-result-locked">
+<p class="game-result-hint">🥚 <span id="game-reveal-cost">20</span>알을 쓰고 결과를 확인하세요</p>
+<button type="button" class="journey-gift-btn" id="btn-game-reveal">🥚 <span>20</span>알 쓰고 결과 보기</button>
+</div>
+<div id="game-result-unlocked" class="hidden">
 <p class="game-result-score"><span id="game-final-score">0</span>점</p>
-<button type="button" class="journey-gift-btn" id="btn-game-share-reward">퍼즐 2조각 받기 &amp; 결과 공유하기 🚀</button>
+<button type="button" class="journey-gift-btn" id="btn-game-share-reward">결과 공유하고 +30알 받기 🚀</button>
+</div>
 <button type="button" class="game-retry-btn" id="btn-game-retry">다시 하기</button>
 </div>
 </div>
@@ -593,13 +609,14 @@
 <script src="js/wishlist-data.js"></script>
 <script src="js/feed-data.js?v=5"></script>
 <script src="js/kidikidi.js?v=4"></script>
-<script src="js/puzzle-mission.js?v=3"></script>
-<script src="js/minigame.js?v=2"></script>
+<script src="js/points.js?v=1"></script>
+<script src="js/puzzle-mission.js?v=4"></script>
+<script src="js/minigame.js?v=3"></script>
 <script src="js/photo-quest-detect.js?v=1"></script>
 <script src="js/photo-storage.js?v=2"></script>
 <script src="js/family-data.js?v=1"></script>
 <script src="js/kakao-auth.js?v=1"></script>
 <script src="js/onboarding.js?v=7"></script>
-<script src="js/app.js?v=38"></script>
+<script src="js/app.js?v=39"></script>
 </body>
 </html>

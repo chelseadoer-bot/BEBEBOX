@@ -2,6 +2,54 @@
 
 아기 성장 기록, 가족 공유, 위시리스트, 퍼즐 미션을 담은 웹 앱입니다.
 
+## 🚀 한 번에 배포하기 (여러 사람과 공유)
+
+다른 가족·지인과 사진·위시리스트를 **함께** 쓰려면 서버를 한 곳에 올려야 합니다.
+아래 버튼을 누르면 Render가 이 저장소의 `render.yaml` 을 읽어 웹 서비스 + 영구 디스크를 자동으로 만들어 줍니다.
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/chelseadoer-bot/bebebox)
+
+> 영구 디스크(사진·DB 보존)는 Render 유료 **Starter** 플랜(약 $7/월)이 필요합니다.
+> 카카오 로그인 없이도 **가족 코드**만 같으면 사진·데이터가 공유됩니다. 자세한 절차는 [docs/DEPLOY.md](docs/DEPLOY.md).
+
+## 🤝 함께 개발하기 (기여 방법)
+
+여러 명이 같이 코드를 고칠 때의 흐름입니다.
+
+> **자동 배포**: `main` 브랜치에 코드가 합쳐지면 Render가 **자동으로 다시 배포**합니다(`autoDeploy: true`).
+> 즉 "사이트 주소에 직접 올리는" 게 아니라 **GitHub `main` 에 반영되면** 사이트가 알아서 갱신됩니다.
+>
+> ⚠️ 사진·위시리스트 같은 **데이터는 Git에 올라가지 않습니다.** 그건 배포된 서버 디스크에 저장되고, 같은 **가족 코드**를 쓰면 서로 공유됩니다.
+
+### 준비 (저장소 주인이 1회)
+
+GitHub 저장소 → **Settings → Collaborators → Add people** 로 함께할 사람의 GitHub 계정을 초대합니다.
+
+### 협업자 작업 흐름
+
+```bash
+# 1) 저장소 복제
+git clone https://github.com/chelseadoer-bot/bebebox
+cd bebebox
+
+# 2) 새 브랜치에서 작업 (main 에 바로 작업하지 않기)
+git switch -c my-feature
+
+# 3) 로컬에서 실행하며 개발·확인
+python server.py        # http://localhost:8080
+
+# 4) 변경 사항 커밋 후 내 브랜치로 push
+git add -A
+git commit -m "무엇을 바꿨는지 한 줄 설명"
+git push -u origin my-feature
+```
+
+5. GitHub에서 **Pull Request** 생성 → 저장소 주인이 확인 후 **main 에 Merge**
+6. Merge되면 Render가 자동 배포 → 2~3분 뒤 https://bebebox.onrender.com 에 반영 ✨
+
+> **왜 PR을 거치나요?** `main` 에 push하면 곧바로 모두가 쓰는 라이브 사이트가 바뀝니다.
+> 깨진 코드가 바로 나가지 않도록, 작업은 항상 **브랜치 → PR → main 병합** 순서로 합니다.
+
 ## 요구 사항
 
 - Python 3.8 이상 (표준 라이브러리만 사용 — 추가 설치 없음)

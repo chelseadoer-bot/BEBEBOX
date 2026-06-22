@@ -21,6 +21,8 @@ function packFamilyState() {
     journeyGifts: state.journeyGifts,
     journeyMemories: state.journeyMemories,
     parentQuestPhotos: state.parentQuestPhotos,
+    points: state.points,
+    coupons: state.coupons,
     inviteCode: typeof getInviteCode === "function" ? getInviteCode() : null,
   };
 }
@@ -47,6 +49,8 @@ function applyFamilyState(data) {
   if (data.journeyGifts) state.journeyGifts = data.journeyGifts;
   if (data.journeyMemories) state.journeyMemories = data.journeyMemories;
   if (data.parentQuestPhotos) state.parentQuestPhotos = data.parentQuestPhotos;
+  if (typeof data.points === "number") state.points = data.points;
+  if (Array.isArray(data.coupons)) state.coupons = data.coupons;
   if (data.inviteCode && typeof ensureInviteCode === "function") {
     localStorage.setItem("photoShare_invite_code", data.inviteCode);
     if (state.profile) state.profile.inviteCode = data.inviteCode;
