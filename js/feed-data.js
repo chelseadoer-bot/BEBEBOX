@@ -57,7 +57,7 @@ const COLLECT_QUESTS={
   6:{id:"col-spoon",bar:"단품 채우기 퀘스트",name:"이유식 숟가락 3개 세트",unitPrice:12000,target:3,current:2,reward:"🥄",rewardLabel:"첫 이유식 샷"}
 };
 const FUNDING_ITEMS={
-  "s3-16":{name:"카시트",emoji:"🚗",copy:"다엘이의 안전을 지키는 카시트! 조각마다 금액이 달라요.",type:"puzzle",
+  "s3-16":{name:"카시트",emoji:"🚗",copy:"우리 아이의 안전을 지키는 카시트! 조각마다 금액이 달라요.",type:"puzzle",
     image:"public/photos/ai-03.jpg",cols:3,rows:2,pieces:[
     {id:"cs1",name:"시트",price:150000,from:"이모"},{id:"cs2",name:"베이스",price:150000,from:"삼촌"},
     {id:"cs3",name:"캐노피",price:100000},{id:"cs4",name:"안전벨트",price:80000},

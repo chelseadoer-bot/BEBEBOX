@@ -480,6 +480,8 @@ function renderSettingsTab(){
   $("#settings-baby-name").value=state.profile.babyName||"";
   $("#settings-baby-age").value=state.profile.currentAge??9;
   $("#settings-kidikidi-id").value=state.profile.kidikidiId||"";
+  const ap=$("#settings-avatar-preview");if(ap)ap.src=state.profile.avatar;
+  const wlBtn=$("#btn-settings-wishlist");if(wlBtn)wlBtn.textContent=`🎁 ${babyName()} 옷장 (위시리스트)`;
   const kakao=typeof getStoredKakaoUser==="function"?getStoredKakaoUser():null;
   const accountSection=$("#settings-account-section");
   if(accountSection){
@@ -593,9 +595,11 @@ function renderFeed(){
     return;
   }
   feed.innerHTML=list.map(p=>{
-    const imgs=p.photos.length?`<div class="post-photos${p.photos.length>1?" multi":""}">${
-      p.photos.map(src=>`<div class="post-photo-slide"><img src="${esc(src)}" alt="" loading="lazy" data-img="${esc(src)}"/></div>`).join("")
-    }</div>${p.photos.length>1?`<div class="post-dots">${p.photos.map((_,i)=>`<span class="${i===0?"on":""}"></span>`).join("")}</div>`:""}`:"";
+    const multi=p.photos.length>1;
+    const slides=p.photos.map(src=>`<div class="post-photo-slide"><img src="${esc(src)}" alt="" loading="lazy" data-img="${esc(src)}"/></div>`).join("");
+    const nav=multi?`<button type="button" class="post-nav prev" data-nav="prev" aria-label="이전 사진">‹</button><button type="button" class="post-nav next" data-nav="next" aria-label="다음 사진">›</button><div class="post-count">1/${p.photos.length}</div>`:"";
+    const dots=multi?`<div class="post-dots">${p.photos.map((_,i)=>`<span class="${i===0?"on":""}"></span>`).join("")}</div>`:"";
+    const imgs=p.photos.length?`<div class="post-photos-wrap"><div class="post-photos${multi?" multi":""}">${slides}</div>${nav}</div>${dots}`:"";
     const gpct=Math.min(100,p.gauge);
     const text=p.text?`<p class="post-text"><strong>${esc(state.profile.name)}</strong> ${esc(p.text)}</p>`:"";
     return`<article class="post-card" data-id="${p.id}">
@@ -616,11 +620,21 @@ function renderFeed(){
   feed.querySelectorAll("img[data-img]").forEach(im=>im.onclick=()=>openImageLightbox(im.dataset.img));
   feed.querySelectorAll("[data-emotion]").forEach(b=>b.onclick=e=>{e.stopPropagation();bumpEmotion(b.dataset.emotion);});
   feed.querySelectorAll("[data-comment]").forEach(b=>b.onclick=()=>openPostCommentSheet(b.dataset.comment));
+  feed.querySelectorAll(".post-nav").forEach(btn=>btn.onclick=e=>{
+    e.stopPropagation();
+    const scroller=btn.parentElement.querySelector(".post-photos");
+    if(!scroller)return;
+    const dir=btn.dataset.nav==="next"?1:-1;
+    scroller.scrollBy({left:dir*scroller.clientWidth,behavior:"smooth"});
+  });
   feed.querySelectorAll(".post-photos.multi").forEach(scroller=>{
     scroller.addEventListener("scroll",()=>{
       const i=Math.round(scroller.scrollLeft/Math.max(1,scroller.clientWidth));
-      const dots=scroller.parentElement.querySelector(".post-dots");
-      if(dots)dots.querySelectorAll("span").forEach((d,di)=>d.classList.toggle("on",di===i));
+      const wrap=scroller.parentElement;
+      const dots=wrap.nextElementSibling;
+      if(dots&&dots.classList.contains("post-dots"))dots.querySelectorAll("span").forEach((d,di)=>d.classList.toggle("on",di===i));
+      const cnt=wrap.querySelector(".post-count");
+      if(cnt)cnt.textContent=`${i+1}/${scroller.children.length}`;
     },{passive:true});
   });
 }
@@ -709,6 +723,20 @@ async function submitPost(){
   addPoints(POINT_RULES.photo,"photo");
   addPuzzlePieces(1,"post");
   showToast(`글을 올렸어요 · +${POINT_RULES.photo}알 🥚`);
+}
+async function changeAvatar(file){
+  if(!file||!file.type.startsWith("image/")){showToast("이미지 파일을 선택해 주세요");return;}
+  if(typeof uploadPhotoToServer!=="function"){showToast("server.py 로 실행해야 사진을 올릴 수 있어요");return;}
+  showToast("프로필 사진 올리는 중...");
+  try{
+    const up=await uploadPhotoToServer(file);
+    if(up?.src){
+      state.profile.avatar=up.src;
+      save();
+      renderProfile();renderSettingsTab();renderFeed();
+      showToast("프로필 사진을 변경했어요");
+    }else{showToast("프로필 사진 변경 실패");}
+  }catch(_){showToast("프로필 사진 변경 실패");}
 }
 /* ----------------------------------------------- 프로필 게이미피케이션 */
 function journeyProgress(){
@@ -1147,7 +1175,11 @@ function saveOwnedFromPicker(){
   loadKidikidiProducts(item,owned);
   showToast(owned?"보유 중으로 표시했어요":"아직 없음으로 변경했어요");
 }
-function openWishlist(){renderStageNav();renderWishlistGrid();showView("#wishlist-view");}
+function openWishlist(){
+  const t=$(".wishlist-title");if(t)t.textContent=`${babyName()} 옷장`;
+  const ca=$("#closet-avatar");if(ca){ca.src=state.profile.avatar;ca.alt=babyName();}
+  renderStageNav();renderWishlistGrid();showView("#wishlist-view");
+}
 function getGuideAge(){
   const age=state.currentAgeTab==="all"?state.profile.currentAge:+state.currentAgeTab;
   return age;
@@ -1594,6 +1626,8 @@ function copyShareLink(url){
 }
 function openShareLinkModal(url){
   $("#share-link-input").value=url||getShareUrl();
+  const d=$("#share-modal .modal-desc");
+  if(d)d.textContent=`${state.profile.name} 프로필 전체 링크예요. 복사해서 친구에게 보내세요.`;
   $("#share-modal").classList.remove("hidden");
 }
 async function shareProfileLink(){
@@ -1664,6 +1698,9 @@ function bindEvents(){
   $("#composer-backdrop")?.addEventListener("click",closeComposer);
   $("#btn-composer-submit")?.addEventListener("click",submitPost);
   $("#composer-photo-input")?.addEventListener("change",e=>{addComposerFiles(e.target.files);e.target.value="";});
+  // 프로필 사진 변경
+  $("#btn-change-avatar")?.addEventListener("click",()=>$("#avatar-input")?.click());
+  $("#avatar-input")?.addEventListener("change",e=>{changeAvatar(e.target.files[0]);e.target.value="";});
   // 프로필 → 게이미피케이션
   $(".profile-row")?.addEventListener("click",openProfileStats);
   $("#btn-pstats-close")?.addEventListener("click",closeProfileStats);

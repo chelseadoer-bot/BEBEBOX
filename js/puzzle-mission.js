@@ -54,31 +54,30 @@ function addPuzzlePieces(count, source) {
   return gained;
 }
 
+// 기록(글)에 올린 사진들을 '오래된 순(=먼저 기록한 순)'으로 모은다.
 function getDiaryPhotoSources() {
-  if (typeof state === "undefined" || !Array.isArray(state.photos)) return [];
-  return state.photos.map((p) => p.src).filter(Boolean);
+  if (typeof state === "undefined" || !Array.isArray(state.posts)) return [];
+  return [...state.posts]
+    .sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0))
+    .flatMap((p) => p.photos || [])
+    .filter(Boolean);
 }
 
+// 퍼즐 이미지는 '첫 번째로 기록한 사진'을 사용한다.
 function pickRandomDiaryPhoto() {
   const sources = getDiaryPhotoSources();
   if (!sources.length) {
     return (typeof state !== "undefined" && state.profile?.avatar) || "public/photos/ai-01.jpg";
   }
-  return sources[Math.floor(Math.random() * sources.length)];
+  return sources[0];
 }
 
 function ensurePuzzleImage(data) {
-  if (data.pieces <= 0) return data.image || null;
-  if (!data.image) {
-    data.image = pickRandomDiaryPhoto();
-    savePuzzleMission(data);
-  }
-  return data.image;
+  return pickRandomDiaryPhoto();
 }
 
 function puzzleMissionImage() {
-  const data = loadPuzzleMission();
-  return ensurePuzzleImage(data) || pickRandomDiaryPhoto();
+  return pickRandomDiaryPhoto();
 }
 
 function puzzlePieceBgStyle(col, row, cols, rows, image) {
