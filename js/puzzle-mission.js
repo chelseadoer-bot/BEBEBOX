@@ -1,29 +1,31 @@
+/** 퍼즐 = '오늘의 미션 달성판'.
+ * 기록·공유로 9칸을 채우면 대량 포인트 보너스를 한 번 지급한다(하루 1회).
+ * 날짜가 바뀌면 판이 새로 시작된다. 쿠폰 교환은 포인트 기반(points.js)으로 이동했다.
+ */
 const PUZZLE_TOTAL = 9;
 const PUZZLE_STORAGE = "photoShare_puzzle_mission";
-const COUPON_STORAGE = "photoShare_coupons";
+
+function _puzzleToday() {
+  return new Date().toISOString().slice(0, 10);
+}
 
 function loadPuzzleMission() {
+  let data = null;
   try {
-    const raw = localStorage.getItem(PUZZLE_STORAGE);
-    if (raw) return JSON.parse(raw);
+    data = JSON.parse(localStorage.getItem(PUZZLE_STORAGE) || "null");
   } catch (_) {}
-  return { pieces: 0 };
+  if (!data || typeof data !== "object") data = { pieces: 0 };
+  // 날짜가 바뀌면 '오늘의 미션' 판을 새로 시작한다.
+  if (data.date !== _puzzleToday()) {
+    data = { pieces: 0, date: _puzzleToday(), image: null, bonusClaimed: false };
+    savePuzzleMission(data);
+  }
+  return data;
 }
 
 function savePuzzleMission(data) {
+  if (!data.date) data.date = _puzzleToday();
   localStorage.setItem(PUZZLE_STORAGE, JSON.stringify(data));
-}
-
-function loadCoupons() {
-  try {
-    const raw = localStorage.getItem(COUPON_STORAGE);
-    if (raw) return JSON.parse(raw);
-  } catch (_) {}
-  return [];
-}
-
-function saveCoupons(list) {
-  localStorage.setItem(COUPON_STORAGE, JSON.stringify(list));
 }
 
 function addPuzzlePieces(count, source) {
@@ -35,34 +37,21 @@ function addPuzzlePieces(count, source) {
   data.pieces = Math.min(PUZZLE_TOTAL, data.pieces + count);
   savePuzzleMission(data);
   const gained = data.pieces - before;
-  if (gained > 0 && typeof onPuzzlePiecesChanged === "function") {
-    onPuzzlePiecesChanged(gained, source, data.pieces);
+
+  // 9칸을 처음 다 채운 순간 → 대량 포인트 보너스(오늘 1회)
+  let bonus = 0;
+  if (data.pieces >= PUZZLE_TOTAL && !data.bonusClaimed) {
+    data.bonusClaimed = true;
+    savePuzzleMission(data);
+    if (typeof addPoints === "function") {
+      bonus = POINT_RULES.missionBonus;
+      addPoints(bonus, "mission");
+    }
+  }
+  if ((gained > 0 || bonus > 0) && typeof onPuzzlePiecesChanged === "function") {
+    onPuzzlePiecesChanged(gained, source, data.pieces, bonus);
   }
   return gained;
-}
-
-function canClaimPuzzleCoupon() {
-  return loadPuzzleMission().pieces >= PUZZLE_TOTAL;
-}
-
-function claimPuzzleCoupon() {
-  if (!canClaimPuzzleCoupon()) return null;
-  const coupons = loadCoupons();
-  const expires = new Date();
-  expires.setDate(expires.getDate() + 30);
-  const coupon = {
-    id: "cp" + Date.now(),
-    amount: 1000,
-    label: "장바구니 쿠폰",
-    code: "BEBE" + Math.random().toString(36).slice(2, 8).toUpperCase(),
-    expires: expires.toISOString().slice(0, 10),
-    createdAt: Date.now(),
-  };
-  coupons.unshift(coupon);
-  saveCoupons(coupons);
-  savePuzzleMission({ pieces: 0, image: null });
-  if (typeof onPuzzlePiecesChanged === "function") onPuzzlePiecesChanged(0, "reset", 0);
-  return coupon;
 }
 
 function getDiaryPhotoSources() {

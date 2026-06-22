@@ -1,8 +1,9 @@
-const MINIGAME = { duration: 10, rewardPieces: 2 };
+const MINIGAME = { duration: 10 };
 
 let gameTimer = null;
 let gameScore = 0;
 let gameRunning = false;
+let gameResultUnlocked = false;
 
 function openMinigameModal() {
   $("#game-minigame-modal")?.classList.remove("hidden");
@@ -75,6 +76,26 @@ function endMinigame() {
   const result = document.getElementById("game-result-screen");
   if (screen) screen.classList.add("hidden");
   if (result) result.classList.remove("hidden");
+  // 결과는 잠긴 상태로 시작 — 포인트(알)를 써야 확인 가능
+  gameResultUnlocked = false;
+  document.getElementById("game-result-locked")?.classList.remove("hidden");
+  document.getElementById("game-result-unlocked")?.classList.add("hidden");
+  const cost = document.getElementById("game-reveal-cost");
+  if (cost) cost.textContent = String(POINT_RULES.gameCost);
+}
+
+/** 20알을 쓰고 점수(결과)를 공개한다. 포인트 부족 시 안내. */
+function revealGameResult() {
+  if (gameResultUnlocked) return;
+  if (typeof spendPoints !== "function" || !spendPoints(POINT_RULES.gameCost, "game")) {
+    if (typeof showToast === "function") {
+      showToast(`${POINT_ICON} 알이 부족해요 · 기록·공유로 모아보세요`);
+    }
+    return;
+  }
+  gameResultUnlocked = true;
+  document.getElementById("game-result-locked")?.classList.add("hidden");
+  document.getElementById("game-result-unlocked")?.classList.remove("hidden");
   const final = document.getElementById("game-final-score");
   if (final) final.textContent = String(gameScore);
 }
@@ -89,11 +110,10 @@ async function shareGameResult() {
       await navigator.clipboard.writeText(`${text}\n${url}`);
       if (typeof showToast === "function") showToast("결과 링크를 복사했어요");
     }
-    addPuzzlePieces(MINIGAME.rewardPieces, "game");
+    if (typeof addPoints === "function") addPoints(POINT_RULES.share, "game");
     closeMinigameModal();
-    if (typeof switchMainTab === "function") {
-      switchMainTab("puzzle", { animate: true });
-      if (typeof showToast === "function") showToast(`퍼즐 ${MINIGAME.rewardPieces}조각을 받았어요! 🧩`);
+    if (typeof showToast === "function") {
+      showToast(`결과를 공유하고 +${POINT_RULES.share}${POINT_LABEL}을 받았어요! ${POINT_ICON}`);
     }
   } catch (e) {
     if (e.name !== "AbortError" && typeof showToast === "function") {
@@ -105,6 +125,7 @@ async function shareGameResult() {
 function bindMinigameEvents() {
   document.getElementById("btn-game-start")?.addEventListener("click", startMinigame);
   document.getElementById("game-tap-zone")?.addEventListener("click", tapMinigame);
+  document.getElementById("btn-game-reveal")?.addEventListener("click", revealGameResult);
   document.getElementById("btn-game-share-reward")?.addEventListener("click", shareGameResult);
   document.getElementById("btn-game-retry")?.addEventListener("click", renderMinigameScreen);
   document.getElementById("btn-game-minigame-close")?.addEventListener("click", closeMinigameModal);
