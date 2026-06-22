@@ -25,23 +25,43 @@ img{display:block;max-width:100%}
 .s-section-title{font-size:17px;font-weight:800;margin:0 0 4px}
 .s-section-sub{font-size:13px;color:var(--sub);margin:0 0 16px}
 
-/* 6컷 그리드 */
-.s-photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
-.s-photo-grid .cell{aspect-ratio:1;background:#f0f0f0 center/cover no-repeat;border-radius:10px;overflow:hidden}
 .s-photo-empty{color:var(--muted);font-size:13px;text-align:center;padding:24px 0}
 
-/* 레지스트리 카드 */
-.s-registry{display:flex;flex-direction:column;gap:14px}
-.s-reg-card{border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;background:var(--card);box-shadow:0 1px 3px rgba(0,0,0,.04)}
-.s-reg-thumb{width:100%;aspect-ratio:16/10;background:#f4f4f4 center/cover no-repeat;display:flex;align-items:center;justify-content:center;font-size:44px}
-.s-reg-body{padding:14px 16px}
-.s-reg-name{font-size:16px;font-weight:800}
-.s-reg-brand{font-size:13px;color:var(--sub);margin-top:2px}
-.s-reg-progress{margin-top:10px;font-size:12px;color:var(--accent);font-weight:700}
-.s-reg-bar{height:8px;border-radius:999px;background:#f0e6df;overflow:hidden;margin-top:6px}
-.s-reg-bar-fill{height:100%;background:linear-gradient(90deg,#ff8a65,#ff5722);border-radius:999px}
-.s-gift-btn{display:block;width:100%;margin-top:14px;padding:14px;border:none;border-radius:12px;background:var(--accent);color:#fff;font-size:15px;font-weight:800;cursor:pointer;box-shadow:0 4px 14px rgba(255,87,34,.28)}
-.s-gift-btn:active{transform:scale(.99)}
+/* 기록(사진) — 크게 */
+.s-section--records{padding-bottom:8px}
+.s-records{display:flex;flex-direction:column;gap:12px}
+.s-rec{border-radius:14px;overflow:hidden;background:#f0f0f0;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.s-rec img{width:100%;display:block;object-fit:cover}
+
+/* 선물 퍼즐(컴팩트) */
+.s-puzzles{display:flex;flex-direction:column;gap:10px;margin-bottom:18px}
+.s-pz-card{display:flex;align-items:center;gap:12px;border:1px solid var(--border);border-radius:14px;padding:10px;background:var(--card)}
+.s-pz-thumb{width:52px;height:52px;border-radius:10px;background:#f4f4f4 center/cover no-repeat;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0}
+.s-pz-body{flex:1;min-width:0}
+.s-pz-name{font-size:14px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.s-pz-sub{font-size:11.5px;color:var(--sub);margin:1px 0 5px}
+.s-pz-bar{height:6px;border-radius:999px;background:#f0e6df;overflow:hidden}
+.s-pz-bar-fill{height:100%;background:linear-gradient(90deg,#ff8a65,#ff5722)}
+.s-pz-meta{font-size:11px;color:var(--accent);font-weight:700;margin-top:4px}
+.s-pz-go{flex-shrink:0;padding:10px 14px;border:none;border-radius:999px;background:var(--accent);color:#fff;font-size:13px;font-weight:800;cursor:pointer}
+
+/* 옷장(시기별 필요/보유) */
+.s-stage{margin-bottom:16px}
+.s-stage-head{display:flex;align-items:center;justify-content:space-between;font-size:14px;font-weight:800;margin-bottom:8px}
+.s-stage-count{font-size:11.5px;font-weight:700;color:var(--accent);background:var(--accent-soft);padding:3px 8px;border-radius:999px}
+.s-stage-items{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}
+.s-wl-item{display:flex;align-items:center;gap:8px;padding:9px 10px;border:1px solid var(--border);border-radius:10px;background:var(--card);text-align:left;cursor:pointer;font-family:inherit}
+.s-wl-item:active{background:var(--bg)}
+.s-wl-item.have{opacity:.5;cursor:default}
+.s-wl-emoji{font-size:17px;flex-shrink:0}
+.s-wl-name{flex:1;min-width:0;font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.s-wl-status{font-size:10.5px;font-weight:800;color:var(--accent);flex-shrink:0}
+.s-wl-item.have .s-wl-status{color:var(--muted)}
+
+/* 플로팅 선물 버튼 */
+.s-fab{position:fixed;right:max(16px,calc((100vw - var(--maxw))/2 + 16px));bottom:20px;z-index:40;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;width:60px;height:60px;border-radius:50%;border:none;background:var(--accent);color:#fff;font-size:24px;cursor:pointer;box-shadow:0 6px 20px rgba(255,87,34,.45)}
+.s-fab-label{font-size:10px;font-weight:800}
+.s-fab:active{transform:scale(.95)}
 
 /* 푸터 CTA */
 .s-footer{padding:28px 18px 48px;text-align:center;color:var(--muted);font-size:12px}
