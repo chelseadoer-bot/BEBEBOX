@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
 <title>베베박스</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css"/>
-<link rel="stylesheet" href="css/style.css?v=26"/>
+<link rel="stylesheet" href="css/style.css?v=27"/>
 <link rel="stylesheet" href="css/onboarding.css?v=5"/>
 <link rel="stylesheet" href="css/theme.css?v=4"/>
 </head>
@@ -312,6 +312,11 @@
 <button type="button" class="settings-avatar-btn" id="btn-change-avatar">📷 프로필 사진 변경</button>
 </div>
 <input type="file" id="avatar-input" accept="image/*" class="hidden-input"/>
+<div class="settings-bg-row">
+<div class="settings-bg-preview" id="settings-bg-preview"></div>
+<button type="button" class="settings-avatar-btn" id="btn-change-bg">🖼️ 메인 배경 사진 변경</button>
+</div>
+<input type="file" id="bg-input" accept="image/*" class="hidden-input"/>
 <label class="settings-field"><span>아기 이름</span><input type="text" id="settings-baby-name" maxlength="12"/></label>
 <label class="settings-field"><span>현재 월령</span><input type="number" id="settings-baby-age" min="0" max="36"/></label>
 <label class="settings-field"><span>키디키디 아이디</span><input type="text" id="settings-kidikidi-id" placeholder="키디키디 로그인 아이디" maxlength="50" autocapitalize="off"/></label>
@@ -348,6 +353,10 @@
 </header>
 <p class="season-banner journey-season" id="season-banner"></p>
 <p class="journey-intro" id="journey-intro">🌱 스케치 정원 길을 따라 내려가면, 지나온 육아 여정이 펼쳐져요. 반짝이는 꽃 노드를 눌러 퀘스트에 참여해 보세요!</p>
+<div class="journey-shortcuts">
+<button type="button" class="journey-shortcut-btn" id="btn-journey-gift-shortcut">🎁 선물하기</button>
+<button type="button" class="journey-shortcut-btn alt" id="btn-journey-puzzle-shortcut">🧩 선물 퍼즐</button>
+</div>
 <div class="journey-scroll" id="journey-scroll">
 <div class="journey-map" id="journey-map"></div>
 </div>
@@ -427,6 +436,9 @@
 <div class="add-product-bar" id="add-product-bar">
 <button type="button" class="add-product-toggle" id="btn-toggle-add-product">+ 상품 추가</button>
 <div class="add-product-form hidden" id="add-product-form">
+<button type="button" class="add-product-image-btn" id="btn-add-product-image">📷 상품 사진 (선택)</button>
+<img class="add-product-image-preview" id="add-product-image-preview" alt="" style="display:none"/>
+<input type="file" id="add-product-image-input" accept="image/*" class="hidden-input"/>
 <input type="text" id="add-product-brand" placeholder="브랜드 (선택)"/>
 <input type="text" id="add-product-name" placeholder="상품명"/>
 <input type="number" id="add-product-price" placeholder="가격" min="0" step="100"/>
@@ -698,6 +710,6 @@
 <script src="js/family-data.js?v=2"></script>
 <script src="js/kakao-auth.js?v=1"></script>
 <script src="js/onboarding.js?v=7"></script>
-<script src="js/app.js?v=43"></script>
+<script src="js/app.js?v=44"></script>
 </body>
 </html>
