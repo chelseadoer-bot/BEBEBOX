@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
 <title>베베박스</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css"/>
-<link rel="stylesheet" href="css/style.css?v=24"/>
+<link rel="stylesheet" href="css/style.css?v=25"/>
 <link rel="stylesheet" href="css/onboarding.css?v=5"/>
 <link rel="stylesheet" href="css/theme.css?v=4"/>
 </head>
@@ -366,6 +366,11 @@
 <button class="stage-arrow" id="stage-next">›</button>
 </div>
 <div class="wishlist-scroll">
+<section class="gift-puzzle-section">
+<div class="gp-section-head"><h3>🧩 선물 퍼즐</h3><button type="button" class="gp-new-btn" id="btn-new-gift-puzzle">＋ 새 선물 퍼즐</button></div>
+<p class="gp-section-desc">갖고 싶은 선물을 퍼즐로 만들고, 친구가 한 조각씩 채워주면 할인 쿠폰을 받아요</p>
+<div id="gift-puzzle-list"></div>
+</section>
 <div class="wishlist-grid" id="wishlist-grid"></div>
 </div>
 </div>
@@ -630,6 +635,49 @@
 <button type="button" class="pstats-journey-btn" id="btn-pstats-journey">🗺️ 성장 저니 보러가기</button>
 </div>
 </div>
+<div class="modal hidden" id="gift-create-modal">
+<div class="modal-backdrop" id="gc-backdrop"></div>
+<div class="modal-content gift-create-content">
+<h3>선물 퍼즐 만들기</h3>
+<p class="modal-desc">갖고 싶은 선물을 등록하면 9조각 퍼즐이 만들어져요</p>
+<button type="button" class="gc-image-btn" id="btn-gc-image">📷 상품 사진 (선택)</button>
+<img class="gc-image-preview" id="gc-image-preview" alt="" style="display:none"/>
+<input type="file" id="gc-image-input" accept="image/*" class="hidden-input"/>
+<input type="text" id="gc-name" class="gc-input" placeholder="선물 이름 (예: 유모차)" maxlength="40"/>
+<input type="text" id="gc-brand" class="gc-input" placeholder="브랜드 (예: 부가부)" maxlength="30"/>
+<input type="number" id="gc-price" class="gc-input" placeholder="가격 (원, 선택)" min="0" step="1000"/>
+<div class="modal-actions">
+<button class="modal-btn" id="btn-gc-cancel">취소</button>
+<button class="modal-btn primary" id="btn-gc-submit">퍼즐 만들기</button>
+</div>
+</div>
+</div>
+<div class="modal hidden" id="gift-fill-modal">
+<div class="modal-backdrop" id="gf-backdrop"></div>
+<div class="modal-content gift-fill-content">
+<button type="button" class="journey-modal-close" id="btn-gf-close">✕</button>
+<p class="gf-baby" id="gf-baby"></p>
+<img class="gf-thumb" id="gf-thumb" alt="" style="display:none"/>
+<h3 class="gf-name" id="gf-name"></h3>
+<p class="gf-brand" id="gf-brand"></p>
+<div class="gp-grid gf-grid" id="gf-grid"></div>
+<p class="gf-progress" id="gf-progress"></p>
+<div id="gf-actions">
+<p class="gf-actions-title">한 가지만 해주면 한 조각이 채워져요 🧩</p>
+<button type="button" class="gf-action-btn" id="gf-ad">📺 광고 보기</button>
+<button type="button" class="gf-action-btn" id="gf-signup">📲 앱 가입하기</button>
+<button type="button" class="gf-action-btn" id="gf-message">💌 축하 메시지 쓰기</button>
+<div class="gf-msg-wrap hidden" id="gf-msg-wrap">
+<textarea id="gf-msg-input" class="gf-msg-input" rows="2" maxlength="200" placeholder="축하 메시지를 남겨주세요"></textarea>
+<button type="button" class="gf-msg-send" id="btn-gf-msg-send">보내고 조각 채우기</button>
+</div>
+</div>
+<div class="gf-done hidden" id="gf-done">
+<p class="gf-done-emoji">🎉</p>
+<p class="gf-done-text">퍼즐이 모두 채워졌어요!<br/>부모님께 할인 쿠폰이 전달됐어요.</p>
+</div>
+</div>
+</div>
 <nav class="bottom-tab-bar hidden" id="bottom-tab-bar" aria-label="하단 메뉴">
 <button type="button" class="tab-bar-item active" data-tab="home"><span class="tab-bar-icon">🏠</span><span>홈</span></button>
 <button type="button" class="tab-bar-item" data-tab="journey"><span class="tab-bar-icon">🗺️</span><span>성장저니</span></button>
@@ -642,13 +690,14 @@
 <script src="js/feed-data.js?v=7"></script>
 <script src="js/kidikidi.js?v=4"></script>
 <script src="js/points.js?v=1"></script>
+<script src="js/gift-puzzle.js?v=1"></script>
 <script src="js/puzzle-mission.js?v=5"></script>
 <script src="js/minigame.js?v=3"></script>
 <script src="js/photo-quest-detect.js?v=1"></script>
 <script src="js/photo-storage.js?v=2"></script>
-<script src="js/family-data.js?v=1"></script>
+<script src="js/family-data.js?v=2"></script>
 <script src="js/kakao-auth.js?v=1"></script>
 <script src="js/onboarding.js?v=7"></script>
-<script src="js/app.js?v=41"></script>
+<script src="js/app.js?v=42"></script>
 </body>
 </html>

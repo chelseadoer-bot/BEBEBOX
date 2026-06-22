@@ -119,7 +119,7 @@ function reorderItemProducts(itemId,from,to){
 }
 function fmtPrice(n){return n.toLocaleString("ko-KR")+"원";}
 function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
-let state={photos:[],friends:[],inbox:[],profile:{...DEFAULT_PROFILE},wishlist:{},owned:{},hidden:{},itemProducts:{},funding:{},fundingGauge:{},gaugePuzzles:{},collectQuests:{},contributors:{},journeyGifts:{},journeyMemories:{},parentQuestPhotos:{},points:0,coupons:[],posts:[],journeyJustCleared:null,viewingPostId:null,currentStage:0,currentAgeTab:"9",pendingGift:null,viewingPhotoId:null,pendingFunding:null,pendingContribute:null,pendingJourneyNode:null,pendingRaidNode:null,pendingJourneyEditNode:null};
+let state={photos:[],friends:[],inbox:[],profile:{...DEFAULT_PROFILE},wishlist:{},owned:{},hidden:{},itemProducts:{},funding:{},fundingGauge:{},gaugePuzzles:{},collectQuests:{},contributors:{},journeyGifts:{},journeyMemories:{},parentQuestPhotos:{},points:0,coupons:[],posts:[],giftPuzzles:[],journeyJustCleared:null,viewingPostId:null,currentStage:0,currentAgeTab:"9",pendingGift:null,viewingPhotoId:null,pendingFunding:null,pendingContribute:null,pendingJourneyNode:null,pendingRaidNode:null,pendingJourneyEditNode:null};
 function isGuest(){return new URLSearchParams(location.search).has("guest");}
 function babyName(){return state.profile.babyName||state.profile.name.replace(/의 일기$/,"")||"다엘이";}
 function hasItem(id){return!!state.owned[id];}
@@ -331,6 +331,7 @@ function load(){
   state.points=sp?(parseInt(sp,10)||0):0;
   try{const cp=JSON.parse(localStorage.getItem("photoShare_coupons")||"[]");state.coupons=Array.isArray(cp)?cp:[];}catch(_){state.coupons=[];}
   try{const ps=JSON.parse(localStorage.getItem("photoShare_posts")||"[]");state.posts=Array.isArray(ps)?ps.map(ensurePostMeta):[];}catch(_){state.posts=[];}
+  try{const gp=JSON.parse(localStorage.getItem("photoShare_giftpuzzles")||"[]");state.giftPuzzles=Array.isArray(gp)?gp:[];}catch(_){state.giftPuzzles=[];}
   const wl=localStorage.getItem(STORAGE_KEYS.wishlist);
   const wlVer=localStorage.getItem(STORAGE_KEYS.wishlist+"_ver");
   if(wlVer!==String(WISHLIST_VERSION)||!wl){
@@ -389,6 +390,7 @@ function saveLocalCache(){
   localStorage.setItem("photoShare_points",String(state.points||0));
   localStorage.setItem("photoShare_coupons",JSON.stringify(state.coupons||[]));
   localStorage.setItem("photoShare_posts",JSON.stringify(state.posts||[]));
+  localStorage.setItem("photoShare_giftpuzzles",JSON.stringify(state.giftPuzzles||[]));
 }
 function save(){
   saveLocalCache();
@@ -508,7 +510,10 @@ function renderSettingsTab(){
     list.innerHTML=`<div class="coupon-empty">아직 받은 쿠폰이 없어요.<br/>1,000알을 모으면 1,000원 장바구니 쿠폰으로 바꿀 수 있어요!</div>`;
     return;
   }
-  list.innerHTML=coupons.map(c=>`<div class="coupon-card"><strong>${c.amount.toLocaleString("ko-KR")}원 ${esc(c.label)}</strong><span>코드 ${esc(c.code)} · ~${esc(c.expires)}까지</span></div>`).join("");
+  list.innerHTML=coupons.map(c=>{
+    const head=c.percent?`${c.percent}% 할인`:`${(c.amount||0).toLocaleString("ko-KR")}원`;
+    return`<div class="coupon-card"><strong>${head} ${esc(c.label||"쿠폰")}</strong><span>코드 ${esc(c.code)} · ~${esc(c.expires)}까지</span></div>`;
+  }).join("");
   const notify=JSON.parse(localStorage.getItem("photoShare_notify")||"{}");
   $("#settings-notify-visit").checked=notify.visit!==false;
   $("#settings-notify-gift").checked=notify.gift!==false;
@@ -1178,6 +1183,7 @@ function saveOwnedFromPicker(){
 function openWishlist(){
   const t=$(".wishlist-title");if(t)t.textContent=`${babyName()} 옷장`;
   const ca=$("#closet-avatar");if(ca){ca.src=state.profile.avatar;ca.alt=babyName();}
+  if(typeof renderGiftPuzzles==="function")renderGiftPuzzles();
   renderStageNav();renderWishlistGrid();showView("#wishlist-view");
 }
 function getGuideAge(){
@@ -1689,6 +1695,7 @@ function bindEvents(){
   });
   $("#btn-copy-invite-code")?.addEventListener("click",copyInviteCode);
   if(typeof bindMinigameEvents==="function")bindMinigameEvents();
+  if(typeof bindGiftPuzzleEvents==="function")bindGiftPuzzleEvents();
   $("#btn-share")?.classList.remove("active");
   $("#btn-gift").onclick=openWishlist;
   $("#btn-back-guide")?.addEventListener("click",()=>switchMainTab("home"));
@@ -1808,6 +1815,11 @@ window.isValidInviteCode=isValidInviteCode;
 window.copyInviteCode=copyInviteCode;
 async function bootApp(){
   load();
+  // 선물 퍼즐 공유 링크: ?family=코드 로 가족을 지정해 같은 퍼즐을 채울 수 있게 한다.
+  const _bp=new URLSearchParams(location.search);
+  const _fam=_bp.get("family");
+  if(_fam)localStorage.setItem(STORAGE_KEYS.inviteCode,_fam.trim().toUpperCase());
+  const _giftId=_bp.get("giftpuzzle");
   if(typeof initKakaoAuth==="function")await initKakaoAuth();
   if(typeof syncFamilyDataFromServer==="function"){
     const synced=await syncFamilyDataFromServer();
@@ -1823,6 +1835,12 @@ async function bootApp(){
   migratePuzzleMissionImage();
   migratePhotoQuestLinks();
   bindEvents();
+  // 선물 퍼즐 링크로 들어오면 온보딩을 건너뛰고 바로 채우기 화면을 연다.
+  if(_giftId){
+    enterMainApp();
+    if(typeof openGiftPuzzleFill==="function")requestAnimationFrame(()=>openGiftPuzzleFill(_giftId));
+    return;
+  }
   const needsOnboarding=typeof initOnboarding==="function"&&initOnboarding();
   if(needsOnboarding)hideTabBar();
   else enterMainApp();
