@@ -590,4 +590,74 @@ body.is-guest .guest-only{display:block!important}
 .game-minigame-close{position:absolute;top:14px;right:14px;border:none;background:var(--color-bg-muted);width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:14px;color:var(--color-text-secondary)}
 .game-minigame-content .game-screen{padding:0}
 .game-minigame-content .game-tap-zone{max-height:220px}
+
+/* ===== 글(포스트) 피드 ===== */
+.feed-empty{padding:48px 24px;text-align:center}
+.feed-empty-title{font-size:16px;font-weight:800;color:var(--color-text)}
+.feed-empty-desc{font-size:13px;color:var(--color-text-tertiary);margin:8px 0 18px}
+.feed-empty-btn{padding:12px 20px;border:none;border-radius:var(--radius-full);background:var(--color-accent);color:#fff;font-size:14px;font-weight:800;cursor:pointer}
+.post-card{border-bottom:8px solid var(--color-bg-subtle)}
+.post-head{display:flex;align-items:center;gap:10px;padding:12px 14px}
+.post-avatar{width:36px;height:36px;border-radius:50%;object-fit:cover}
+.post-head-meta{display:flex;flex-direction:column}
+.post-name{font-size:14px;font-weight:700}
+.post-date{font-size:11.5px;color:var(--color-text-tertiary)}
+.post-photos{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.post-photos::-webkit-scrollbar{display:none}
+.post-photo-slide{flex:0 0 100%;scroll-snap-align:start;aspect-ratio:1;background:#000}
+.post-photo-slide img{width:100%;height:100%;object-fit:cover;display:block;cursor:zoom-in}
+.post-dots{display:flex;gap:5px;justify-content:center;padding:8px 0 0}
+.post-dots span{width:6px;height:6px;border-radius:50%;background:var(--color-border)}
+.post-dots span.on{background:var(--color-accent)}
+.post-emotion{display:flex;align-items:center;gap:10px;padding:10px 14px 4px;position:relative}
+.post-emotion-btn{font-size:24px;background:none;border:none;cursor:pointer;line-height:1;padding:2px;transition:transform .1s}
+.post-emotion-btn.pop{animation:emotion-pop .35s ease}
+@keyframes emotion-pop{0%{transform:scale(1)}40%{transform:scale(1.5)}100%{transform:scale(1)}}
+.post-gauge{flex:1;height:10px;border-radius:999px;background:var(--color-bg-muted);overflow:hidden}
+.post-gauge-fill{height:100%;width:0;border-radius:999px;background:linear-gradient(90deg,#ff8a65,#ff5722);transition:width .2s ease}
+.post-emotion-count{font-size:13px;font-weight:800;color:var(--color-accent);min-width:24px;text-align:right}
+.emotion-float{position:absolute;left:18px;bottom:8px;font-size:18px;pointer-events:none;animation:emotion-float .7s ease-out forwards}
+@keyframes emotion-float{0%{opacity:1;transform:translateY(0) scale(.8)}100%{opacity:0;transform:translateY(-44px) scale(1.4)}}
+.post-text{font-size:14px;line-height:1.5;padding:6px 14px 2px}
+.post-text strong{font-weight:700;margin-right:5px}
+.post-comment-link{display:block;width:100%;text-align:left;background:none;border:none;padding:8px 14px 14px;font-size:13px;color:var(--color-text-tertiary);cursor:pointer}
+
+/* ===== 글쓰기(인스타식) ===== */
+.composer-content{max-width:var(--max-width);width:100%;border-radius:18px;padding:0;overflow:hidden}
+.composer-top{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--color-border-light)}
+.composer-heading{font-size:15px;font-weight:800}
+.composer-cancel{background:none;border:none;color:var(--color-text-secondary);font-size:14px;font-weight:600;cursor:pointer}
+.composer-submit{background:none;border:none;color:var(--color-accent);font-size:15px;font-weight:800;cursor:pointer}
+.composer-submit:disabled{opacity:.4}
+.composer-thumbs{display:flex;gap:8px;overflow-x:auto;padding:14px 16px 4px}
+.composer-thumb{position:relative;flex:0 0 auto}
+.composer-thumb img{width:74px;height:74px;border-radius:10px;object-fit:cover;display:block}
+.composer-thumb-del{position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;border:none;background:rgba(0,0,0,.65);color:#fff;font-size:11px;cursor:pointer}
+.composer-add-tile{flex:0 0 auto;width:74px;height:74px;border-radius:10px;border:1.5px dashed var(--color-border);background:var(--color-bg-subtle);color:var(--color-text-tertiary);font-size:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer}
+.composer-add-tile span{font-size:10px}
+.composer-text{width:100%;border:none;outline:none;resize:none;padding:12px 16px 18px;font-size:15px;font-family:var(--font);line-height:1.5}
+
+/* ===== 프로필 게이미피케이션 ===== */
+.pstats-content{max-width:340px;width:90%;border-radius:20px;padding:22px 20px;position:relative;text-align:left}
+.pstats-head{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+.pstats-avatar{width:52px;height:52px;border-radius:50%;object-fit:cover}
+.pstats-name{font-size:16px;font-weight:800}
+.pstats-tier{font-size:13px;font-weight:700;color:var(--color-accent);margin-top:2px}
+.pstats-journey{background:var(--color-bg-subtle);border-radius:14px;padding:14px;margin-bottom:14px}
+.pstats-journey-top{display:flex;justify-content:space-between;align-items:baseline;font-size:13px;font-weight:700;color:var(--color-text-secondary)}
+.pstats-journey-top strong{font-size:20px;color:var(--color-accent)}
+.pstats-bar{height:10px;border-radius:999px;background:var(--color-bg-muted);overflow:hidden;margin:8px 0 6px}
+.pstats-bar-fill{height:100%;width:0;border-radius:999px;background:linear-gradient(90deg,#7bd88f,#34a853);transition:width .5s ease}
+.pstats-journey-sub{font-size:11.5px;color:var(--color-text-tertiary)}
+.pstats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
+.pstats-cell{background:var(--color-bg-subtle);border-radius:12px;padding:12px 6px;text-align:center;display:flex;flex-direction:column;gap:3px}
+.pstats-cell-num{font-size:18px;font-weight:800}
+.pstats-cell-label{font-size:11px;color:var(--color-text-tertiary)}
+.pstats-journey-btn{width:100%;padding:13px;border:none;border-radius:var(--radius-md);background:var(--color-primary);color:#fff;font-size:14px;font-weight:800;cursor:pointer}
+
+/* 이미지 라이트박스(좋아요/메타 숨김) */
+.photo-detail.lightbox-only .detail-actions,.photo-detail.lightbox-only .detail-meta{display:none}
+/* 성장 저니를 탭으로 쓸 때 하단바 여백 */
+#app.has-tab-bar #quest-guide-view .journey-scroll{padding-bottom:84px}
+.profile-row{cursor:pointer}
 .hidden{display:none!important}
