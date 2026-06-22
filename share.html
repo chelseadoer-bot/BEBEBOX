@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<title>{{OG_TITLE}}</title>
+<meta name="description" content="{{OG_DESC}}"/>
+<!-- 카카오톡/SNS 링크 미리보기 (서버에서 가족 데이터로 주입) -->
+<meta property="og:type" content="website"/>
+<meta property="og:title" content="{{OG_TITLE}}"/>
+<meta property="og:description" content="{{OG_DESC}}"/>
+<meta property="og:image" content="{{OG_IMAGE}}"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css"/>
+<link rel="stylesheet" href="/css/share.css?v=1"/>
+<script>window.__BABY_ID__="{{BABY_ID}}";</script>
+</head>
+<body>
+<main id="share-root" class="share-root">
+<div class="share-loading">불러오는 중…</div>
+</main>
+
+<div class="gift-modal hidden" id="gift-modal">
+<div class="gift-modal-backdrop" id="gift-modal-backdrop"></div>
+<div class="gift-modal-card">
+<button type="button" class="gift-modal-close" id="gift-modal-close">✕</button>
+<div class="gift-modal-emoji">🎁</div>
+<h3 class="gift-modal-title" id="gift-modal-title"></h3>
+<p class="gift-modal-desc" id="gift-modal-desc"></p>
+<div class="gift-modal-coupon">🎟️ 선물하면 <b>키디키디 선물 할인 쿠폰</b>을 드려요</div>
+<a class="gift-modal-go" id="gift-modal-go" href="#" target="_blank" rel="noopener">키디키디에서 선물하기 →</a>
+</div>
+</div>
+
+<script src="/js/share.js?v=1"></script>
+</body>
+</html>

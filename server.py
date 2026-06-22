@@ -17,6 +17,7 @@ API
   GET    /auth/kakao/callback         카카오 콜백
   POST   /api/auth/logout             로그아웃
 """
+import html
 import json
 import mimetypes
 import os
@@ -292,6 +293,13 @@ class H(SimpleHTTPRequestHandler):
         path = urllib.parse.urlparse(self.path).path
         if path.startswith("/uploads/"):
             return self._serve_upload(path)
+        # 라우팅: 부모 앱(/home, /)과 지인 공유 웹(/share/:id) 분리
+        if path == "/" or path == "/home" or path == "/index.html":
+            return self._serve_html("index.html")
+        if path == "/share" or path.startswith("/share/"):
+            rest = path[len("/share"):].strip("/")
+            baby_id = norm_family(urllib.parse.unquote(rest.split("/")[0])) if rest else DEFAULT_FAMILY
+            return self._serve_share(baby_id)
         if path == "/api/config":
             return json_response(self, 200, {
                 "storage": "sqlite",
@@ -371,6 +379,53 @@ class H(SimpleHTTPRequestHandler):
         if not remove_photo(photo_id, family):
             return json_response(self, 404, {"error": "not_found"})
         return json_response(self, 200, {"ok": True, "id": photo_id})
+
+    def _serve_html(self, filename, replacements=None):
+        full = os.path.join(ROOT, filename)
+        if not os.path.isfile(full):
+            return self.send_error(404)
+        with open(full, encoding="utf-8") as f:
+            page = f.read()
+        if replacements:
+            for k, v in replacements.items():
+                page = page.replace(k, v)
+        body = page.encode("utf-8")
+        self.send_response(200)
+        self.send_header("Content-Type", "text/html; charset=utf-8")
+        self.send_header("Content-Length", str(len(body)))
+        self.send_header("Cache-Control", "no-cache")
+        self.end_headers()
+        self.wfile.write(body)
+
+    def _origin(self):
+        proto = self.headers.get("X-Forwarded-Proto") or "http"
+        host = self.headers.get("Host") or ("localhost:%d" % server_port())
+        return "%s://%s" % (proto, host)
+
+    def _serve_share(self, baby_id):
+        """지인용 공유 페이지. 링크 미리보기(OG)를 가족 데이터로 채워 넣는다."""
+        row = db.get_family_data(baby_id)
+        data = (row or {}).get("data") or {}
+        profile = data.get("profile") or {}
+        baby = profile.get("babyName") or (profile.get("name") or "").replace("의 일기", "") or "우리 아기"
+        img = profile.get("shareImage") or ""
+        if not img:
+            for p in (data.get("posts") or []):
+                photos = p.get("photos") or []
+                if photos:
+                    img = photos[0]
+                    break
+        if not img:
+            img = profile.get("avatar") or "/public/photos/ai-01.jpg"
+        origin = self._origin()
+        og_img = (origin + img) if img.startswith("/") else img
+        repl = {
+            "{{OG_TITLE}}": html.escape("%s의 베베박스" % baby),
+            "{{OG_DESC}}": html.escape("우리 아이에게 선물하고 키디키디 쿠폰도 받아가세요 🎁"),
+            "{{OG_IMAGE}}": html.escape(og_img),
+            "{{BABY_ID}}": html.escape(baby_id),
+        }
+        return self._serve_html("share.html", repl)
 
     def _serve_upload(self, path):
         rel = urllib.parse.unquote(path[len("/uploads/"):])
