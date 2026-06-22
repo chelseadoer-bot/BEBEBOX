@@ -1,0 +1,62 @@
+/* 지인용 공유 페이지(반응형 웹) — 카카오 인앱 브라우저 최적화 */
+:root{
+  --accent:#ff5722;--accent-soft:#fff4ef;--text:#191919;--sub:#6b6b6b;
+  --muted:#9e9e9e;--border:#ececec;--bg:#fafafa;--card:#fff;
+  --radius:16px;--maxw:600px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{font-family:"Pretendard",-apple-system,BlinkMacSystemFont,system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.5}
+img{display:block;max-width:100%}
+.share-root{max-width:var(--maxw);margin:0 auto;background:var(--card);min-height:100vh}
+.share-loading{padding:80px 0;text-align:center;color:var(--muted)}
+
+/* 히어로 */
+.s-hero{position:relative;background:#111;aspect-ratio:16/10;overflow:hidden}
+.s-hero-bg{position:absolute;inset:0;background-size:cover;background-position:center;filter:brightness(.7)}
+.s-hero-grad{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.1),rgba(0,0,0,.65))}
+.s-hero-body{position:absolute;left:0;right:0;bottom:0;padding:20px;color:#fff;display:flex;align-items:flex-end;gap:14px}
+.s-hero-avatar{width:64px;height:64px;border-radius:50%;border:3px solid #fff;object-fit:cover;flex-shrink:0;background:#ddd}
+.s-hero-name{font-size:22px;font-weight:800;letter-spacing:-.02em}
+.s-hero-age{font-size:13px;font-weight:600;opacity:.9;margin-top:3px}
+
+/* 섹션 공통 */
+.s-section{padding:24px 18px}
+.s-section-title{font-size:17px;font-weight:800;margin:0 0 4px}
+.s-section-sub{font-size:13px;color:var(--sub);margin:0 0 16px}
+
+/* 6컷 그리드 */
+.s-photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
+.s-photo-grid .cell{aspect-ratio:1;background:#f0f0f0 center/cover no-repeat;border-radius:10px;overflow:hidden}
+.s-photo-empty{color:var(--muted);font-size:13px;text-align:center;padding:24px 0}
+
+/* 레지스트리 카드 */
+.s-registry{display:flex;flex-direction:column;gap:14px}
+.s-reg-card{border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;background:var(--card);box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.s-reg-thumb{width:100%;aspect-ratio:16/10;background:#f4f4f4 center/cover no-repeat;display:flex;align-items:center;justify-content:center;font-size:44px}
+.s-reg-body{padding:14px 16px}
+.s-reg-name{font-size:16px;font-weight:800}
+.s-reg-brand{font-size:13px;color:var(--sub);margin-top:2px}
+.s-reg-progress{margin-top:10px;font-size:12px;color:var(--accent);font-weight:700}
+.s-reg-bar{height:8px;border-radius:999px;background:#f0e6df;overflow:hidden;margin-top:6px}
+.s-reg-bar-fill{height:100%;background:linear-gradient(90deg,#ff8a65,#ff5722);border-radius:999px}
+.s-gift-btn{display:block;width:100%;margin-top:14px;padding:14px;border:none;border-radius:12px;background:var(--accent);color:#fff;font-size:15px;font-weight:800;cursor:pointer;box-shadow:0 4px 14px rgba(255,87,34,.28)}
+.s-gift-btn:active{transform:scale(.99)}
+
+/* 푸터 CTA */
+.s-footer{padding:28px 18px 48px;text-align:center;color:var(--muted);font-size:12px}
+.s-footer-brand{font-weight:800;color:var(--accent);font-size:15px;margin-bottom:6px}
+.s-cta-app{display:inline-block;margin-top:14px;padding:11px 18px;border:1px solid var(--border);border-radius:999px;color:var(--sub);font-size:13px;font-weight:700;text-decoration:none}
+
+/* 선물 모달 */
+.gift-modal{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;padding:20px}
+.gift-modal.hidden{display:none}
+.gift-modal-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.5)}
+.gift-modal-card{position:relative;background:#fff;border-radius:20px;max-width:360px;width:100%;padding:26px 22px;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.3)}
+.gift-modal-close{position:absolute;top:12px;right:14px;border:none;background:none;font-size:18px;color:var(--muted);cursor:pointer}
+.gift-modal-emoji{font-size:46px}
+.gift-modal-title{font-size:18px;font-weight:800;margin:8px 0 6px}
+.gift-modal-desc{font-size:14px;color:var(--sub);margin:0 0 16px;line-height:1.6}
+.gift-modal-coupon{background:var(--accent-soft);color:#c45c2e;font-size:13px;font-weight:700;border-radius:12px;padding:12px;margin-bottom:18px}
+.gift-modal-go{display:block;padding:15px;border-radius:12px;background:var(--accent);color:#fff;font-size:16px;font-weight:800;text-decoration:none;box-shadow:0 4px 14px rgba(255,87,34,.3)}
+.gift-modal-go:active{transform:scale(.99)}

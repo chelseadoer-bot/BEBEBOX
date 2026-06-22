@@ -77,7 +77,7 @@ async function shareGiftPuzzle(id) {
 let _gcImage = "";
 function openGiftCreate() {
   if (typeof ensureInviteCode === "function") ensureInviteCode(true);
-  ["gc-name", "gc-brand", "gc-price"].forEach((id) => {
+  ["gc-name", "gc-brand", "gc-price", "gc-url"].forEach((id) => {
     const el = document.getElementById(id);
     if (el) el.value = "";
   });
@@ -104,7 +104,8 @@ function submitGiftCreate() {
   if (!name) { showToast("선물 이름을 입력해 주세요"); return; }
   const brand = document.getElementById("gc-brand").value.trim();
   const price = parseInt(document.getElementById("gc-price").value, 10) || 0;
-  const p = ensureGiftPuzzleMeta({ id: "gp" + Date.now(), productName: name, brand, price, image: _gcImage, total: GIFT_PUZZLE_TOTAL, pieces: [], createdAt: Date.now(), rewardClaimed: false });
+  const url = (document.getElementById("gc-url").value || "").trim();
+  const p = ensureGiftPuzzleMeta({ id: "gp" + Date.now(), productName: name, brand, price, image: _gcImage, url, total: GIFT_PUZZLE_TOTAL, pieces: [], createdAt: Date.now(), rewardClaimed: false });
   state.giftPuzzles.unshift(p);
   save();
   document.getElementById("gift-create-modal")?.classList.add("hidden");

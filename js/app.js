@@ -1684,9 +1684,39 @@ function initGameTab(){
 }
 function openIgView(){switchMainTab("game");}
 function getShareUrl(){
-  const u=new URL(window.location.href.split("#")[0]);
-  u.searchParams.set("guest","1");
-  return u.toString();
+  // 지인용 공유 페이지(/share/:가족코드) 로 연결한다.
+  let code=(typeof ensureInviteCode==="function"&&ensureInviteCode(true))||(typeof getInviteCode==="function"&&getInviteCode())||"BEBEBOX";
+  return `${location.origin}/share/${encodeURIComponent(String(code).toUpperCase())}`;
+}
+// 6컷 사진을 1200x1200 한 장으로 합성(카카오/링크 미리보기용)
+function _loadImg(src){return new Promise(res=>{const im=new Image();im.crossOrigin="anonymous";im.onload=()=>res(im);im.onerror=()=>res(null);im.src=src;});}
+function _drawCover(ctx,im,x,y,w,h){
+  const r=Math.max(w/im.width,h/im.height),iw=im.width*r,ih=im.height*r;
+  ctx.drawImage(im,x+(w-iw)/2,y+(h-ih)/2,iw,ih);
+}
+async function generateShareGrid(srcs){
+  const list=srcs.slice(0,6);
+  if(!list.length)return null;
+  const SZ=1200,canvas=document.createElement("canvas");
+  canvas.width=SZ;canvas.height=SZ;
+  const ctx=canvas.getContext("2d");
+  ctx.fillStyle="#fff";ctx.fillRect(0,0,SZ,SZ);
+  const cw=SZ/2,ch=SZ/3;
+  const imgs=await Promise.all(list.map(_loadImg));
+  imgs.forEach((im,i)=>{if(!im)return;const cx=(i%2)*cw,cy=Math.floor(i/2)*ch;_drawCover(ctx,im,cx+4,cy+4,cw-8,ch-8);});
+  return new Promise(res=>{try{canvas.toBlob(b=>res(b),"image/jpeg",0.9);}catch(_){res(null);}});
+}
+async function buildAndSaveShareImage(){
+  try{
+    const srcs=[...state.posts].sort((a,b)=>b.createdAt-a.createdAt).flatMap(p=>p.photos||[]).filter(Boolean);
+    if(!srcs.length||typeof uploadPhotoToServer!=="function")return null;
+    const blob=await generateShareGrid(srcs);
+    if(!blob)return null;
+    const file=new File([blob],"share-grid.jpg",{type:"image/jpeg"});
+    const up=await uploadPhotoToServer(file);
+    if(up&&up.src){state.profile.shareImage=up.src;save();return up.src;}
+  }catch(_){}
+  return null;
 }
 function copyShareLink(url){
   const link=url||getShareUrl();
@@ -1707,13 +1737,29 @@ function openShareLinkModal(url){
 }
 async function shareProfileLink(){
   const url=getShareUrl();
-  const title=state.profile.name||"다엘이의 일기";
-  const text=`${title} 메인 화면을 확인해 보세요`;
+  const title=`${babyName()}의 베베박스`;
+  const text=`${babyName()}에게 선물하고 키디키디 쿠폰도 받아가세요 🎁`;
+  showToast("공유 이미지를 만드는 중...");
+  const grid=await buildAndSaveShareImage();
+  // 카카오 SDK 가 준비돼 있으면 피드 템플릿(합성 이미지)으로 공유
+  if(window.Kakao&&Kakao.isInitialized&&Kakao.isInitialized()){
+    try{
+      Kakao.Share.sendDefault({
+        objectType:"feed",
+        content:{title,description:text,
+          imageUrl:(grid?location.origin+grid:location.origin+"/public/photos/ai-01.jpg"),
+          link:{mobileWebUrl:url,webUrl:url}},
+        buttons:[{title:"선물하러 가기",link:{mobileWebUrl:url,webUrl:url}}],
+      });
+      addPoints(POINT_RULES.share,"share");addPuzzlePieces(3,"share");
+      return;
+    }catch(_){}
+  }
   if(navigator.share){
     try{
       await navigator.share({title,text,url});
       addPoints(POINT_RULES.share,"share");
-      showToast(`메인 화면을 공유하고 +${POINT_RULES.share}알 🥚`);
+      showToast(`공유하고 +${POINT_RULES.share}알 🥚`);
       addPuzzlePieces(3,"share");
       return;
     }catch(e){
