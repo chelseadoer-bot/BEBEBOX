@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
 <title>베베박스</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css"/>
-<link rel="stylesheet" href="css/style.css?v=22"/>
+<link rel="stylesheet" href="css/style.css?v=23"/>
 <link rel="stylesheet" href="css/onboarding.css?v=5"/>
 <link rel="stylesheet" href="css/theme.css?v=4"/>
 </head>
@@ -198,14 +198,6 @@
 <div class="age-tabs" id="age-tabs"></div>
 <p class="age-quest-badge" id="age-quest-badge"></p>
 </div>
-<button type="button" class="quest-banner shimmer" id="btn-quest-guide">
-<span class="quest-banner-scroll">🌿</span>
-<span class="quest-banner-body">
-<span class="quest-banner-text" id="quest-banner-text">다엘이의 성장 지도 보기</span>
-<span class="quest-banner-sub" id="quest-banner-sub">지나온 길은 추억 · 지금 노드는 선물하기</span>
-</span>
-<span class="quest-banner-arrow">›</span>
-</button>
 </div>
 <section class="feed-section">
 <input type="file" id="photo-input" accept="image/*" multiple class="hidden-input"/>
@@ -599,15 +591,50 @@
 </div>
 </div>
 </div>
+<div class="modal hidden" id="post-composer-modal">
+<div class="modal-backdrop" id="composer-backdrop"></div>
+<div class="modal-content composer-content">
+<div class="composer-top">
+<button type="button" class="composer-cancel" id="btn-composer-cancel">취소</button>
+<strong class="composer-heading">새 글</strong>
+<button type="button" class="composer-submit" id="btn-composer-submit">게시</button>
+</div>
+<div class="composer-thumbs" id="composer-thumbs"></div>
+<textarea id="composer-text" class="composer-text" rows="4" maxlength="500" placeholder="오늘 아이의 순간을 기록해 보세요..."></textarea>
+<input type="file" id="composer-photo-input" accept="image/*" multiple class="hidden-input"/>
+</div>
+</div>
+<div class="modal hidden" id="profile-stats-modal">
+<div class="modal-backdrop" id="pstats-backdrop"></div>
+<div class="modal-content pstats-content">
+<button type="button" class="journey-modal-close" id="btn-pstats-close">✕</button>
+<div class="pstats-head">
+<img class="pstats-avatar" id="pstats-avatar" src="" alt=""/>
+<div><div class="pstats-name" id="pstats-name"></div><div class="pstats-tier" id="pstats-tier"></div></div>
+</div>
+<div class="pstats-journey">
+<div class="pstats-journey-top"><span>성장 저니</span><strong id="pstats-journey-pct">0%</strong></div>
+<div class="pstats-bar"><div class="pstats-bar-fill" id="pstats-journey-fill"></div></div>
+<p class="pstats-journey-sub" id="pstats-journey-sub"></p>
+</div>
+<div class="pstats-grid">
+<div class="pstats-cell"><span class="pstats-cell-num" id="pstats-points">0</span><span class="pstats-cell-label">🥚 알</span></div>
+<div class="pstats-cell"><span class="pstats-cell-num" id="pstats-posts">0</span><span class="pstats-cell-label">📷 기록</span></div>
+<div class="pstats-cell"><span class="pstats-cell-num" id="pstats-emotions">0</span><span class="pstats-cell-label">❤️ 받은 감정</span></div>
+</div>
+<button type="button" class="pstats-journey-btn" id="btn-pstats-journey">🗺️ 성장 저니 보러가기</button>
+</div>
+</div>
 <nav class="bottom-tab-bar hidden" id="bottom-tab-bar" aria-label="하단 메뉴">
 <button type="button" class="tab-bar-item active" data-tab="home"><span class="tab-bar-icon">🏠</span><span>홈</span></button>
-<button type="button" class="tab-bar-item" data-tab="puzzle"><span class="tab-bar-icon">🧩</span><span>조각채우기</span></button>
+<button type="button" class="tab-bar-item" data-tab="journey"><span class="tab-bar-icon">🗺️</span><span>성장저니</span></button>
+<button type="button" class="tab-bar-item" data-tab="puzzle"><span class="tab-bar-icon">🥚</span><span>리워드</span></button>
 <button type="button" class="tab-bar-item" data-tab="game"><span class="tab-bar-icon">🎮</span><span>게임</span></button>
 <button type="button" class="tab-bar-item" data-tab="settings"><span class="tab-bar-icon">⚙️</span><span>설정</span></button>
 </nav>
 <div class="toast hidden" id="toast"></div>
 <script src="js/wishlist-data.js"></script>
-<script src="js/feed-data.js?v=5"></script>
+<script src="js/feed-data.js?v=6"></script>
 <script src="js/kidikidi.js?v=4"></script>
 <script src="js/points.js?v=1"></script>
 <script src="js/puzzle-mission.js?v=4"></script>
@@ -617,6 +644,6 @@
 <script src="js/family-data.js?v=1"></script>
 <script src="js/kakao-auth.js?v=1"></script>
 <script src="js/onboarding.js?v=7"></script>
-<script src="js/app.js?v=39"></script>
+<script src="js/app.js?v=40"></script>
 </body>
 </html>

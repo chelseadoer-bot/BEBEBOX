@@ -119,7 +119,7 @@ function reorderItemProducts(itemId,from,to){
 }
 function fmtPrice(n){return n.toLocaleString("ko-KR")+"원";}
 function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
-let state={photos:[],friends:[],inbox:[],profile:{...DEFAULT_PROFILE},wishlist:{},owned:{},hidden:{},itemProducts:{},funding:{},fundingGauge:{},gaugePuzzles:{},collectQuests:{},contributors:{},journeyGifts:{},journeyMemories:{},parentQuestPhotos:{},points:0,coupons:[],journeyJustCleared:null,currentStage:0,currentAgeTab:"9",pendingGift:null,viewingPhotoId:null,pendingFunding:null,pendingContribute:null,pendingJourneyNode:null,pendingRaidNode:null,pendingJourneyEditNode:null};
+let state={photos:[],friends:[],inbox:[],profile:{...DEFAULT_PROFILE},wishlist:{},owned:{},hidden:{},itemProducts:{},funding:{},fundingGauge:{},gaugePuzzles:{},collectQuests:{},contributors:{},journeyGifts:{},journeyMemories:{},parentQuestPhotos:{},points:0,coupons:[],posts:[],journeyJustCleared:null,viewingPostId:null,currentStage:0,currentAgeTab:"9",pendingGift:null,viewingPhotoId:null,pendingFunding:null,pendingContribute:null,pendingJourneyNode:null,pendingRaidNode:null,pendingJourneyEditNode:null};
 function isGuest(){return new URLSearchParams(location.search).has("guest");}
 function babyName(){return state.profile.babyName||state.profile.name.replace(/의 일기$/,"")||"다엘이";}
 function hasItem(id){return!!state.owned[id];}
@@ -127,15 +127,9 @@ const EYE_ON='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-
 const EYE_OFF='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
 const $=(s)=>document.querySelector(s);
 const $$=(s)=>document.querySelectorAll(s);
+// 데모 사진은 더 이상 시드하지 않는다. 피드는 state.posts(직접 작성한 글)만 보여준다.
 function mkPhotos(){
-  const caps=["귀여운 하루 🌟","첫 미소가 너무 예뻐요","목 가눔 성공!","이유식 첫 도전","기어다니기 시작했어요"];
-  return DEFAULT_PHOTOS.map((src,i)=>{
-    const ageMonth=i<3?0:i<7?3:i<12?6:9;
-    const p={id:"d"+i,src,createdAt:Date.now()-i*86400000,ageMonth,likes:Math.floor(Math.random()*8),liked:false,comments:[],caption:caps[i%caps.length]||""};
-    if(i===8)p.ownedTag={itemName:"국민 이유식 의자",from:"이모 수연",message:"다엘이가 매일 여기서 밥 먹어요."};
-    if(i===13){p.needTag={ageMonth:9};p.caption="이제 기어 다니기 시작해서 온 집안을 다 참견해요";}
-    return p;
-  });
+  return [];
 }
 function ensurePhotoMeta(p){
   if(p.likes==null)p.likes=0;if(p.liked==null)p.liked=false;if(!p.comments)p.comments=[];
@@ -336,6 +330,7 @@ function load(){
   const sp=localStorage.getItem("photoShare_points");
   state.points=sp?(parseInt(sp,10)||0):0;
   try{const cp=JSON.parse(localStorage.getItem("photoShare_coupons")||"[]");state.coupons=Array.isArray(cp)?cp:[];}catch(_){state.coupons=[];}
+  try{const ps=JSON.parse(localStorage.getItem("photoShare_posts")||"[]");state.posts=Array.isArray(ps)?ps.map(ensurePostMeta):[];}catch(_){state.posts=[];}
   const wl=localStorage.getItem(STORAGE_KEYS.wishlist);
   const wlVer=localStorage.getItem(STORAGE_KEYS.wishlist+"_ver");
   if(wlVer!==String(WISHLIST_VERSION)||!wl){
@@ -393,6 +388,7 @@ function saveLocalCache(){
   localStorage.setItem(STORAGE_KEYS.wishlist+"_parent_quest_photos",JSON.stringify(state.parentQuestPhotos));
   localStorage.setItem("photoShare_points",String(state.points||0));
   localStorage.setItem("photoShare_coupons",JSON.stringify(state.coupons||[]));
+  localStorage.setItem("photoShare_posts",JSON.stringify(state.posts||[]));
 }
 function save(){
   saveLocalCache();
@@ -400,7 +396,7 @@ function save(){
 }
 window.saveLocalCache=saveLocalCache;
 function showToast(m){const t=$("#toast");t.textContent=m;t.classList.remove("hidden");clearTimeout(showToast._t);showToast._t=setTimeout(()=>t.classList.add("hidden"),2500);}
-const TAB_VIEWS={home:"#profile-view",puzzle:"#puzzle-tab-view",game:"#game-tab-view",settings:"#settings-tab-view"};
+const TAB_VIEWS={home:"#profile-view",journey:"#quest-guide-view",puzzle:"#puzzle-tab-view",game:"#game-tab-view",settings:"#settings-tab-view"};
 let currentMainTab="home";
 function showTabBar(){
   $("#bottom-tab-bar")?.classList.remove("hidden");
@@ -421,6 +417,7 @@ function switchMainTab(tab,{animate=false}={}){
   updateTabBarUI();
   showTabBar();
   if(tab==="home"){renderProfile();renderFeed();}
+  if(tab==="journey"){renderSeasonBanner();renderJourneyMap();}
   if(tab==="puzzle")renderPuzzleTab({animate});
   if(tab==="settings")renderSettingsTab();
   if(tab==="game"){initGameTab();renderPointsUI();}
@@ -555,7 +552,8 @@ function getCurrentStageLabel(){
   return stage?stage.label:`${cm}개월`;
 }
 function updateQuestBanner(){
-  $("#quest-banner-text").textContent=`${babyName()}의 성장 정원`;
+  const t=$("#quest-banner-text");
+  if(t)t.textContent=`${babyName()}의 성장 정원`;
   const sub=$("#quest-banner-sub");
   if(sub)sub.textContent=`정원 길을 따라 · ${getCurrentStageLabel()} 꽃이 피었어요`;
 }
@@ -565,54 +563,181 @@ function filterPhotosByAge(){
   return state.photos.filter(p=>p.ageMonth===m);
 }
 function ageLabel(m){const t=AGE_TABS.find(x=>x.months&&x.months[0]===m);return t?t.label.replace(" 📍",""):`${m}개월`;}
+function ensurePostMeta(p){
+  if(!p)return p;
+  if(!Array.isArray(p.photos))p.photos=p.photos?[p.photos]:[];
+  if(p.text==null)p.text="";
+  if(p.gauge==null)p.gauge=0;
+  if(!Array.isArray(p.comments))p.comments=[];
+  if(p.ageMonth==null)p.ageMonth=9;
+  if(!p.createdAt)p.createdAt=Date.now();
+  return p;
+}
+function getPost(id){return state.posts.find(p=>p.id===id);}
+function filterPostsByAge(){
+  const all=[...state.posts].sort((a,b)=>b.createdAt-a.createdAt);
+  if(state.currentAgeTab==="all")return all;
+  return all.filter(p=>p.ageMonth===+state.currentAgeTab);
+}
 function renderFeed(){
   const feed=$("#photo-feed");
-  const list=filterPhotosByAge();
-  if(!list.length){feed.innerHTML='<p class="feed-empty">이 시기의 사진이 아직 없어요</p>';return;}
+  if(!feed)return;
+  const list=filterPostsByAge();
+  if(!list.length){
+    feed.innerHTML=`<div class="feed-empty">
+      <p class="feed-empty-title">아직 올린 글이 없어요</p>
+      <p class="feed-empty-desc">오늘의 ${esc(babyName())} 순간을 사진과 함께 기록해 보세요</p>
+      <button type="button" class="feed-empty-btn" id="btn-feed-empty-write">✏️ 첫 글 작성하기</button>
+    </div>`;
+    $("#btn-feed-empty-write")?.addEventListener("click",openComposer);
+    return;
+  }
   feed.innerHTML=list.map(p=>{
-    const tag=p.ownedTag?`<button type="button" class="photo-gift-tag" data-pid="${p.id}" aria-label="선물 인증">🎁</button>`:"";
-    const need=p.needTag?`<button type="button" class="feed-need-chip" data-pid="${p.id}">💡 ${ageLabel(p.ageMonth)} ${babyName()}에게 지금 필요한 것은?</button>`:"";
-    const quest=p.questLink?`<p class="feed-quest-chip">🌿 ${esc(p.questLink.label)} 퀘스트에 등록됨</p>`:"";
-    const cap=p.caption?`<p class="feed-caption"><strong>${esc(state.profile.name)}</strong> ${esc(p.caption)}</p>`:"";
-    return`<article class="feed-card" data-id="${p.id}">
-      <div class="feed-card-head">
-        <img class="feed-card-avatar" src="${state.profile.avatar}" alt=""/>
-        <div class="feed-card-meta">
-          <div class="feed-card-name">${esc(state.profile.name)}</div>
-          <div class="feed-card-age">${ageLabel(p.ageMonth)}</div>
-        </div>
+    const imgs=p.photos.length?`<div class="post-photos${p.photos.length>1?" multi":""}">${
+      p.photos.map(src=>`<div class="post-photo-slide"><img src="${esc(src)}" alt="" loading="lazy" data-img="${esc(src)}"/></div>`).join("")
+    }</div>${p.photos.length>1?`<div class="post-dots">${p.photos.map((_,i)=>`<span class="${i===0?"on":""}"></span>`).join("")}</div>`:""}`:"";
+    const gpct=Math.min(100,p.gauge);
+    const text=p.text?`<p class="post-text"><strong>${esc(state.profile.name)}</strong> ${esc(p.text)}</p>`:"";
+    return`<article class="post-card" data-id="${p.id}">
+      <div class="post-head">
+        <img class="post-avatar" src="${esc(state.profile.avatar)}" alt=""/>
+        <div class="post-head-meta"><div class="post-name">${esc(state.profile.name)}</div><div class="post-date">${esc(fmtPhotoDate(p.createdAt))} · ${esc(ageLabel(p.ageMonth))}</div></div>
       </div>
-      <div class="feed-photo-wrap">
-        <img src="${p.src}" alt="사진" loading="lazy"/>
-        ${tag}
+      ${imgs}
+      <div class="post-emotion">
+        <button type="button" class="post-emotion-btn" data-emotion="${p.id}" aria-label="감정 표현">❤️</button>
+        <div class="post-gauge"><div class="post-gauge-fill" style="width:${gpct}%"></div></div>
+        <span class="post-emotion-count" data-emotion-count="${p.id}">${p.gauge}</span>
       </div>
-      <div class="feed-actions">
-        <button type="button" class="feed-action-btn" data-like="${p.id}">♥ ${p.likes}</button>
-        <button type="button" class="feed-action-btn" data-comment="${p.id}">💬 ${p.comments.length||""}</button>
-      </div>
-      ${cap}
-      ${quest}
-      ${need}
+      ${text}
+      <button type="button" class="post-comment-link" data-comment="${p.id}">💬 댓글 ${p.comments.length?p.comments.length+"개":"달기"}</button>
     </article>`;
   }).join("");
-  feed.querySelectorAll(".feed-photo-wrap img, .feed-action-btn[data-comment]").forEach(el=>{
-    el.onclick=()=>openPhotoDetail(el.closest(".feed-card")?.dataset.id||el.dataset.comment);
-  });
-  feed.querySelectorAll(".feed-action-btn[data-like]").forEach(btn=>{
-    btn.onclick=e=>{e.stopPropagation();toggleFeedLike(btn.dataset.like);};
-  });
-  feed.querySelectorAll(".photo-gift-tag").forEach(btn=>{
-    btn.onclick=e=>{e.stopPropagation();openPplSheet(btn.dataset.pid);};
-  });
-  feed.querySelectorAll(".feed-need-chip").forEach(btn=>{
-    btn.onclick=e=>{e.stopPropagation();openNeedSheet(btn.dataset.pid);};
+  feed.querySelectorAll("img[data-img]").forEach(im=>im.onclick=()=>openImageLightbox(im.dataset.img));
+  feed.querySelectorAll("[data-emotion]").forEach(b=>b.onclick=e=>{e.stopPropagation();bumpEmotion(b.dataset.emotion);});
+  feed.querySelectorAll("[data-comment]").forEach(b=>b.onclick=()=>openPostCommentSheet(b.dataset.comment));
+  feed.querySelectorAll(".post-photos.multi").forEach(scroller=>{
+    scroller.addEventListener("scroll",()=>{
+      const i=Math.round(scroller.scrollLeft/Math.max(1,scroller.clientWidth));
+      const dots=scroller.parentElement.querySelector(".post-dots");
+      if(dots)dots.querySelectorAll("span").forEach((d,di)=>d.classList.toggle("on",di===i));
+    },{passive:true});
   });
 }
-function toggleFeedLike(id){
-  const p=getPhoto(id);if(!p)return;
-  if(p.liked){p.liked=false;p.likes=Math.max(0,p.likes-1);}else{p.liked=true;p.likes++;}
-  save();renderFeed();
+let _emotionSaveTimer=null;
+function bumpEmotion(id){
+  const p=getPost(id);if(!p)return;
+  p.gauge=(p.gauge||0)+1;
+  const cnt=document.querySelector(`[data-emotion-count="${id}"]`);
+  if(cnt)cnt.textContent=p.gauge;
+  const card=document.querySelector(`.post-card[data-id="${id}"]`);
+  const fill=card?.querySelector(".post-gauge-fill");
+  if(fill)fill.style.width=Math.min(100,p.gauge)+"%";
+  const btn=card?.querySelector(".post-emotion-btn");
+  if(btn){btn.classList.remove("pop");void btn.offsetWidth;btn.classList.add("pop");}
+  const wrap=card?.querySelector(".post-emotion");
+  if(wrap){
+    const heart=document.createElement("span");
+    heart.className="emotion-float";heart.textContent="❤️";
+    wrap.appendChild(heart);
+    setTimeout(()=>heart.remove(),700);
+  }
+  clearTimeout(_emotionSaveTimer);
+  _emotionSaveTimer=setTimeout(()=>save(),700);
 }
+function openImageLightbox(src){
+  $("#detail-img").src=src;
+  $("#photo-detail").classList.add("lightbox-only");
+  $("#photo-detail").classList.remove("hidden");
+  document.body.style.overflow="hidden";
+}
+function openPostCommentSheet(id){
+  state.viewingPostId=id;
+  renderComments();
+  $("#comment-input").value="";
+  $("#btn-send-comment").classList.remove("active");
+  $("#comment-my-avatar").src=state.profile.avatar;
+  $("#comment-sheet").classList.remove("hidden");
+  setTimeout(()=>$("#comment-input").focus(),300);
+}
+/* ---------------------------------------------------- 글쓰기(인스타식) */
+let composerFiles=[];
+function openComposer(){
+  composerFiles=[];
+  const t=$("#composer-text");if(t)t.value="";
+  renderComposerThumbs();
+  $("#post-composer-modal")?.classList.remove("hidden");
+}
+function closeComposer(){
+  $("#post-composer-modal")?.classList.add("hidden");
+  composerFiles=[];
+}
+function addComposerFiles(files){
+  const imgs=Array.from(files||[]).filter(f=>f.type.startsWith("image/"));
+  composerFiles=composerFiles.concat(imgs).slice(0,10);
+  renderComposerThumbs();
+}
+function renderComposerThumbs(){
+  const wrap=$("#composer-thumbs");
+  if(!wrap)return;
+  wrap.innerHTML=composerFiles.map((f,i)=>`<div class="composer-thumb"><img src="${URL.createObjectURL(f)}" alt=""/><button type="button" class="composer-thumb-del" data-ci="${i}">✕</button></div>`).join("")
+    +`<button type="button" class="composer-add-tile" id="btn-composer-add-photo">＋<span>사진</span></button>`;
+  wrap.querySelectorAll(".composer-thumb-del").forEach(b=>b.onclick=()=>{composerFiles.splice(+b.dataset.ci,1);renderComposerThumbs();});
+  $("#btn-composer-add-photo").onclick=()=>$("#composer-photo-input")?.click();
+}
+async function submitPost(){
+  const text=$("#composer-text").value.trim();
+  if(!composerFiles.length&&!text){showToast("사진을 추가하거나 내용을 입력해 주세요");return;}
+  const btn=$("#btn-composer-submit");
+  if(btn)btn.disabled=true;
+  const srcs=[];
+  if(composerFiles.length){
+    if(typeof uploadPhotoToServer!=="function"){showToast("server.py 로 실행해야 사진을 올릴 수 있어요");if(btn)btn.disabled=false;return;}
+    showToast("올리는 중...");
+    for(const f of composerFiles){
+      try{const up=await uploadPhotoToServer(f);if(up?.src)srcs.push(up.src);}catch(_){}
+    }
+    if(!srcs.length){showToast("사진 업로드 실패. server.py 실행 중인지 확인해 주세요");if(btn)btn.disabled=false;return;}
+  }
+  const post=ensurePostMeta({id:"post"+Date.now(),text,photos:srcs,ageMonth:state.profile.currentAge||9,createdAt:Date.now(),gauge:0,comments:[]});
+  state.posts.unshift(post);
+  save();
+  if(btn)btn.disabled=false;
+  closeComposer();
+  switchMainTab("home");
+  renderFeed();
+  addPoints(POINT_RULES.photo,"photo");
+  addPuzzlePieces(1,"post");
+  showToast(`글을 올렸어요 · +${POINT_RULES.photo}알 🥚`);
+}
+/* ----------------------------------------------- 프로필 게이미피케이션 */
+function journeyProgress(){
+  const nodes=JOURNEY_MAP.filter(n=>n.kind==="node");
+  const done=nodes.filter(n=>!n.lockedPreview&&(n.parentDone||state.journeyGifts[n.id]||state.journeyMemories[n.id])).length;
+  const pct=nodes.length?Math.round(done/nodes.length*100):0;
+  return {done,total:nodes.length,pct};
+}
+function growthTier(pct){
+  if(pct>=100)return"성장 졸업 🎓";
+  if(pct>=75)return"성장왕 👑";
+  if(pct>=50)return"탐험가 🧭";
+  if(pct>=25)return"꼬물이 🐛";
+  return"새싹 🌱";
+}
+function openProfileStats(){
+  const jp=journeyProgress();
+  $("#pstats-name").textContent=state.profile.name;
+  $("#pstats-avatar").src=state.profile.avatar;
+  $("#pstats-tier").textContent=`${growthTier(jp.pct)} 등극!`;
+  $("#pstats-journey-pct").textContent=jp.pct+"%";
+  $("#pstats-journey-fill").style.width=jp.pct+"%";
+  $("#pstats-journey-sub").textContent=`성장 저니 ${jp.done}/${jp.total} 단계 완료`;
+  $("#pstats-points").textContent=formatPoints(getPoints());
+  $("#pstats-posts").textContent=String(state.posts.length);
+  $("#pstats-emotions").textContent=String(state.posts.reduce((s,p)=>s+(p.gauge||0),0));
+  $("#profile-stats-modal")?.classList.remove("hidden");
+}
+function closeProfileStats(){$("#profile-stats-modal")?.classList.add("hidden");}
 function getJourneyMemory(nodeId){
   return state.journeyMemories[nodeId]||null;
 }
@@ -762,6 +887,7 @@ function openPhotoDetail(id){
 }
 function closePhotoDetail(){
   $("#photo-detail").classList.add("hidden");
+  $("#photo-detail").classList.remove("lightbox-only");
   closeCommentSheet();
   state.viewingPhotoId=null;
   document.body.style.overflow="";
@@ -774,7 +900,7 @@ function toggleLike(){
   save();updateDetailUI();
 }
 function renderComments(){
-  const p=getPhoto(state.viewingPhotoId);
+  const p=getPost(state.viewingPostId);
   const list=$("#comment-list");
   if(!p||!p.comments.length){
     list.innerHTML='<p class="comment-empty">첫 댓글을 남겨보세요.</p>';
@@ -801,14 +927,16 @@ function closeCommentSheet(){$("#comment-sheet").classList.add("hidden");}
 function sendComment(){
   const text=$("#comment-input").value.trim();
   if(!text)return;
-  const p=getPhoto(state.viewingPhotoId);
+  const p=getPost(state.viewingPostId);
   if(!p)return;
-  p.comments.push({id:"c"+Date.now(),author:state.profile.name,text,avatar:state.profile.avatar,at:Date.now()});
+  const me=(typeof getStoredKakaoUser==="function"&&getStoredKakaoUser()?.nickname)||state.profile.name;
+  const av=(typeof getStoredKakaoUser==="function"&&getStoredKakaoUser()?.profileImage)||state.profile.avatar;
+  p.comments.push({id:"c"+Date.now(),author:me,text,avatar:av,at:Date.now()});
   save();
   $("#comment-input").value="";
   $("#btn-send-comment").classList.remove("active");
   renderComments();
-  updateDetailUI();
+  renderFeed();
 }
 function renderStageNav(){
   const nav=$("#stage-nav");
@@ -1502,10 +1630,7 @@ function bindEvents(){
     renderSettingsTab();
     showToast("1,000원 장바구니 쿠폰으로 교환했어요! 🎟️");
   });
-  $("#btn-mission-photo")?.addEventListener("click",()=>{
-    switchMainTab("home");
-    setTimeout(()=>$("#photo-input")?.click(),200);
-  });
+  $("#btn-mission-photo")?.addEventListener("click",openComposer);
   $("#btn-mission-share")?.addEventListener("click",()=>shareProfileLink());
   $("#btn-mission-game")?.addEventListener("click",()=>{
     switchMainTab("game");
@@ -1524,7 +1649,7 @@ function bindEvents(){
   $("#settings-notify-visit")?.addEventListener("change",saveNotifySettings);
   $("#settings-notify-gift")?.addEventListener("change",saveNotifySettings);
   $("#btn-settings-wishlist")?.addEventListener("click",openWishlist);
-  $("#btn-settings-journey")?.addEventListener("click",openQuestGuide);
+  $("#btn-settings-journey")?.addEventListener("click",()=>switchMainTab("journey"));
   $("#btn-kakao-logout")?.addEventListener("click",()=>{
     if(typeof logoutKakao==="function")logoutKakao();
   });
@@ -1532,9 +1657,18 @@ function bindEvents(){
   if(typeof bindMinigameEvents==="function")bindMinigameEvents();
   $("#btn-share")?.classList.remove("active");
   $("#btn-gift").onclick=openWishlist;
-  $("#btn-quest-guide").onclick=openQuestGuide;
-  $("#btn-back-guide").onclick=()=>switchMainTab("home");
-  $("#btn-add-feed-photo").onclick=()=>$("#photo-input").click();
+  $("#btn-back-guide")?.addEventListener("click",()=>switchMainTab("home"));
+  $("#btn-add-feed-photo").onclick=openComposer;
+  // 글쓰기(인스타식) 모달
+  $("#btn-composer-cancel")?.addEventListener("click",closeComposer);
+  $("#composer-backdrop")?.addEventListener("click",closeComposer);
+  $("#btn-composer-submit")?.addEventListener("click",submitPost);
+  $("#composer-photo-input")?.addEventListener("change",e=>{addComposerFiles(e.target.files);e.target.value="";});
+  // 프로필 → 게이미피케이션
+  $(".profile-row")?.addEventListener("click",openProfileStats);
+  $("#btn-pstats-close")?.addEventListener("click",closeProfileStats);
+  $("#pstats-backdrop")?.addEventListener("click",closeProfileStats);
+  $("#btn-pstats-journey")?.addEventListener("click",()=>{closeProfileStats();switchMainTab("journey");});
   $("#ppl-backdrop").onclick=()=>$("#ppl-sheet").classList.add("hidden");
   $("#need-backdrop").onclick=()=>$("#need-sheet").classList.add("hidden");
   $("#funding-backdrop").onclick=()=>$("#funding-sheet").classList.add("hidden");

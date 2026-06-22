@@ -1,4 +1,4 @@
-const PHOTOS_VERSION=5;
+const PHOTOS_VERSION=6;
 const AGE_TABS=[
   {id:"all",label:"전체"},
   {id:"0",label:"Newborn",months:[0]},
