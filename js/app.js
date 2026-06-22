@@ -55,6 +55,33 @@ const BACKGROUND=AI_PHOTOS[1];
 const DEFAULT_PHOTOS=Array.from({length:18},(_,i)=>AI_PHOTOS[i%AI_PHOTOS.length]);
 const DEFAULT_FRIENDS=[{id:"f1",name:"민지"},{id:"f2",name:"준호"},{id:"f3",name:"수연"}];
 const DEFAULT_PROFILE={name:"다엘이의 일기",babyName:"다엘이",status:"9개월",currentAge:9,avatar:AVATAR,background:BACKGROUND};
+// 연령 칩 단계: 0~24개월은 월 단위, 이후 3~14세는 연 단위(15세 전까지).
+const AGE_STEPS=(()=>{
+  const s=[];
+  for(let m=0;m<=24;m++)s.push({id:"m"+m,month:m,label:m===0?"신생아":m+"개월"});
+  for(let y=3;y<=14;y++)s.push({id:"y"+y,month:y*12,label:y+"세"});
+  return s;
+})();
+const AGE_TAB_CHIP_LIMIT=8; // (전체 포함) 칩이 이보다 많으면 드롭다운으로 표시
+function stepIndexForMonth(m){
+  m=(m==null?0:m);
+  let idx=0;
+  for(let i=0;i<AGE_STEPS.length;i++){if(AGE_STEPS[i].month<=m)idx=i;else break;}
+  return idx;
+}
+function ageStepById(id){return AGE_STEPS.find(s=>s.id===id);}
+function ageChipId(m){return AGE_STEPS[stepIndexForMonth(m)].id;}
+function startStepMonth(){return state.profile.startAge??state.profile.currentAge??0;}
+function visibleAgeSteps(){
+  const a=stepIndexForMonth(startStepMonth());
+  const b=stepIndexForMonth(state.profile.currentAge??startStepMonth());
+  return AGE_STEPS.slice(Math.min(a,b),Math.max(a,b)+1);
+}
+function currentTabMonth(){
+  if(state.currentAgeTab==="all")return state.profile.currentAge??9;
+  const s=ageStepById(state.currentAgeTab);
+  return s?s.month:(state.profile.currentAge??9);
+}
 const STAGES=[
   {id:"s1",name:"임신 초기"},{id:"s2",name:"임신 중기"},{id:"s3",name:"임신 후기"},{id:"s4",name:"출산 전후"},
   {id:"s5",name:"0-3개월"},{id:"s6",name:"4-6개월"},{id:"s7",name:"7-12개월"},{id:"s8",name:"돌 이후"}
@@ -119,7 +146,7 @@ function reorderItemProducts(itemId,from,to){
 }
 function fmtPrice(n){return n.toLocaleString("ko-KR")+"원";}
 function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
-let state={photos:[],friends:[],inbox:[],profile:{...DEFAULT_PROFILE},wishlist:{},owned:{},hidden:{},itemProducts:{},funding:{},fundingGauge:{},gaugePuzzles:{},collectQuests:{},contributors:{},journeyGifts:{},journeyMemories:{},parentQuestPhotos:{},points:0,coupons:[],posts:[],giftPuzzles:[],journeyJustCleared:null,viewingPostId:null,currentStage:0,currentAgeTab:"9",pendingGift:null,viewingPhotoId:null,pendingFunding:null,pendingContribute:null,pendingJourneyNode:null,pendingRaidNode:null,pendingJourneyEditNode:null};
+let state={photos:[],friends:[],inbox:[],profile:{...DEFAULT_PROFILE},wishlist:{},owned:{},hidden:{},itemProducts:{},funding:{},fundingGauge:{},gaugePuzzles:{},collectQuests:{},contributors:{},journeyGifts:{},journeyMemories:{},parentQuestPhotos:{},points:0,coupons:[],posts:[],giftPuzzles:[],journeyJustCleared:null,viewingPostId:null,currentStage:0,currentAgeTab:"all",pendingGift:null,viewingPhotoId:null,pendingFunding:null,pendingContribute:null,pendingJourneyNode:null,pendingRaidNode:null,pendingJourneyEditNode:null};
 function isGuest(){return new URLSearchParams(location.search).has("guest");}
 function babyName(){return state.profile.babyName||state.profile.name.replace(/의 일기$/,"")||"다엘이";}
 function hasItem(id){return!!state.owned[id];}
@@ -326,7 +353,9 @@ function load(){
   }
   state.profile.currentAge=state.profile.currentAge??DEFAULT_PROFILE.currentAge;
   state.profile.kidikidiId=state.profile.kidikidiId||"";
-  state.currentAgeTab=String(state.profile.currentAge??9);
+  // 가입 시점(연령)을 한 번 고정해 두고, 이후 월령이 늘면 칩이 그 위로 쌓인다.
+  if(state.profile.startAge==null)state.profile.startAge=state.profile.currentAge;
+  state.currentAgeTab="all";
   const sp=localStorage.getItem("photoShare_points");
   state.points=sp?(parseInt(sp,10)||0):0;
   try{const cp=JSON.parse(localStorage.getItem("photoShare_coupons")||"[]");state.coupons=Array.isArray(cp)?cp:[];}catch(_){state.coupons=[];}
@@ -537,21 +566,31 @@ function renderProfile(){
   renderAgeQuestBadge();
 }
 function renderAgeQuestBadge(){
-  const age=state.currentAgeTab==="all"?state.profile.currentAge:+state.currentAgeTab;
-  const rate=questCompletionRate(age);
-  $("#age-quest-badge").textContent=`엄마·아빠 퀘스트 ${rate}% 완료! 🔥`;
+  const rate=questCompletionRate(currentTabMonth());
+  const el=$("#age-quest-badge");
+  if(el)el.textContent=`엄마·아빠 퀘스트 ${rate}% 완료! 🔥`;
+}
+function onAgeTabChange(id){
+  state.currentAgeTab=id;
+  renderAgeTabs();renderFeed();renderAgeQuestBadge();
 }
 function renderAgeTabs(){
   const el=$("#age-tabs");
-  el.innerHTML=AGE_TABS.map(t=>{
-    const active=t.id===state.currentAgeTab?" active":"";
-    const label=t.current?`${t.label} 📍`:t.label;
-    return`<button class="age-tab${active}" data-age="${t.id}">${label}</button>`;
-  }).join("");
-  el.querySelectorAll(".age-tab").forEach(btn=>btn.onclick=()=>{
-    state.currentAgeTab=btn.dataset.age;
-    renderAgeTabs();renderFeed();renderAgeQuestBadge();
-  });
+  if(!el)return;
+  const curId=ageChipId(state.profile.currentAge??0);
+  const items=[{id:"all",label:"전체"},...visibleAgeSteps().map(s=>({id:s.id,label:s.id===curId?`${s.label} 📍`:s.label}))];
+  if(items.length>AGE_TAB_CHIP_LIMIT){
+    // 칩이 너무 많으면 드롭다운으로
+    el.classList.add("age-tabs--select");
+    const sel=items.map(it=>`<option value="${it.id}"${it.id===state.currentAgeTab?" selected":""}>${it.label}</option>`).join("");
+    el.innerHTML=`<select class="age-select" id="age-select" aria-label="연령 선택">${sel}</select>`;
+    const s=el.querySelector("#age-select");
+    if(s)s.onchange=e=>onAgeTabChange(e.target.value);
+  }else{
+    el.classList.remove("age-tabs--select");
+    el.innerHTML=items.map(it=>`<button class="age-tab${it.id===state.currentAgeTab?" active":""}" data-age="${it.id}">${it.label}</button>`).join("");
+    el.querySelectorAll(".age-tab").forEach(btn=>btn.onclick=()=>onAgeTabChange(btn.dataset.age));
+  }
 }
 function getCurrentStageLabel(){
   const cm=state.profile.currentAge??9;
@@ -564,12 +603,7 @@ function updateQuestBanner(){
   const sub=$("#quest-banner-sub");
   if(sub)sub.textContent=`정원 길을 따라 · ${getCurrentStageLabel()} 꽃이 피었어요`;
 }
-function filterPhotosByAge(){
-  if(state.currentAgeTab==="all")return [...state.photos];
-  const m=+state.currentAgeTab;
-  return state.photos.filter(p=>p.ageMonth===m);
-}
-function ageLabel(m){const t=AGE_TABS.find(x=>x.months&&x.months[0]===m);return t?t.label.replace(" 📍",""):`${m}개월`;}
+function ageLabel(m){return AGE_STEPS[stepIndexForMonth(m)].label;}
 function ensurePostMeta(p){
   if(!p)return p;
   if(!Array.isArray(p.photos))p.photos=p.photos?[p.photos]:[];
@@ -584,7 +618,7 @@ function getPost(id){return state.posts.find(p=>p.id===id);}
 function filterPostsByAge(){
   const all=[...state.posts].sort((a,b)=>b.createdAt-a.createdAt);
   if(state.currentAgeTab==="all")return all;
-  return all.filter(p=>p.ageMonth===+state.currentAgeTab);
+  return all.filter(p=>ageChipId(p.ageMonth)===state.currentAgeTab);
 }
 function renderFeed(){
   const feed=$("#photo-feed");
@@ -1187,8 +1221,7 @@ function openWishlist(){
   renderStageNav();renderWishlistGrid();showView("#wishlist-view");
 }
 function getGuideAge(){
-  const age=state.currentAgeTab==="all"?state.profile.currentAge:+state.currentAgeTab;
-  return age;
+  return currentTabMonth();
 }
 function getSparkleNodeId(cm){
   for(const item of JOURNEY_MAP){
@@ -1681,7 +1714,11 @@ function bindEvents(){
     const age=parseInt($("#settings-baby-age").value,10);
     const kidikidiId=$("#settings-kidikidi-id")?.value.trim().replace(/\s+/g,"")||"";
     if(name)state.profile.babyName=name;
-    if(!Number.isNaN(age))state.profile.currentAge=age;
+    if(!Number.isNaN(age)){
+      state.profile.currentAge=age;
+      // 가입 시점보다 어린 월령으로 정정하면 시작 칩도 함께 내려준다.
+      if(state.profile.startAge==null||age<state.profile.startAge)state.profile.startAge=age;
+    }
     state.profile.kidikidiId=kidikidiId;
     state.profile.name=(state.profile.babyName||"다엘이")+"의 일기";
     save();renderProfile();renderFeed();renderAgeQuestBadge();showToast("프로필을 저장했어요");

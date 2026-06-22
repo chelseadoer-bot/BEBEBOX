@@ -714,4 +714,7 @@ body.is-guest .guest-only{display:block!important}
 /* 성장 저니를 탭으로 쓸 때 하단바 여백 */
 #app.has-tab-bar #quest-guide-view .journey-scroll{padding-bottom:84px}
 .profile-row{cursor:pointer}
+/* 연령 칩이 많을 때 드롭다운 */
+.age-tabs--select{padding:0}
+.age-select{appearance:none;-webkit-appearance:none;border:1px solid var(--color-border);background:var(--color-bg) url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='3'><path d='M6 9l6 6 6-6'/></svg>") no-repeat right 12px center;border-radius:var(--radius-full);padding:9px 32px 9px 14px;font-size:13px;font-weight:700;font-family:var(--font);color:var(--color-text);cursor:pointer}
 .hidden{display:none!important}
