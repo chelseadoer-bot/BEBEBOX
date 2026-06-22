@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
 <title>베베박스</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css"/>
-<link rel="stylesheet" href="css/style.css?v=28"/>
+<link rel="stylesheet" href="css/style.css?v=29"/>
 <link rel="stylesheet" href="css/onboarding.css?v=5"/>
 <link rel="stylesheet" href="css/theme.css?v=4"/>
 </head>
@@ -293,10 +293,21 @@
 </div>
 <div id="settings-tab-view" class="view tab-view">
 <header class="tab-page-header">
-<h2>설정</h2>
-<p>프로필과 쿠폰을 관리해요</p>
+<h2>마이</h2>
 </header>
 <div class="settings-scroll">
+<div class="my-hero">
+<img class="my-hero-avatar" id="my-hero-avatar" src="" alt=""/>
+<div class="my-hero-info">
+<div class="my-hero-name" id="my-hero-name">우리 아기</div>
+<div class="my-hero-sub" id="my-hero-sub">성장 기록 중</div>
+</div>
+</div>
+<div class="my-stats">
+<div class="my-stat"><span class="my-stat-num" id="my-stat-total">0</span><span class="my-stat-label">총 누적 기록</span></div>
+<div class="my-stat"><span class="my-stat-num" id="my-stat-month">0</span><span class="my-stat-label">이번 달 기록</span></div>
+<div class="my-stat"><span class="my-stat-num" id="my-stat-heart">0</span><span class="my-stat-label">받은 하트</span></div>
+</div>
 <section class="settings-section" id="settings-account-section" hidden>
 <h3>내 계정</h3>
 <div class="settings-account">
@@ -712,6 +723,6 @@
 <script src="js/family-data.js?v=2"></script>
 <script src="js/kakao-auth.js?v=1"></script>
 <script src="js/onboarding.js?v=7"></script>
-<script src="js/app.js?v=47"></script>
+<script src="js/app.js?v=48"></script>
 </body>
 </html>
