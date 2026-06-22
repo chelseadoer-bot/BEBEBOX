@@ -24,6 +24,7 @@ function packFamilyState() {
     points: state.points,
     coupons: state.coupons,
     posts: state.posts,
+    giftPuzzles: state.giftPuzzles,
     inviteCode: typeof getInviteCode === "function" ? getInviteCode() : null,
   };
 }
@@ -53,6 +54,7 @@ function applyFamilyState(data) {
   if (typeof data.points === "number") state.points = data.points;
   if (Array.isArray(data.coupons)) state.coupons = data.coupons;
   if (Array.isArray(data.posts)) state.posts = data.posts;
+  if (Array.isArray(data.giftPuzzles)) state.giftPuzzles = data.giftPuzzles;
   if (data.inviteCode && typeof ensureInviteCode === "function") {
     localStorage.setItem("photoShare_invite_code", data.inviteCode);
     if (state.profile) state.profile.inviteCode = data.inviteCode;
@@ -75,6 +77,7 @@ async function syncFamilyDataFromServer() {
     const row = await fetchFamilyDataFromServer();
     if (!row?.data || !Object.keys(row.data).length) return false;
     applyFamilyState(row.data);
+    state._synced = true;
     if (typeof saveLocalCache === "function") saveLocalCache();
     return true;
   } catch {
@@ -83,6 +86,10 @@ async function syncFamilyDataFromServer() {
 }
 
 async function pushFamilyDataToServerNow() {
+  // 게스트(지인)는 가족 데이터를 먼저 받아온 뒤에만 되돌려 쓴다.
+  // (동기화 전 빈 상태를 push 하면 부모의 글·프로필이 지워질 수 있음)
+  const guest = typeof isGuest === "function" && isGuest();
+  if (guest && !state._synced) return false;
   const payload = packFamilyState();
   if (!payload) return false;
   const family = encodeURIComponent(

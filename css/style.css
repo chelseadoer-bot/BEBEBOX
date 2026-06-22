@@ -667,6 +667,48 @@ body.is-guest .guest-only{display:block!important}
 .settings-avatar-btn{padding:10px 16px;border:1px solid var(--color-border);border-radius:var(--radius-full);background:var(--color-bg);font-size:13px;font-weight:700;color:var(--color-text);cursor:pointer}
 .settings-avatar-btn:active{background:var(--color-bg-subtle)}
 
+/* ===== 선물 퍼즐(레지스트리) ===== */
+.gift-puzzle-section{padding:14px 4px 18px;border-bottom:1px solid var(--color-border-light);margin-bottom:14px}
+.gp-section-head{display:flex;align-items:center;justify-content:space-between}
+.gp-section-head h3{font-size:15px;font-weight:800}
+.gp-new-btn{padding:8px 12px;border:none;border-radius:var(--radius-full);background:var(--color-accent);color:#fff;font-size:12.5px;font-weight:800;cursor:pointer}
+.gp-section-desc{font-size:12px;color:var(--color-text-tertiary);margin:6px 0 12px;line-height:1.5}
+.gp-empty{font-size:13px;color:var(--color-text-tertiary);line-height:1.6;text-align:center;padding:18px 8px;background:var(--color-bg-subtle);border-radius:var(--radius-md)}
+.gift-puzzle-card{background:var(--color-bg);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:14px;margin-bottom:12px;box-shadow:var(--shadow-sm)}
+.gp-top{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.gp-thumb{width:48px;height:48px;border-radius:10px;object-fit:cover;flex-shrink:0}
+.gp-thumb--ph{display:flex;align-items:center;justify-content:center;font-size:24px;background:var(--color-bg-muted)}
+.gp-name{font-size:14px;font-weight:700}
+.gp-brand{font-size:12px;color:var(--color-text-tertiary);margin-top:2px}
+.gp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;background:#dcc8b8;border-radius:12px;padding:6px;margin-bottom:10px}
+.gp-cell{aspect-ratio:1;border-radius:7px;background:repeating-linear-gradient(45deg,#ece0d6,#ece0d6 5px,#e4d6ca 5px,#e4d6ca 10px)}
+.gp-cell.on{background:linear-gradient(135deg,#ffd0b5,#ff7043);box-shadow:inset 0 0 0 1px rgba(255,87,34,.3)}
+.gp-progress{font-size:13px;font-weight:700;color:#c45c2e;margin-bottom:10px}
+.gp-share{width:100%;padding:11px;border:none;border-radius:var(--radius-md);background:var(--color-primary);color:#fff;font-size:13px;font-weight:800;cursor:pointer}
+.gp-reward{font-size:12.5px;font-weight:700;color:#34a853;background:#eafaef;border-radius:var(--radius-md);padding:10px;text-align:center}
+/* 만들기 모달 */
+.gift-create-content{max-width:340px;width:90%;border-radius:18px;text-align:left}
+.gc-image-btn{width:100%;padding:11px;border:1px dashed var(--color-border);border-radius:var(--radius-md);background:var(--color-bg-subtle);font-size:13px;font-weight:700;color:var(--color-text-secondary);cursor:pointer;margin-bottom:8px}
+.gc-image-preview{width:100%;max-height:160px;object-fit:cover;border-radius:var(--radius-md);margin-bottom:8px}
+.gc-input{width:100%;padding:12px 14px;border:1px solid var(--color-border);border-radius:var(--radius-md);font-size:14px;font-family:var(--font);margin-bottom:8px}
+/* 채우기 모달(지인) */
+.gift-fill-content{max-width:340px;width:90%;border-radius:20px;text-align:center;position:relative}
+.gf-baby{font-size:13px;color:var(--color-text-secondary);font-weight:600;margin-bottom:6px}
+.gf-thumb{width:100%;max-height:170px;object-fit:cover;border-radius:var(--radius-md);margin-bottom:10px}
+.gf-name{font-size:18px;font-weight:800}
+.gf-brand{font-size:13px;color:var(--color-text-tertiary);margin:2px 0 12px}
+.gf-grid{max-width:200px;margin:0 auto 8px}
+.gf-progress{font-size:13px;font-weight:700;color:#c45c2e;margin-bottom:14px}
+.gf-actions-title{font-size:12.5px;color:var(--color-text-secondary);font-weight:600;margin-bottom:10px}
+.gf-action-btn{width:100%;padding:14px;border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-bg);font-size:14px;font-weight:700;color:var(--color-text);cursor:pointer;margin-bottom:8px}
+.gf-action-btn:active{background:var(--color-bg-subtle)}
+.gf-msg-wrap{margin-top:4px}
+.gf-msg-input{width:100%;border:1px solid var(--color-border);border-radius:var(--radius-md);padding:10px;font-size:14px;font-family:var(--font);resize:none;margin-bottom:8px}
+.gf-msg-send{width:100%;padding:12px;border:none;border-radius:var(--radius-md);background:var(--color-accent);color:#fff;font-size:14px;font-weight:800;cursor:pointer}
+.gf-done{padding:10px 0}
+.gf-done-emoji{font-size:40px}
+.gf-done-text{font-size:14px;font-weight:700;line-height:1.6;margin-top:8px}
+
 /* 이미지 라이트박스(좋아요/메타 숨김) */
 .photo-detail.lightbox-only .detail-actions,.photo-detail.lightbox-only .detail-meta{display:none}
 /* 성장 저니를 탭으로 쓸 때 하단바 여백 */
