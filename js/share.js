@@ -13,6 +13,11 @@
     { id: "s7", name: "7-12개월" }, { id: "s8", name: "돌 이후" }
   ];
   var ITEM_INDEX = {}; // id -> item (위시리스트 클릭용)
+  var CURRENT_DATA = null;   // 서버에서 받은 전체 가족 데이터(상호작용 저장 시 그대로 PUT)
+  var HAS_FAMILY = false;    // 가족 데이터 문서가 있을 때만 서버 저장
+  var CUR_BABY = "우리 아기";
+  var CMT_PID = null;        // 현재 댓글 시트가 열린 글 id
+  var _saveTimer = null;
 
   function esc(s) {
     return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
@@ -85,21 +90,104 @@
     return out;
   }
 
+  // 서버에 가족 데이터 전체를 그대로 되돌려 저장(불러온 객체를 수정해 PUT → 다른 필드 보존)
+  function persistSoon() {
+    if (!HAS_FAMILY || !CURRENT_DATA) return;
+    clearTimeout(_saveTimer);
+    _saveTimer = setTimeout(persistNow, 500);
+  }
+  async function persistNow() {
+    if (!HAS_FAMILY || !CURRENT_DATA) return;
+    try {
+      await fetch("/api/family-data?family=" + encodeURIComponent(BABY_ID), {
+        method: "PUT", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(CURRENT_DATA),
+      });
+    } catch (_) {}
+  }
+  function getPost(id) { return (CURRENT_DATA.posts || []).find(function (p) { return p.id === id; }); }
+
+  // 기록(글)별 사진 + 하트 게이지 + 댓글
+  function renderRecords(posts) {
+    if (!posts.length) return '<p class="s-photo-empty">아직 올라온 기록이 없어요</p>';
+    return '<div class="s-records">' + posts.map(function (p) {
+      var imgs = (p.photos || []).map(function (s) {
+        return '<div class="s-rec-slide"><img src="' + esc(s) + '" alt="" loading="lazy"/></div>';
+      }).join("");
+      var multi = (p.photos || []).length > 1;
+      var gauge = p.gauge || 0;
+      var cc = (p.comments || []).length;
+      var text = p.text ? '<p class="s-rec-text">' + esc(p.text) + "</p>" : "";
+      return '<article class="s-rec-card" data-pid="' + esc(p.id) + '">' +
+        '<div class="s-rec-photos' + (multi ? " multi" : "") + '">' + imgs + "</div>" +
+        text +
+        '<div class="s-rec-actions">' +
+          '<button type="button" class="s-heart" data-heart="' + esc(p.id) + '" aria-label="하트">❤️</button>' +
+          '<div class="s-heart-bar"><div class="s-heart-fill" style="width:' + Math.min(100, gauge) + '%"></div></div>' +
+          '<span class="s-heart-count" data-hc="' + esc(p.id) + '">' + gauge + "</span>" +
+        "</div>" +
+        '<button type="button" class="s-cmt-link" data-cmt="' + esc(p.id) + '">💬 댓글 ' + (cc ? cc + "개" : "달기") + "</button>" +
+        "</article>";
+    }).join("") + "</div>";
+  }
+
+  function bumpHeart(id) {
+    var p = getPost(id); if (!p) return;
+    p.gauge = (p.gauge || 0) + 1;
+    var hc = document.querySelector('[data-hc="' + (window.CSS && CSS.escape ? CSS.escape(id) : id) + '"]');
+    var card = document.querySelector('.s-rec-card[data-pid="' + (window.CSS && CSS.escape ? CSS.escape(id) : id) + '"]');
+    if (hc) hc.textContent = p.gauge;
+    var fill = card && card.querySelector(".s-heart-fill");
+    if (fill) fill.style.width = Math.min(100, p.gauge) + "%";
+    var btn = card && card.querySelector(".s-heart");
+    if (btn) { btn.classList.remove("pop"); void btn.offsetWidth; btn.classList.add("pop"); }
+    persistSoon();
+  }
+
+  function openComments(id) {
+    CMT_PID = id;
+    renderCommentList();
+    document.getElementById("cmt-text").value = "";
+    document.getElementById("cmt-sheet").classList.remove("hidden");
+  }
+  function closeComments() { document.getElementById("cmt-sheet").classList.add("hidden"); CMT_PID = null; }
+  function renderCommentList() {
+    var p = getPost(CMT_PID);
+    var list = document.getElementById("cmt-list");
+    var arr = (p && p.comments) || [];
+    list.innerHTML = arr.length
+      ? arr.map(function (c) {
+          return '<div class="cmt-item"><b>' + esc(c.author || "익명") + "</b> " + esc(c.text) + "</div>";
+        }).join("")
+      : '<p class="cmt-empty">첫 댓글을 남겨보세요 🙂</p>';
+    list.scrollTop = list.scrollHeight;
+  }
+  function sendComment() {
+    var p = getPost(CMT_PID); if (!p) return;
+    var t = document.getElementById("cmt-text").value.trim();
+    if (!t) return;
+    var name = document.getElementById("cmt-name").value.trim() || "익명";
+    if (!Array.isArray(p.comments)) p.comments = [];
+    p.comments.push({ id: "c" + Date.now(), author: name, text: t, at: Date.now() });
+    document.getElementById("cmt-text").value = "";
+    renderCommentList();
+    persistNow();
+    var link = document.querySelector('[data-cmt="' + (window.CSS && CSS.escape ? CSS.escape(CMT_PID) : CMT_PID) + '"]');
+    if (link) link.textContent = "💬 댓글 " + p.comments.length + "개";
+  }
+
   function render(data) {
     var root = document.getElementById("share-root");
     var profile = data.profile || {};
     var baby = profile.babyName || (profile.name || "").replace("의 일기", "") || "우리 아기";
+    CUR_BABY = baby;
     var avatar = profile.avatar || "/public/photos/ai-01.jpg";
     var hero = profile.shareImage || profile.background || collectPhotos(data)[0] || avatar;
     var age = ageLabel(profile.currentAge);
-    var photos = collectPhotos(data);
+    var posts = (data.posts || []).slice().sort(function (a, b) { return (b.createdAt || 0) - (a.createdAt || 0); });
     var registry = data.giftPuzzles || [];
 
-    var recHtml = photos.length
-      ? '<div class="s-records">' + photos.map(function (s) {
-          return '<div class="s-rec"><img src="' + esc(s) + '" alt="" loading="lazy"/></div>';
-        }).join("") + "</div>"
-      : '<p class="s-photo-empty">아직 올라온 기록이 없어요</p>';
+    var recHtml = renderRecords(posts);
 
     var giftInner = renderPuzzles(registry) + renderWishlist(data);
     if (!giftInner) giftInner = '<p class="s-photo-empty">아직 등록된 선물이 없어요</p>';
@@ -143,6 +231,12 @@
         if (it) openGiftModal(it, baby);
       };
     });
+    root.querySelectorAll("[data-heart]").forEach(function (btn) {
+      btn.onclick = function () { bumpHeart(btn.dataset.heart); };
+    });
+    root.querySelectorAll("[data-cmt]").forEach(function (btn) {
+      btn.onclick = function () { openComments(btn.dataset.cmt); };
+    });
     var fab = document.getElementById("s-fab");
     if (fab) fab.onclick = function () {
       var sec = document.getElementById("gift-section");
@@ -161,17 +255,28 @@
   function closeGiftModal() { document.getElementById("gift-modal").classList.add("hidden"); }
   document.getElementById("gift-modal-close").onclick = closeGiftModal;
   document.getElementById("gift-modal-backdrop").onclick = closeGiftModal;
+  document.getElementById("cmt-backdrop").onclick = closeComments;
+  document.getElementById("cmt-send").onclick = sendComment;
+  document.getElementById("cmt-text").addEventListener("keydown", function (e) { if (e.key === "Enter") sendComment(); });
 
   (async function init() {
     var fam = encodeURIComponent(BABY_ID);
     var row = await fetchJSON("/api/family-data?family=" + fam);
+    HAS_FAMILY = !!(row && row.data && Object.keys(row.data).length);
     var data = (row && row.data) || {};
     if (!data.posts || !data.posts.length) {
       var ph = await fetchJSON("/api/photos?family=" + fam);
       if (ph && ph.photos && ph.photos.length) {
-        data.posts = [{ createdAt: Date.now(), photos: ph.photos.map(function (p) { return p.src; }) }];
+        data.posts = [{ id: "legacy", createdAt: Date.now(), photos: ph.photos.map(function (p) { return p.src; }) }];
       }
     }
+    // 글마다 id/배열 보정(하트·댓글 저장용)
+    (data.posts || []).forEach(function (p, i) {
+      if (!p.id) p.id = "post" + i;
+      if (!Array.isArray(p.comments)) p.comments = [];
+      if (p.gauge == null) p.gauge = 0;
+    });
+    CURRENT_DATA = data;
     render(data);
   })();
 })();
