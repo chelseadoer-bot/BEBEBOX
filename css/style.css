@@ -720,6 +720,13 @@ body.is-guest .guest-only{display:block!important}
 .gf-done-emoji{font-size:40px}
 .gf-done-text{font-size:14px;font-weight:700;line-height:1.6;margin-top:8px}
 
+/* 설정: 내 알 / 쿠폰 교환 */
+.settings-point-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.settings-point-bal{font-size:20px;font-weight:800;color:#c45c2e}
+.settings-exchange-btn{padding:11px 14px;border:none;border-radius:var(--radius-full);background:#e3ddd8;color:#fff;font-size:13px;font-weight:800;cursor:pointer}
+.settings-exchange-btn.is-ready{background:linear-gradient(135deg,#ff7043,#ff5722);box-shadow:0 4px 14px rgba(255,87,34,.3)}
+.settings-exchange-btn:disabled{cursor:default}
+
 /* 이미지 라이트박스(좋아요/메타 숨김) */
 .photo-detail.lightbox-only .detail-actions,.photo-detail.lightbox-only .detail-meta{display:none}
 /* 성장 저니를 탭으로 쓸 때 하단바 여백 */

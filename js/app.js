@@ -494,12 +494,18 @@ function renderPuzzleTab({animate=false}={}){
 function renderPointsUI(){
   const pts=getPoints();
   $$(".js-point-balance").forEach(el=>{el.textContent=formatPoints(pts);});
+  const ok=canExchangeCoupon();
   const ex=$("#btn-claim-coupon");
   if(ex){
-    const ok=canExchangeCoupon();
     ex.disabled=!ok;
     ex.classList.toggle("is-ready",ok);
     ex.textContent=ok?"🎟️ 1,000알 → 쿠폰 교환하기":`🎟️ 쿠폰까지 ${formatPoints(POINT_RULES.couponCost-pts)}알`;
+  }
+  const sx=$("#btn-settings-exchange");
+  if(sx){
+    sx.disabled=!ok;
+    sx.classList.toggle("is-ready",ok);
+    sx.textContent=ok?"🎟️ 1,000알 → 쿠폰 교환":`쿠폰까지 ${formatPoints(POINT_RULES.couponCost-pts)}알`;
   }
 }
 function onPointsChanged(){renderPointsUI();}
@@ -517,6 +523,7 @@ function renderSettingsTab(){
     else{bp.style.backgroundImage="none";bp.classList.add("is-empty");bp.textContent="배경 없음";}
   }
   const wlBtn=$("#btn-settings-wishlist");if(wlBtn)wlBtn.textContent=`🎁 ${babyName()} 옷장 (위시리스트)`;
+  renderPointsUI();
   const kakao=typeof getStoredKakaoUser==="function"?getStoredKakaoUser():null;
   const accountSection=$("#settings-account-section");
   if(accountSection){
@@ -1807,6 +1814,14 @@ function bindEvents(){
   });
   $("#settings-notify-visit")?.addEventListener("change",saveNotifySettings);
   $("#settings-notify-gift")?.addEventListener("change",saveNotifySettings);
+  $("#btn-settings-exchange")?.addEventListener("click",()=>{
+    const coupon=exchangeCoupon();
+    if(!coupon){showToast("알이 부족해요 🥚 (1,000알 필요)");return;}
+    renderSettingsTab();
+    showToast("1,000원 장바구니 쿠폰으로 교환했어요! 🎟️");
+  });
+  $("#btn-settings-share")?.addEventListener("click",()=>shareProfileLink());
+  $("#btn-settings-preview")?.addEventListener("click",()=>{window.open(getShareUrl(),"_blank");});
   $("#btn-settings-wishlist")?.addEventListener("click",openWishlist);
   $("#btn-kakao-logout")?.addEventListener("click",()=>{
     if(typeof logoutKakao==="function")logoutKakao();

@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
 <title>베베박스</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css"/>
-<link rel="stylesheet" href="css/style.css?v=27"/>
+<link rel="stylesheet" href="css/style.css?v=28"/>
 <link rel="stylesheet" href="css/onboarding.css?v=5"/>
 <link rel="stylesheet" href="css/theme.css?v=4"/>
 </head>
@@ -164,7 +164,7 @@
 <p class="ob-next-head">💡 다음에 할 일</p>
 <ol class="ob-next-list">
 <li><strong>기록 탭</strong>에서 첫 글과 사진을 올려요</li>
-<li><strong>리워드 탭</strong>에서 알을 모아 쿠폰으로 바꿔요</li>
+<li><strong>기록·공유</strong>로 알을 모아 설정에서 쿠폰으로 바꿔요</li>
 <li><strong>키디키디</strong>에서 선물받은 쿠폰을 확인해요</li>
 </ol>
 </div>
@@ -332,6 +332,14 @@
 </div>
 </section>
 <section class="settings-section">
+<h3>🥚 내 알</h3>
+<div class="settings-point-row">
+<span class="settings-point-bal"><span class="js-point-balance">0</span> 알</span>
+<button type="button" class="settings-exchange-btn" id="btn-settings-exchange">1,000알 쿠폰 교환</button>
+</div>
+<p class="settings-hint">기록(+10)·공유(+30)로 알을 모아 1,000알이면 키디키디 쿠폰으로 바꿔요</p>
+</section>
+<section class="settings-section">
 <h3>내 쿠폰함 <span class="settings-count" id="coupon-count">0</span></h3>
 <div class="coupon-list" id="coupon-list"></div>
 </section>
@@ -341,6 +349,8 @@
 <label class="settings-toggle"><input type="checkbox" id="settings-notify-gift" checked/><span>선물·응원 알림</span></label>
 </section>
 <section class="settings-section settings-links">
+<button type="button" class="settings-link-btn" id="btn-settings-share">📤 공유 링크 보내기</button>
+<button type="button" class="settings-link-btn" id="btn-settings-preview">👀 지인용 공유 화면 미리보기</button>
 <button type="button" class="settings-link-btn" id="btn-settings-wishlist">🎁 다엘이 옷장 (위시리스트)</button>
 </section>
 </div>
@@ -686,7 +696,6 @@
 </div>
 <nav class="bottom-tab-bar hidden" id="bottom-tab-bar" aria-label="하단 메뉴">
 <button type="button" class="tab-bar-item active" data-tab="home"><span class="tab-bar-icon">📷</span><span>기록</span></button>
-<button type="button" class="tab-bar-item" data-tab="puzzle"><span class="tab-bar-icon">🥚</span><span>리워드</span></button>
 <button type="button" class="tab-bar-item" data-tab="game"><span class="tab-bar-icon">🎮</span><span>게임</span></button>
 <button type="button" class="tab-bar-item" data-tab="settings"><span class="tab-bar-icon">⚙️</span><span>설정</span></button>
 </nav>
@@ -703,6 +712,6 @@
 <script src="js/family-data.js?v=2"></script>
 <script src="js/kakao-auth.js?v=1"></script>
 <script src="js/onboarding.js?v=7"></script>
-<script src="js/app.js?v=46"></script>
+<script src="js/app.js?v=47"></script>
 </body>
 </html>
