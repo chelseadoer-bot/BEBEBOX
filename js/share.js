@@ -107,39 +107,60 @@
   }
   function getPost(id) { return (CURRENT_DATA.posts || []).find(function (p) { return p.id === id; }); }
 
-  // 기록(글)별 사진 + 하트 게이지 + 댓글
-  function renderRecords(posts) {
-    if (!posts.length) return '<p class="s-photo-empty">아직 올라온 기록이 없어요</p>';
-    return '<div class="s-records">' + posts.map(function (p) {
-      var imgs = (p.photos || []).map(function (s) {
-        return '<div class="s-rec-slide"><img src="' + esc(s) + '" alt="" loading="lazy"/></div>';
-      }).join("");
-      var multi = (p.photos || []).length > 1;
-      var gauge = p.gauge || 0;
-      var cc = (p.comments || []).length;
-      var text = p.text ? '<p class="s-rec-text">' + esc(p.text) + "</p>" : "";
-      return '<article class="s-rec-card" data-pid="' + esc(p.id) + '">' +
-        '<div class="s-rec-photos' + (multi ? " multi" : "") + '">' + imgs + "</div>" +
-        text +
-        '<div class="s-rec-actions">' +
-          '<button type="button" class="s-heart" data-heart="' + esc(p.id) + '" aria-label="하트">❤️</button>' +
-          '<div class="s-heart-bar"><div class="s-heart-fill" style="width:' + Math.min(100, gauge) + '%"></div></div>' +
-          '<span class="s-heart-count" data-hc="' + esc(p.id) + '">' + gauge + "</span>" +
-        "</div>" +
-        '<button type="button" class="s-cmt-link" data-cmt="' + esc(p.id) + '">💬 댓글 ' + (cc ? cc + "개" : "달기") + "</button>" +
-        "</article>";
-    }).join("") + "</div>";
+  function fmtDate(ts) {
+    if (!ts) return "";
+    var d = new Date(ts);
+    return (d.getMonth() + 1) + "월 " + d.getDate() + "일";
   }
-
+  // 부모 화면과 동일한 게시물(post-card) 형태 + 하트 게이지 + 댓글
+  function renderRecords(posts, profile, baby) {
+    if (!posts.length) return '<p class="s-photo-empty">아직 올라온 기록이 없어요</p>';
+    var avatar = profile.avatar || "/public/photos/ai-01.jpg";
+    var name = profile.name || (baby + "의 일기");
+    return posts.map(function (p) {
+      var multi = (p.photos || []).length > 1;
+      var slides = (p.photos || []).map(function (s) {
+        return '<div class="post-photo-slide"><img src="' + esc(s) + '" alt="" loading="lazy"/></div>';
+      }).join("");
+      var nav = multi
+        ? '<button type="button" class="post-nav prev" data-nav="prev" aria-label="이전 사진">‹</button>' +
+          '<button type="button" class="post-nav next" data-nav="next" aria-label="다음 사진">›</button>' +
+          '<div class="post-count">1/' + p.photos.length + "</div>"
+        : "";
+      var dots = multi
+        ? '<div class="post-dots">' + p.photos.map(function (_, i) { return '<span class="' + (i === 0 ? "on" : "") + '"></span>'; }).join("") + "</div>"
+        : "";
+      var imgs = (p.photos && p.photos.length)
+        ? '<div class="post-photos-wrap"><div class="post-photos' + (multi ? " multi" : "") + '">' + slides + "</div>" + nav + "</div>" + dots
+        : "";
+      var gpct = Math.min(100, p.gauge || 0);
+      var dateAge = [fmtDate(p.createdAt), ageLabel(p.ageMonth)].filter(Boolean).join(" · ");
+      var text = p.text ? '<p class="post-text"><strong>' + esc(name) + "</strong> " + esc(p.text) + "</p>" : "";
+      var cc = (p.comments || []).length;
+      return '<article class="post-card" data-pid="' + esc(p.id) + '">' +
+        '<div class="post-head"><img class="post-avatar" src="' + esc(avatar) + '" alt=""/>' +
+          '<div class="post-head-meta"><div class="post-name">' + esc(name) + '</div><div class="post-date">' + esc(dateAge) + "</div></div></div>" +
+        imgs +
+        '<div class="post-emotion">' +
+          '<button type="button" class="post-emotion-btn" data-heart="' + esc(p.id) + '" aria-label="하트">❤️</button>' +
+          '<div class="post-gauge"><div class="post-gauge-fill" style="width:' + gpct + '%"></div></div>' +
+          '<span class="post-emotion-count" data-hc="' + esc(p.id) + '">' + (p.gauge || 0) + "</span>" +
+        "</div>" +
+        text +
+        '<button type="button" class="post-comment-link" data-cmt="' + esc(p.id) + '">💬 댓글 ' + (cc ? cc + "개" : "달기") + "</button>" +
+        "</article>";
+    }).join("");
+  }
+  function cssEsc(s) { return (window.CSS && CSS.escape) ? CSS.escape(s) : s; }
   function bumpHeart(id) {
     var p = getPost(id); if (!p) return;
     p.gauge = (p.gauge || 0) + 1;
-    var hc = document.querySelector('[data-hc="' + (window.CSS && CSS.escape ? CSS.escape(id) : id) + '"]');
-    var card = document.querySelector('.s-rec-card[data-pid="' + (window.CSS && CSS.escape ? CSS.escape(id) : id) + '"]');
+    var hc = document.querySelector('[data-hc="' + cssEsc(id) + '"]');
+    var card = document.querySelector('.post-card[data-pid="' + cssEsc(id) + '"]');
     if (hc) hc.textContent = p.gauge;
-    var fill = card && card.querySelector(".s-heart-fill");
+    var fill = card && card.querySelector(".post-gauge-fill");
     if (fill) fill.style.width = Math.min(100, p.gauge) + "%";
-    var btn = card && card.querySelector(".s-heart");
+    var btn = card && card.querySelector(".post-emotion-btn");
     if (btn) { btn.classList.remove("pop"); void btn.offsetWidth; btn.classList.add("pop"); }
     persistSoon();
   }
@@ -187,11 +208,9 @@
     var posts = (data.posts || []).slice().sort(function (a, b) { return (b.createdAt || 0) - (a.createdAt || 0); });
     var registry = data.giftPuzzles || [];
 
-    var recHtml = renderRecords(posts);
+    var recHtml = renderRecords(posts, profile, baby);
 
-    var giftInner = renderPuzzles(registry) + renderWishlist(data);
-    if (!giftInner) giftInner = '<p class="s-photo-empty">아직 등록된 선물이 없어요</p>';
-
+    // 첫 화면은 기록만. 선물(조각 채우기)은 플로팅 버튼 → 오버레이로만 진입.
     root.innerHTML =
       '<section class="s-hero">' +
         '<div class="s-hero-bg" style="background-image:url(\'' + esc(hero) + '\')"></div>' +
@@ -207,11 +226,6 @@
         '<h2 class="s-section-title">📷 ' + esc(baby) + "의 기록</h2>" +
         recHtml +
       "</section>" +
-      '<section class="s-section" id="gift-section">' +
-        '<h2 class="s-section-title">🧩 ' + esc(baby) + "의 조각 채우기</h2>" +
-        '<p class="s-section-sub">선물하면 ' + esc(baby) + "에게 한 조각이 채워지고, 나도 키디키디 쿠폰을 받아요</p>" +
-        giftInner +
-      "</section>" +
       '<footer class="s-footer">' +
         '<div class="s-footer-brand">베베박스 · BEBEBOX</div>' +
         "아기의 성장을 가족과 함께 기록하고 선물해요" +
@@ -219,30 +233,57 @@
       "</footer>" +
       '<button type="button" class="s-fab" id="s-fab" aria-label="선물하기">🎁<span class="s-fab-label">선물</span></button>';
 
-    root.querySelectorAll("[data-gift]").forEach(function (btn) {
-      btn.onclick = function () {
-        var g = registry.find(function (x) { return x.id === btn.dataset.gift; });
-        if (g) openGiftModal(g, baby);
-      };
-    });
-    root.querySelectorAll("[data-wl]").forEach(function (btn) {
-      btn.onclick = function () {
-        var it = ITEM_INDEX[btn.dataset.wl];
-        if (it) openGiftModal(it, baby);
-      };
-    });
-    root.querySelectorAll("[data-heart]").forEach(function (btn) {
+    bindRecordEvents(root);
+    var fab = document.getElementById("s-fab");
+    if (fab) fab.onclick = openGiftSheet;
+  }
+
+  // 기록 카드 이벤트(하트·댓글·캐러셀) — 부모 화면과 동일 동작
+  function bindRecordEvents(scope) {
+    scope.querySelectorAll("[data-heart]").forEach(function (btn) {
       btn.onclick = function () { bumpHeart(btn.dataset.heart); };
     });
-    root.querySelectorAll("[data-cmt]").forEach(function (btn) {
+    scope.querySelectorAll("[data-cmt]").forEach(function (btn) {
       btn.onclick = function () { openComments(btn.dataset.cmt); };
     });
-    var fab = document.getElementById("s-fab");
-    if (fab) fab.onclick = function () {
-      var sec = document.getElementById("gift-section");
-      if (sec) sec.scrollIntoView({ behavior: "smooth", block: "start" });
-    };
+    scope.querySelectorAll(".post-nav").forEach(function (btn) {
+      btn.onclick = function () {
+        var sc = btn.parentElement.querySelector(".post-photos");
+        if (!sc) return;
+        sc.scrollBy({ left: (btn.dataset.nav === "next" ? 1 : -1) * sc.clientWidth, behavior: "smooth" });
+      };
+    });
+    scope.querySelectorAll(".post-photos.multi").forEach(function (sc) {
+      sc.addEventListener("scroll", function () {
+        var i = Math.round(sc.scrollLeft / Math.max(1, sc.clientWidth));
+        var wrap = sc.parentElement, dots = wrap.nextElementSibling;
+        if (dots && dots.classList.contains("post-dots"))
+          dots.querySelectorAll("span").forEach(function (d, di) { d.classList.toggle("on", di === i); });
+        var cnt = wrap.querySelector(".post-count");
+        if (cnt) cnt.textContent = (i + 1) + "/" + sc.children.length;
+      }, { passive: true });
+    });
   }
+
+  // 선물(조각 채우기) 오버레이
+  function openGiftSheet() {
+    var body = document.getElementById("gift-sheet-body");
+    var inner = renderPuzzles(CURRENT_DATA.giftPuzzles || []) + renderWishlist(CURRENT_DATA);
+    body.innerHTML = '<p class="s-section-sub">선물하면 ' + esc(CUR_BABY) + "에게 한 조각이 채워지고, 나도 키디키디 쿠폰을 받아요</p>" +
+      (inner || '<p class="s-photo-empty">아직 등록된 선물이 없어요</p>');
+    document.getElementById("gift-sheet-title").textContent = CUR_BABY + "의 조각 채우기";
+    body.querySelectorAll("[data-gift]").forEach(function (btn) {
+      btn.onclick = function () {
+        var g = (CURRENT_DATA.giftPuzzles || []).find(function (x) { return x.id === btn.dataset.gift; });
+        if (g) openGiftModal(g, CUR_BABY);
+      };
+    });
+    body.querySelectorAll("[data-wl]").forEach(function (btn) {
+      btn.onclick = function () { var it = ITEM_INDEX[btn.dataset.wl]; if (it) openGiftModal(it, CUR_BABY); };
+    });
+    document.getElementById("gift-sheet").classList.remove("hidden");
+  }
+  function closeGiftSheet() { document.getElementById("gift-sheet").classList.add("hidden"); }
 
   function openGiftModal(item, baby) {
     var name = item.productName || item.name || "선물";
@@ -255,6 +296,8 @@
   function closeGiftModal() { document.getElementById("gift-modal").classList.add("hidden"); }
   document.getElementById("gift-modal-close").onclick = closeGiftModal;
   document.getElementById("gift-modal-backdrop").onclick = closeGiftModal;
+  document.getElementById("gift-sheet-backdrop").onclick = closeGiftSheet;
+  document.getElementById("gift-sheet-close").onclick = closeGiftSheet;
   document.getElementById("cmt-backdrop").onclick = closeComments;
   document.getElementById("cmt-send").onclick = sendComment;
   document.getElementById("cmt-text").addEventListener("keydown", function (e) { if (e.key === "Enter") sendComment(); });
