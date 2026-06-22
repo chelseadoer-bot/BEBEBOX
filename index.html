@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
 <title>베베박스</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css"/>
-<link rel="stylesheet" href="css/style.css?v=23"/>
+<link rel="stylesheet" href="css/style.css?v=24"/>
 <link rel="stylesheet" href="css/onboarding.css?v=5"/>
 <link rel="stylesheet" href="css/theme.css?v=4"/>
 </head>
@@ -247,7 +247,7 @@
 </div>
 <div class="ig-banner-slide" data-slide="1">
 <div class="ig-banner-text">
-<strong>다엘이 겨울 외출복 모음</strong>
+<strong>우리 아이 겨울 외출복 모음</strong>
 <span>따뜻한 패딩 ~30% 할인</span>
 </div>
 <div class="ig-banner-visual">🧸</div>
@@ -307,6 +307,11 @@
 </section>
 <section class="settings-section">
 <h3>내 프로필</h3>
+<div class="settings-avatar-row">
+<img class="settings-avatar-preview" id="settings-avatar-preview" src="" alt="프로필 사진"/>
+<button type="button" class="settings-avatar-btn" id="btn-change-avatar">📷 프로필 사진 변경</button>
+</div>
+<input type="file" id="avatar-input" accept="image/*" class="hidden-input"/>
 <label class="settings-field"><span>아기 이름</span><input type="text" id="settings-baby-name" maxlength="12"/></label>
 <label class="settings-field"><span>현재 월령</span><input type="number" id="settings-baby-age" min="0" max="36"/></label>
 <label class="settings-field"><span>키디키디 아이디</span><input type="text" id="settings-kidikidi-id" placeholder="키디키디 로그인 아이디" maxlength="50" autocapitalize="off"/></label>
@@ -634,16 +639,16 @@
 </nav>
 <div class="toast hidden" id="toast"></div>
 <script src="js/wishlist-data.js"></script>
-<script src="js/feed-data.js?v=6"></script>
+<script src="js/feed-data.js?v=7"></script>
 <script src="js/kidikidi.js?v=4"></script>
 <script src="js/points.js?v=1"></script>
-<script src="js/puzzle-mission.js?v=4"></script>
+<script src="js/puzzle-mission.js?v=5"></script>
 <script src="js/minigame.js?v=3"></script>
 <script src="js/photo-quest-detect.js?v=1"></script>
 <script src="js/photo-storage.js?v=2"></script>
 <script src="js/family-data.js?v=1"></script>
 <script src="js/kakao-auth.js?v=1"></script>
 <script src="js/onboarding.js?v=7"></script>
-<script src="js/app.js?v=40"></script>
+<script src="js/app.js?v=41"></script>
 </body>
 </html>

@@ -609,6 +609,12 @@ body.is-guest .guest-only{display:block!important}
 .post-dots{display:flex;gap:5px;justify-content:center;padding:8px 0 0}
 .post-dots span{width:6px;height:6px;border-radius:50%;background:var(--color-border)}
 .post-dots span.on{background:var(--color-accent)}
+.post-photos-wrap{position:relative}
+.post-nav{position:absolute;top:50%;transform:translateY(-50%);width:30px;height:30px;border-radius:50%;border:none;background:rgba(255,255,255,.82);color:#222;font-size:18px;font-weight:700;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.2);z-index:2}
+.post-nav.prev{left:8px}
+.post-nav.next{right:8px}
+.post-nav:active{background:#fff}
+.post-count{position:absolute;top:10px;right:10px;background:rgba(0,0,0,.55);color:#fff;font-size:11px;font-weight:700;padding:3px 8px;border-radius:999px;z-index:2}
 .post-emotion{display:flex;align-items:center;gap:10px;padding:10px 14px 4px;position:relative}
 .post-emotion-btn{font-size:24px;background:none;border:none;cursor:pointer;line-height:1;padding:2px;transition:transform .1s}
 .post-emotion-btn.pop{animation:emotion-pop .35s ease}
@@ -654,6 +660,12 @@ body.is-guest .guest-only{display:block!important}
 .pstats-cell-num{font-size:18px;font-weight:800}
 .pstats-cell-label{font-size:11px;color:var(--color-text-tertiary)}
 .pstats-journey-btn{width:100%;padding:13px;border:none;border-radius:var(--radius-md);background:var(--color-primary);color:#fff;font-size:14px;font-weight:800;cursor:pointer}
+
+/* 설정: 프로필 사진 변경 */
+.settings-avatar-row{display:flex;align-items:center;gap:14px;margin-bottom:14px}
+.settings-avatar-preview{width:60px;height:60px;border-radius:50%;object-fit:cover;background:var(--color-bg-muted);border:1px solid var(--color-border)}
+.settings-avatar-btn{padding:10px 16px;border:1px solid var(--color-border);border-radius:var(--radius-full);background:var(--color-bg);font-size:13px;font-weight:700;color:var(--color-text);cursor:pointer}
+.settings-avatar-btn:active{background:var(--color-bg-subtle)}
 
 /* 이미지 라이트박스(좋아요/메타 숨김) */
 .photo-detail.lightbox-only .detail-actions,.photo-detail.lightbox-only .detail-meta{display:none}
