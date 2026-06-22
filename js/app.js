@@ -523,6 +523,16 @@ function renderSettingsTab(){
     else{bp.style.backgroundImage="none";bp.classList.add("is-empty");bp.textContent="배경 없음";}
   }
   const wlBtn=$("#btn-settings-wishlist");if(wlBtn)wlBtn.textContent=`🎁 ${babyName()} 옷장 (위시리스트)`;
+  // 마이 상단 프로필 + 통계
+  const mha=$("#my-hero-avatar");if(mha)mha.src=state.profile.avatar;
+  const mhn=$("#my-hero-name");if(mhn)mhn.textContent=babyName();
+  const mhs=$("#my-hero-sub");if(mhs)mhs.textContent=`${ageLabel(state.profile.currentAge)} · 성장 기록 중`;
+  const now=new Date(),mTotal=state.posts.length;
+  const mMonth=state.posts.filter(p=>{const d=new Date(p.createdAt);return d.getFullYear()===now.getFullYear()&&d.getMonth()===now.getMonth();}).length;
+  const mHeart=state.posts.reduce((s,p)=>s+(p.gauge||0),0);
+  const st=$("#my-stat-total");if(st)st.textContent=mTotal;
+  const sm=$("#my-stat-month");if(sm)sm.textContent=mMonth;
+  const sh=$("#my-stat-heart");if(sh)sh.textContent=mHeart;
   renderPointsUI();
   const kakao=typeof getStoredKakaoUser==="function"?getStoredKakaoUser():null;
   const accountSection=$("#settings-account-section");

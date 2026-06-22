@@ -1,9 +1,10 @@
 /* 지인용 공유 페이지(반응형 웹) — 카카오 인앱 브라우저 최적화 */
 :root{
-  --accent:#ff5722;--accent-soft:#fff4ef;--text:#191919;--sub:#6b6b6b;
-  --muted:#9e9e9e;--border:#ececec;--bg:#fafafa;--card:#fff;
-  --radius:16px;--maxw:600px;
+  --accent:#ff6b3d;--accent-soft:#fff2ec;--text:#2b2622;--sub:#7a7068;
+  --muted:#a8a098;--border:#efe9e1;--bg:#faf7f3;--card:#fff;
+  --radius:18px;--maxw:600px;
 }
+body{letter-spacing:-.01em}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;padding:0}
 body{font-family:"Pretendard",-apple-system,BlinkMacSystemFont,system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.5}
