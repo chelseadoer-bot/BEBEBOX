@@ -397,7 +397,6 @@ function load(){
   if(isOnboarded()&&isFamilyCreator())ensureInviteCode(true);
   else if(getInviteCode()&&state.profile)state.profile.inviteCode=getInviteCode();
   document.body.classList.toggle("is-guest",isGuest());
-  if(new URLSearchParams(location.search).get("map")==="1")requestAnimationFrame(()=>openQuestGuide());
   if(photoVerChanged)save();
 }
 function saveLocalCache(){
@@ -428,7 +427,7 @@ function save(){
 }
 window.saveLocalCache=saveLocalCache;
 function showToast(m){const t=$("#toast");t.textContent=m;t.classList.remove("hidden");clearTimeout(showToast._t);showToast._t=setTimeout(()=>t.classList.add("hidden"),2500);}
-const TAB_VIEWS={home:"#profile-view",journey:"#quest-guide-view",puzzle:"#puzzle-tab-view",game:"#game-tab-view",settings:"#settings-tab-view"};
+const TAB_VIEWS={home:"#profile-view",puzzle:"#puzzle-tab-view",game:"#game-tab-view",settings:"#settings-tab-view"};
 let currentMainTab="home";
 function showTabBar(){
   $("#bottom-tab-bar")?.classList.remove("hidden");
@@ -449,7 +448,6 @@ function switchMainTab(tab,{animate=false}={}){
   updateTabBarUI();
   showTabBar();
   if(tab==="home"){renderProfile();renderFeed();}
-  if(tab==="journey"){renderSeasonBanner();renderJourneyMap();}
   if(tab==="puzzle")renderPuzzleTab({animate});
   if(tab==="settings")renderSettingsTab();
   if(tab==="game"){initGameTab();renderPointsUI();}
@@ -822,23 +820,20 @@ function journeyProgress(){
   const pct=nodes.length?Math.round(done/nodes.length*100):0;
   return {done,total:nodes.length,pct};
 }
-function growthTier(pct){
-  if(pct>=100)return"성장 졸업 🎓";
-  if(pct>=75)return"성장왕 👑";
-  if(pct>=50)return"탐험가 🧭";
-  if(pct>=25)return"꼬물이 🐛";
+function growthTier(records){
+  if(records>=100)return"기록왕 👑";
+  if(records>=50)return"성장왕 🌟";
+  if(records>=20)return"탐험가 🧭";
+  if(records>=5)return"꼬물이 🐛";
   return"새싹 🌱";
 }
 function openProfileStats(){
-  const jp=journeyProgress();
+  const records=state.posts.length;
   $("#pstats-name").textContent=state.profile.name;
   $("#pstats-avatar").src=state.profile.avatar;
-  $("#pstats-tier").textContent=`${growthTier(jp.pct)} 등극!`;
-  $("#pstats-journey-pct").textContent=jp.pct+"%";
-  $("#pstats-journey-fill").style.width=jp.pct+"%";
-  $("#pstats-journey-sub").textContent=`성장 저니 ${jp.done}/${jp.total} 단계 완료`;
+  $("#pstats-tier").textContent=`${growthTier(records)} 등극!`;
   $("#pstats-points").textContent=formatPoints(getPoints());
-  $("#pstats-posts").textContent=String(state.posts.length);
+  $("#pstats-posts").textContent=String(records);
   $("#pstats-emotions").textContent=String(state.posts.reduce((s,p)=>s+(p.gauge||0),0));
   $("#profile-stats-modal")?.classList.remove("hidden");
 }
@@ -1767,7 +1762,6 @@ function bindEvents(){
   $("#settings-notify-visit")?.addEventListener("change",saveNotifySettings);
   $("#settings-notify-gift")?.addEventListener("change",saveNotifySettings);
   $("#btn-settings-wishlist")?.addEventListener("click",openWishlist);
-  $("#btn-settings-journey")?.addEventListener("click",()=>switchMainTab("journey"));
   $("#btn-kakao-logout")?.addEventListener("click",()=>{
     if(typeof logoutKakao==="function")logoutKakao();
   });
@@ -1799,7 +1793,6 @@ function bindEvents(){
   $(".profile-row")?.addEventListener("click",openProfileStats);
   $("#btn-pstats-close")?.addEventListener("click",closeProfileStats);
   $("#pstats-backdrop")?.addEventListener("click",closeProfileStats);
-  $("#btn-pstats-journey")?.addEventListener("click",()=>{closeProfileStats();switchMainTab("journey");});
   $("#ppl-backdrop").onclick=()=>$("#ppl-sheet").classList.add("hidden");
   $("#need-backdrop").onclick=()=>$("#need-sheet").classList.add("hidden");
   $("#funding-backdrop").onclick=()=>$("#funding-sheet").classList.add("hidden");
@@ -1891,7 +1884,6 @@ function enterMainApp(){
   renderAgeQuestBadge();
   renderPointsUI();
   switchMainTab("home");
-  if(new URLSearchParams(location.search).get("map")==="1")requestAnimationFrame(()=>openQuestGuide());
 }
 window.enterMainApp=enterMainApp;
 window.state=state;
