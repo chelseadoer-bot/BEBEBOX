@@ -49,9 +49,10 @@
       }).catch(function () {});
     } catch (_) {}
   }
+  function isPublic(p) { return p && p.visibility !== "me"; }
   function collectPhotos(data) {
     var srcs = [];
-    (data.posts || []).slice().sort(function (a, b) { return (b.createdAt || 0) - (a.createdAt || 0); })
+    (data.posts || []).filter(isPublic).slice().sort(function (a, b) { return (b.createdAt || 0) - (a.createdAt || 0); })
       .forEach(function (p) { (p.photos || []).forEach(function (s) { if (s) srcs.push(s); }); });
     return srcs;
   }
@@ -216,7 +217,7 @@
     var avatar = profile.avatar || "/public/photos/ai-01.jpg";
     var hero = profile.shareImage || profile.background || collectPhotos(data)[0] || avatar;
     var age = ageLabel(profile.currentAge);
-    var posts = (data.posts || []).slice().sort(function (a, b) { return (b.createdAt || 0) - (a.createdAt || 0); });
+    var posts = (data.posts || []).filter(isPublic).slice().sort(function (a, b) { return (b.createdAt || 0) - (a.createdAt || 0); });
     var registry = data.giftPuzzles || [];
 
     var recHtml = renderRecords(posts, profile, baby);
