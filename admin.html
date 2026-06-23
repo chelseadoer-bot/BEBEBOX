@@ -100,22 +100,24 @@ th{color:var(--sub);font-weight:700;font-size:12px;background:#faf7f3;white-spac
 
 <!-- 게임 탭 상단 배너 교체 -->
 <div class="card">
-<div class="card-h"><span>🖼️ 게임 탭 상단 배너</span><span class="muted">사진(왼쪽) + 텍스트를 교체하세요</span></div>
+<div class="card-h"><span>🖼️ 게임 탭 상단 배너</span><span class="muted">배경 사진 + 텍스트 + 우측 아이콘</span></div>
 <div style="padding:16px">
 <label style="display:flex;align-items:center;gap:8px;margin-bottom:14px;font-size:13px;cursor:pointer"><input type="checkbox" id="bn-enabled"/> 이 배너 사용(켜기) — 끄면 기본 배너가 보여요</label>
 <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start">
 <div style="flex:0 0 auto;text-align:center">
-<div id="bn-preview" class="bn-preview">사진<br/>없음</div>
+<div id="bn-preview" class="bn-preview">배경<br/>사진</div>
 <input type="file" id="bn-file" accept="image/*" style="display:none"/>
-<button class="btn ghost sm" id="bn-upload" style="margin-top:8px">사진 올리기</button>
+<button class="btn ghost sm" id="bn-upload" style="margin-top:8px">배경 사진</button>
 </div>
 <div style="flex:1;min-width:220px;display:flex;flex-direction:column;gap:8px">
 <input class="search" id="bn-title" placeholder="제목 텍스트 (예: 베베박스 6월 특가 오픈)" maxlength="40"/>
 <input class="search" id="bn-subtitle" placeholder="설명 텍스트 (작게 들어가는 한 줄)" maxlength="60"/>
+<input class="search" id="bn-icon" placeholder="우측 아이콘 이모지 (예: 🎁 🍼 🧸)" maxlength="8"/>
 <input class="search" id="bn-link" placeholder="클릭 시 이동할 링크 URL (선택)"/>
 <div style="display:flex;gap:8px"><button class="btn" id="bn-save" style="flex:1">배너 저장</button><span id="bn-status" class="muted" style="align-self:center"></span></div>
 </div>
 </div>
+<p class="legend" style="padding:10px 0 0">※ 배경 사진 위에 흰색 텍스트가 얹혀요. 사진이 없으면 텍스트+아이콘만 표시됩니다.</p>
 </div>
 </div>
 
@@ -297,6 +299,7 @@ async function loadBanner(){
   document.getElementById("bn-enabled").checked = !!b.enabled;
   document.getElementById("bn-title").value = b.title||"";
   document.getElementById("bn-subtitle").value = b.subtitle||"";
+  document.getElementById("bn-icon").value = b.icon||"";
   document.getElementById("bn-link").value = b.link||"";
   BN_IMG = b.image||"";
   bnPreview();
@@ -320,6 +323,7 @@ document.getElementById("bn-save").onclick=async function(){
     title:document.getElementById("bn-title").value.trim(),
     subtitle:document.getElementById("bn-subtitle").value.trim(),
     image:BN_IMG,
+    icon:document.getElementById("bn-icon").value.trim(),
     link:document.getElementById("bn-link").value.trim()
   };
   document.getElementById("bn-status").textContent="저장 중...";

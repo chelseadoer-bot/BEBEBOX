@@ -484,9 +484,8 @@ function switchMainTab(tab,{animate=false}={}){
   if(tab==="home"){renderProfile();renderFeed();}
   if(tab==="puzzle")renderPuzzleTab({animate});
   if(tab==="settings")renderSettingsTab();
-  if(tab==="game"){initGameTab();renderPointsUI();}
+  if(tab==="game"){initGameTab();applyGameBanner();renderPointsUI();}
   $("#btn-add-feed-photo")?.classList.toggle("hidden",tab!=="home");
-  $("#btn-gift-fab")?.classList.toggle("hidden",tab!=="home");
 }
 function showOverlay(id){
   $$(".view").forEach(v=>v.classList.remove("active"));
@@ -1837,10 +1836,8 @@ function submitFunding(){
 }
 function initGameTab(){
   if(initGameTab._timer)return;
-  applyGameBanner();
   let slide=0;
   initGameTab._timer=setInterval(()=>{
-    if(initGameTab._timer==="custom")return;
     if(!$("#game-tab-view")?.classList.contains("active"))return;
     slide=(slide+1)%3;
     $$(".ig-banner-slide").forEach(s=>s.classList.toggle("active",+s.dataset.slide===slide));
@@ -1848,19 +1845,26 @@ function initGameTab(){
     if(badge)badge.textContent=`${slide+1} | 3`;
   },4000);
 }
-// 운영자가 설정한 상단 배너(사진 왼쪽 + 텍스트)로 교체한다.
+// 운영자가 설정한 상단 배너(배경 사진 + 텍스트 + 우측 아이콘)로 교체한다.
+// 기본 슬라이드는 .custom 일 때 CSS로 숨겨지고, 끄면 다시 보인다.
 async function applyGameBanner(){
+  const banner=$("#ig-banner");if(!banner)return;
   let cfg=null;
-  try{const r=await fetch("/api/banner");cfg=await r.json();}catch(_){}
-  const banner=$("#ig-banner");
-  if(!banner||!cfg||!cfg.enabled||!(cfg.title||cfg.image))return;
-  if(initGameTab._timer&&initGameTab._timer!=="custom")clearInterval(initGameTab._timer);
-  initGameTab._timer="custom";
-  const img=cfg.image?`<div class="ig-cbanner-img"><img src="${esc(cfg.image)}" alt=""/></div>`:"";
-  const tx=`<div class="ig-cbanner-tx"><strong>${esc(cfg.title||"")}</strong>${cfg.subtitle?`<span>${esc(cfg.subtitle)}</span>`:""}</div>`;
+  try{const r=await fetch("/api/banner?_t="+Date.now());cfg=await r.json();}catch(_){}
+  const on=cfg&&cfg.enabled&&(cfg.title||cfg.image||cfg.icon);
+  let box=banner.querySelector(".ig-cbanner");
+  if(!on){
+    banner.classList.remove("custom");banner.style.backgroundImage="";banner.onclick=null;
+    if(box)box.remove();
+    return;
+  }
   banner.classList.add("custom");
-  banner.innerHTML=img+tx;
-  if(cfg.link){banner.style.cursor="pointer";banner.onclick=()=>window.open(cfg.link,"_blank","noopener");}
+  banner.style.backgroundImage=cfg.image?`url('${cfg.image}')`:"";
+  banner.onclick=cfg.link?()=>window.open(cfg.link,"_blank","noopener"):null;
+  const icon=cfg.icon?`<div class="ig-cbanner-icon">${esc(cfg.icon)}</div>`:"";
+  const html=`<div class="ig-cbanner-tx"><strong>${esc(cfg.title||"")}</strong>${cfg.subtitle?`<span>${esc(cfg.subtitle)}</span>`:""}</div>${icon}`;
+  if(box){box.innerHTML=html;}
+  else{box=document.createElement("div");box.className="ig-cbanner";box.innerHTML=html;banner.appendChild(box);}
 }
 function openIgView(){switchMainTab("game");}
 /* ─── AI 그라운드 앱 연결 ───────────────────────────────────────────
@@ -2155,7 +2159,10 @@ function copyShareLinkWithReward(url){
   });
 }
 function bindEvents(){
-  $$(".tab-bar-item").forEach(btn=>btn.onclick=()=>switchMainTab(btn.dataset.tab));
+  $$(".tab-bar-item").forEach(btn=>btn.onclick=()=>{
+    if(btn.dataset.tab==="gift"){openWishlist();return;}
+    switchMainTab(btn.dataset.tab);
+  });
   $("#btn-claim-coupon")?.addEventListener("click",()=>{
     const coupon=exchangeCoupon();
     if(!coupon){showToast("알이 부족해요 🥚 (1,000알 필요)");return;}
@@ -2211,7 +2218,6 @@ function bindEvents(){
   $("#btn-journey-gift-shortcut")?.addEventListener("click",openWishlist);
   $("#btn-journey-puzzle-shortcut")?.addEventListener("click",()=>{openWishlist();setTimeout(()=>$("#btn-new-gift-puzzle")?.scrollIntoView({behavior:"smooth",block:"center"}),200);});
   $("#btn-add-feed-photo").onclick=openComposer;
-  $("#btn-gift-fab")?.addEventListener("click",openWishlist);
   // 글쓰기(인스타식) 모달
   $("#btn-composer-cancel")?.addEventListener("click",closeComposer);
   $("#composer-backdrop")?.addEventListener("click",closeComposer);

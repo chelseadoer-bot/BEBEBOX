@@ -426,6 +426,7 @@ class H(SimpleHTTPRequestHandler):
                 "title": (body.get("title") or "").strip(),
                 "subtitle": (body.get("subtitle") or "").strip(),
                 "image": (body.get("image") or "").strip(),
+                "icon": (body.get("icon") or "").strip(),
                 "link": (body.get("link") or "").strip(),
             })
             return json_response(self, 200, {"ok": True})
