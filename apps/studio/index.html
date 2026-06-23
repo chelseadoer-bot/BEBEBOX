@@ -3,44 +3,42 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
-<title>2세 얼굴 예측 — KIDIKIDI</title>
+<title>AI 컨셉스튜디오 — KIDIKIDI</title>
 <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" rel="stylesheet">
 <style>
-:root{--bg:#F0F7FF;--card:#fff;--ink:#1E293B;--ink3:#64748B;--brand:#4A90E2;--brand2:#38BDF8;--border:#DBEAFE;}
+:root{--bg:#F0F7FF;--card:#fff;--ink:#1E293B;--ink2:#475569;--ink3:#64748B;--brand:#4A90E2;--brand-d:#2563EB;--brand2:#38BDF8;--brand-l:#EFF6FF;--border:#DBEAFE;}
 *{margin:0;padding:0;box-sizing:border-box;}
 body{font-family:'Pretendard',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;}
 .app{max-width:480px;margin:0 auto;padding:24px 20px 40px;}
-.header{text-align:center;margin-bottom:24px;}
-.header .badge{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.12em;color:var(--brand);background:#f5f3ff;padding:4px 12px;border-radius:20px;margin-bottom:10px;}
+.header{text-align:center;margin-bottom:20px;}
+.header .badge{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.12em;color:var(--brand);background:#fff;padding:4px 12px;border-radius:20px;margin-bottom:10px;box-shadow:0 2px 8px rgba(74,144,226,.12);}
 .header h1{font-size:24px;font-weight:800;line-height:1.35;margin-bottom:8px;}
 .header p{font-size:13px;color:var(--ink3);line-height:1.6;}
 .screen{display:none;}
 .screen.on{display:block;}
 .card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:20px;margin-bottom:14px;}
-.upload-row{display:flex;gap:14px;justify-content:center;margin:16px 0;}
-.upload-box{width:130px;height:130px;border-radius:16px;border:2px dashed var(--border);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;position:relative;background:#fafafa;}
+.sec-tit{font-size:14px;font-weight:800;text-align:center;margin-bottom:12px;}
+.upload-box{width:100%;aspect-ratio:1;max-width:200px;margin:0 auto;border-radius:18px;border:2px dashed var(--border);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;position:relative;background:#fafcff;}
 .upload-box img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
-.upload-box .lbl{font-size:12px;font-weight:800;color:var(--ink3);margin-top:6px;z-index:1;}
-.upload-box.has img ~ .lbl,.upload-box.has .plus{display:none;}
-.plus{width:40px;height:40px;border-radius:50%;background:var(--ink);color:#fff;font-size:22px;line-height:40px;text-align:center;}
-.gender-row{display:flex;gap:10px;margin-top:8px;}
-.g-btn{flex:1;padding:16px;border:2px solid var(--border);border-radius:14px;background:#fff;cursor:pointer;font-family:inherit;font-weight:800;}
-.g-btn.on{border-color:var(--brand);background:#f5f3ff;}
-input[type=range]{width:100%;accent-color:var(--brand);margin-top:8px;}
-.ratio-lbl{display:flex;justify-content:space-between;font-size:12px;font-weight:800;color:var(--ink3);margin-bottom:4px;}
-.btn-main{width:100%;padding:16px;border:none;border-radius:14px;font-family:inherit;font-size:16px;font-weight:800;color:#fff;cursor:pointer;margin-top:8px;background:linear-gradient(135deg,var(--brand),var(--brand2));box-shadow:0 6px 20px rgba(124,58,237,.35);}
+.upload-box .lbl{font-size:12px;font-weight:800;color:var(--ink3);margin-top:8px;z-index:1;}
+.upload-box.has .plus,.upload-box.has .lbl{display:none;}
+.plus{width:46px;height:46px;border-radius:50%;background:var(--brand);color:#fff;font-size:24px;line-height:46px;text-align:center;z-index:1;}
+.concept-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.concept{border:2px solid var(--border);border-radius:16px;padding:16px 12px;background:#fff;cursor:pointer;text-align:center;transition:all .16s;}
+.concept:hover{border-color:var(--brand2);}
+.concept.on{border-color:var(--brand);background:var(--brand-l);box-shadow:0 6px 18px rgba(74,144,226,.18);}
+.concept .ico{font-size:30px;line-height:1;}
+.concept .nm{font-size:14px;font-weight:800;margin-top:8px;}
+.concept .ds{font-size:11px;font-weight:600;color:var(--ink3);margin-top:4px;line-height:1.45;}
+.btn-main{width:100%;padding:16px;border:none;border-radius:14px;font-family:inherit;font-size:16px;font-weight:800;color:#fff;cursor:pointer;margin-top:8px;background:linear-gradient(135deg,var(--brand),var(--brand2));box-shadow:0 6px 20px rgba(74,144,226,.35);}
 .btn-main:disabled{opacity:.45;cursor:not-allowed;}
-.btn-sub{width:100%;padding:12px;border:1px solid var(--border);border-radius:12px;background:#fff;font-family:inherit;font-weight:800;margin-top:8px;cursor:pointer;}
-.loading{text-align:center;padding:40px 20px;}
+.btn-sub{width:100%;padding:12px;border:1px solid var(--border);border-radius:12px;background:#fff;font-family:inherit;font-weight:800;margin-top:8px;cursor:pointer;color:var(--ink2);}
+.loading{text-align:center;padding:44px 20px;}
 .loading .spin{font-size:48px;animation:pulse 1.2s ease-in-out infinite;display:inline-block;}
-@keyframes pulse{50%{transform:scale(1.08);}}
+@keyframes pulse{50%{transform:scale(1.1);}}
 .result-img{width:100%;aspect-ratio:3/4;border-radius:18px;object-fit:cover;background:#eee;margin:12px 0;}
-.age-chips{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:12px 0;}
-.age-chip{padding:8px 14px;border-radius:20px;border:1px solid var(--border);background:#fff;font-size:12px;font-weight:800;cursor:pointer;}
-.age-chip.on{background:var(--brand);color:#fff;border-color:var(--brand);}
+.result-tag{display:inline-block;font-size:12px;font-weight:800;color:var(--brand-d);background:var(--brand-l);padding:6px 14px;border-radius:20px;}
 .err{background:#FEF0EF;border:1px solid #fcc;border-radius:12px;padding:14px;font-size:13px;font-weight:700;color:#c03020;margin-top:12px;display:none;line-height:1.5;}
-.thumbs{display:flex;gap:8px;justify-content:center;margin-bottom:8px;}
-.thumbs img{width:44px;height:44px;border-radius:50%;object-fit:cover;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.15);}
 input[type=file]{display:none;}
 </style>
 </head>
@@ -48,136 +46,123 @@ input[type=file]{display:none;}
 <div class="app">
   <div class="header">
     <div class="badge">KIDIKIDI AI</div>
-    <h1>2세 얼굴<br>예측</h1>
-    <p>엄마·아빠 사진으로 AI가<br>성장 단계별 모습을 만들어요</p>
+    <h1>AI 컨셉스튜디오</h1>
+    <p>특별한 장소에 가지 않아도<br>예쁜 아이 사진을 완성해요.</p>
   </div>
 
-  <div id="s-upload" class="screen on">
+  <div id="s-input" class="screen on">
     <div class="card">
-      <p style="font-size:14px;font-weight:800;text-align:center;margin-bottom:4px">부모 사진을 올려주세요</p>
-      <div class="upload-row">
-        <div class="upload-box" id="mom-box" onclick="pick('mom')"><span class="plus">+</span><span class="lbl">엄마</span></div>
-        <div class="upload-box" id="dad-box" onclick="pick('dad')"><span class="plus">+</span><span class="lbl">아빠</span></div>
+      <p class="sec-tit">아이 사진을 올려주세요</p>
+      <div class="upload-box" id="photo-box" onclick="pick()">
+        <span class="plus">+</span><span class="lbl">사진 선택</span>
       </div>
-      <input type="file" id="file-mom" accept="image/*" hidden>
-      <input type="file" id="file-dad" accept="image/*" hidden>
-    </div>
-    <button class="btn-main" id="btn-next" disabled onclick="show('s-options')">다음</button>
-  </div>
-
-  <div id="s-options" class="screen">
-    <div class="card">
-      <p style="font-size:13px;font-weight:800;margin-bottom:10px">성별</p>
-      <div class="gender-row">
-        <button type="button" class="g-btn" data-g="boy" onclick="setG('boy')">👦 남아</button>
-        <button type="button" class="g-btn on" data-g="girl" onclick="setG('girl')">👧 여아</button>
-      </div>
+      <input type="file" id="file-photo" accept="image/*">
     </div>
     <div class="card">
-      <p style="font-size:13px;font-weight:800;margin-bottom:4px">닮은 비율</p>
-      <div class="ratio-lbl"><span id="mom-pct">엄마 50%</span><span id="dad-pct">아빠 50%</span></div>
-      <input type="range" id="ratio" min="0" max="100" value="50" oninput="onRatio(this.value)">
+      <p class="sec-tit">컨셉을 골라주세요</p>
+      <div class="concept-grid" id="concept-grid"></div>
     </div>
-    <button class="btn-main" onclick="generate()">✨ AI 아기 생성하기</button>
-    <button class="btn-sub" onclick="show('s-upload')">← 사진 다시 선택</button>
+    <button class="btn-main" id="btn-go" disabled onclick="generate()">✨ 컨셉 사진 만들기</button>
     <div class="err" id="err"></div>
   </div>
 
   <div id="s-loading" class="screen">
     <div class="loading card">
-      <span class="spin">🧬</span>
-      <p id="load-msg" style="margin-top:16px;font-weight:800">유전 정보 분석 중...</p>
+      <span class="spin">📸</span>
+      <p id="load-msg" style="margin-top:16px;font-weight:800">컨셉 스튜디오에서 촬영 중...</p>
       <p style="font-size:12px;color:var(--ink3);margin-top:8px">30~90초 정도 걸릴 수 있어요</p>
     </div>
   </div>
 
   <div id="s-result" class="screen">
-    <div id="fb-card">
-      <div class="thumbs">
-        <img id="thumb-mom" alt="엄마">
-        <img id="thumb-dad" alt="아빠">
+    <div class="card" style="text-align:center">
+      <div id="cs-card">
+        <span class="result-tag" id="result-tag"></span>
+        <img id="result-img" class="result-img" alt="컨셉 사진">
       </div>
-      <p style="text-align:center;font-weight:800;font-size:15px" id="resemble-txt"></p>
-      <img id="result-img" class="result-img" alt="2세 얼굴">
-      <div class="age-chips" id="age-chips"></div>
+      <div class="share-row" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;">
+        <button class="btn-sub" style="margin-top:0" onclick="copyShot()">📋 결과 복사</button>
+        <button class="btn-main" style="margin-top:0" onclick="downloadImg()">💾 저장하기</button>
+      </div>
+      <button class="btn-sub" onclick="restart()">🔄 다시 하기</button>
     </div>
-    <div class="share-row" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;">
-      <button class="btn-sub" style="margin-top:0" onclick="copyShot()">📋 결과 복사</button>
-      <button class="btn-main" style="margin-top:0" onclick="downloadImg()">💾 저장하기</button>
-    </div>
-    <button class="btn-sub" onclick="restart()">🔄 다시 하기</button>
   </div>
 </div>
 
-<script src="/kidikidi-app.js"></script>
+<script src="kidikidi-app.js"></script>
 <script>
-var AGES = [3, 5, 8, 12, 18];
-var state = { mom: null, dad: null, gender: 'girl', dadPct: 50, images: {}, age: 5 };
+var CONCEPTS = [
+  { id:'spring',     emoji:'🌸', name:'봄꽃 스튜디오',   desc:'화사한 벚꽃 화보' },
+  { id:'hanbok',     emoji:'🏮', name:'한복 스튜디오',   desc:'단아한 전통 명절' },
+  { id:'beach',      emoji:'🌊', name:'바닷가 스튜디오', desc:'시원한 여름 바다' },
+  { id:'space',      emoji:'🚀', name:'우주 스튜디오',   desc:'신비로운 우주 탐험' },
+  { id:'watermelon', emoji:'🍉', name:'수박 스튜디오',   desc:'상큼한 여름 수박' },
+  { id:'christmas',  emoji:'🎄', name:'크리스마스 스튜디오', desc:'따뜻한 겨울 성탄' }
+];
+var PLACEHOLDERS = 2; // 그리드 8칸 — 추가 예정 슬롯
+var state = { photo:null, concept:null, image_url:null, concept_label:null };
 
 function show(id){document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('on');});document.getElementById(id).classList.add('on');var e=document.getElementById('err');if(e)e.style.display='none';}
-function pick(who){document.getElementById('file-'+who).click();}
-function resizeB64(dataUrl){return new Promise(function(resolve,reject){var img=new Image();img.onload=function(){var max=768;var s=Math.min(1,max/Math.max(img.width,img.height));var c=document.createElement('canvas');c.width=Math.round(img.width*s);c.height=Math.round(img.height*s);c.getContext('2d').drawImage(img,0,0,c.width,c.height);resolve(c.toDataURL('image/jpeg',0.88));};img.onerror=reject;img.src=dataUrl;});}
-function setupFile(who){
-  document.getElementById('file-'+who).addEventListener('change',function(e){
-    var f=e.target.files[0];if(!f)return;var r=new FileReader();
-    r.onload=function(ev){resizeB64(ev.target.result).then(function(b64){
-      state[who]=b64;
-      var box=document.getElementById(who+'-box');box.classList.add('has');
-      var img=box.querySelector('img');if(!img){img=document.createElement('img');box.appendChild(img);}img.src=b64;
-      document.getElementById('btn-next').disabled=!(state.mom&&state.dad);
-    });};
-    r.readAsDataURL(f);
-  });
-}
-function setG(g){state.gender=g;document.querySelectorAll('.g-btn').forEach(function(b){b.classList.toggle('on',b.dataset.g===g);});}
-function onRatio(v){state.dadPct=Number(v);document.getElementById('mom-pct').textContent='엄마 '+(100-state.dadPct)+'%';document.getElementById('dad-pct').textContent='아빠 '+state.dadPct+'%';}
+function pick(){document.getElementById('file-photo').click();}
 function showErr(msg){var el=document.getElementById('err');el.textContent=msg;el.style.display='block';}
+function refreshGo(){document.getElementById('btn-go').disabled=!(state.photo&&state.concept);}
+
+function resizeB64(dataUrl){return new Promise(function(resolve,reject){var img=new Image();img.onload=function(){var max=768;var s=Math.min(1,max/Math.max(img.width,img.height));var c=document.createElement('canvas');c.width=Math.round(img.width*s);c.height=Math.round(img.height*s);c.getContext('2d').drawImage(img,0,0,c.width,c.height);resolve(c.toDataURL('image/jpeg',0.88));};img.onerror=reject;img.src=dataUrl;});}
+
+document.getElementById('file-photo').addEventListener('change',function(e){
+  var f=e.target.files[0];if(!f)return;var r=new FileReader();
+  r.onload=function(ev){resizeB64(ev.target.result).then(function(b64){
+    state.photo=b64;
+    var box=document.getElementById('photo-box');box.classList.add('has');
+    var img=box.querySelector('img');if(!img){img=document.createElement('img');box.appendChild(img);}img.src=b64;
+    refreshGo();
+  });};
+  r.readAsDataURL(f);
+});
+
+function buildConcepts(){
+  var grid=document.getElementById('concept-grid');grid.innerHTML='';
+  CONCEPTS.forEach(function(c){
+    var el=document.createElement('div');el.className='concept';el.dataset.id=c.id;
+    el.innerHTML='<div class="ico">'+c.emoji+'</div><div class="nm">'+c.name+'</div><div class="ds">'+c.desc+'</div>';
+    el.onclick=function(){state.concept=c.id;document.querySelectorAll('.concept').forEach(function(x){x.classList.toggle('on',x.dataset.id===c.id);});refreshGo();};
+    grid.appendChild(el);
+  });
+  for(var i=0;i<PLACEHOLDERS;i++){
+    var ph=document.createElement('div');ph.className='concept';
+    ph.style.cssText='cursor:default;opacity:.6;border-style:dashed;background:#fafbfc;';
+    ph.innerHTML='<div class="ico">➕</div><div class="nm">7월 추가 예정</div><div class="ds">곧 새로운 스튜디오가 열려요</div>';
+    grid.appendChild(ph);
+  }
+}
+buildConcepts();
 
 async function generate(){
-  if(!state.mom||!state.dad){showErr('엄마·아빠 사진을 모두 올려주세요.');return;}
+  if(!state.photo||!state.concept){showErr('사진과 컨셉을 모두 선택해주세요.');return;}
   show('s-loading');
-  document.getElementById('load-msg').textContent='AI가 나이대별 얼굴을 생성하는 중...';
   try{
-    var res=await KD.run({mom:state.mom,dad:state.dad,gender:state.gender,dadPct:state.dadPct});
-    state.images=res.output.images||{};
-    state.momThumb=res.output.mom_thumb;state.dadThumb=res.output.dad_thumb;
+    var res=await KD.run({photo:state.photo,concept:state.concept});
+    state.image_url=res.output.image_url;state.concept_label=res.output.concept_label;
     showResult(res.output);
-  }catch(e){show('s-options');showErr((e&&e.message)||String(e));}
+  }catch(e){show('s-input');showErr((e&&e.message)||String(e));}
 }
 
 function showResult(o){
-  var dadPct=o.dadPct!=null?o.dadPct:state.dadPct;
-  var who=dadPct>=50?'아빠':'엄마';var pct=Math.max(dadPct,100-dadPct);
-  document.getElementById('resemble-txt').textContent=who+'를 '+pct+'% 닮은 미래 모습이에요';
-  document.getElementById('thumb-mom').src=o.mom_thumb||state.mom;
-  document.getElementById('thumb-dad').src=o.dad_thumb||state.dad;
-  var chips=document.getElementById('age-chips');chips.innerHTML='';
-  AGES.forEach(function(age){var b=document.createElement('button');b.type='button';b.className='age-chip'+(age===5?' on':'');b.textContent=age+'세';b.onclick=function(){setAge(age,b);};chips.appendChild(b);});
-  setAge(5);
+  document.getElementById('result-tag').textContent='📍 '+(o.concept_label||'컨셉 사진');
+  document.getElementById('result-img').src=o.image_url;
   show('s-result');
 }
-function setAge(age,btn){state.age=age;document.getElementById('result-img').src=state.images[String(age)]||state.images[age];document.querySelectorAll('.age-chip').forEach(function(c){c.classList.remove('on');});if(btn)btn.classList.add('on');else document.querySelectorAll('.age-chip').forEach(function(c){if(c.textContent===age+'세')c.classList.add('on');});}
-function downloadImg(){var a=document.createElement('a');a.href=state.images[String(state.age)]||state.images[state.age];a.download='kidikidi-future-baby-'+state.age+'yo.png';a.click();}
-function copyShot(){
-  var sub=document.getElementById('resemble-txt')?document.getElementById('resemble-txt').textContent:'';
-  KD.copyAgesShot({images:state.images,ages:AGES,title:'미래 얼굴 예측',subtitle:sub,filename:'kidikidi-future-baby.png'});
-}
-function restart(){location.reload();}
-
-setupFile('mom');setupFile('dad');
+function downloadImg(){var a=document.createElement('a');a.href=state.image_url;a.download='kidikidi-studio-'+(state.concept||'concept')+'.png';a.click();}
+function copyShot(){KD.copyShot({target:'#cs-card',filename:'kidikidi-studio.png'});}
+function restart(){show('s-input');}
 
 KD.mountHistory({
   mountTarget: document.querySelector('.app'),
-  label: function(r){ var o=r.output||{}; return (o.gender==='boy'?'남아':'여아')+' · 5개 나이대 결과'; },
-  captureRecord: function(rec, c){ var o=rec.output||{}; KD.copyAgesShot({images:o.images||{},ages:(o.ages||AGES),title:'미래 얼굴 예측',filename:'kidikidi-future-baby.png'}); },
+  label: function(r){ var o=r.output||{}; return (o.concept_label||'컨셉 사진')+' 결과'; },
   renderRecord: function(rec, c){
     var o=rec.output||{};
-    state.images=o.images||{};
-    c.innerHTML='<div class="thumbs"><img src="'+(o.mom_thumb||'')+'"><img src="'+(o.dad_thumb||'')+'"></div>'+
-      '<img id="result-img" class="result-img">'+'<div class="age-chips" id="age-chips"></div>';
-    var chips=c.querySelector('#age-chips');
-    (o.ages||AGES).forEach(function(age){var b=document.createElement('button');b.type='button';b.className='age-chip'+(age===5?' on':'');b.textContent=age+'세';b.onclick=function(){c.querySelector('#result-img').src=o.images[String(age)];c.querySelectorAll('.age-chip').forEach(function(x){x.classList.remove('on');});b.classList.add('on');};chips.appendChild(b);});
-    c.querySelector('#result-img').src=o.images[String((o.ages||AGES)[1]||5)];
+    c.innerHTML='<span class="result-tag">📍 '+(o.concept_label||'컨셉 사진')+'</span>'+
+      '<img class="result-img" src="'+(o.image_url||'')+'">';
   }
 });
 </script>
