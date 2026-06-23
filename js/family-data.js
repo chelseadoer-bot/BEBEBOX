@@ -12,6 +12,8 @@ function packFamilyState() {
     wishlist: state.wishlist,
     owned: state.owned,
     hidden: state.hidden,
+    published: state.published,
+    giftedBy: state.giftedBy,
     itemProducts: state.itemProducts,
     funding: state.funding,
     fundingGauge: state.fundingGauge,
@@ -42,6 +44,8 @@ function applyFamilyState(data) {
   if (data.wishlist) state.wishlist = data.wishlist;
   if (data.owned) state.owned = data.owned;
   if (data.hidden) state.hidden = data.hidden;
+  if (data.published) state.published = data.published;
+  if (data.giftedBy) state.giftedBy = data.giftedBy;
   if (data.itemProducts) state.itemProducts = data.itemProducts;
   if (data.funding) state.funding = data.funding;
   if (data.fundingGauge) state.fundingGauge = data.fundingGauge;
@@ -76,7 +80,14 @@ async function syncFamilyDataFromServer() {
   try {
     const row = await fetchFamilyDataFromServer();
     if (!row?.data || !Object.keys(row.data).length) return false;
+    // 아직 서버에 반영 안 된 로컬 글이 동기화로 사라지지 않게 보존
+    const localPosts = Array.isArray(state.posts) ? state.posts.slice() : [];
     applyFamilyState(row.data);
+    if (Array.isArray(state.posts)) {
+      const ids = new Set(state.posts.map((p) => p && p.id));
+      localPosts.forEach((p) => { if (p && !ids.has(p.id)) state.posts.push(p); });
+      state.posts.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+    }
     state._synced = true;
     if (typeof saveLocalCache === "function") saveLocalCache();
     return true;

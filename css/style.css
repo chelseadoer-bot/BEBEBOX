@@ -445,6 +445,20 @@ body.is-guest .guest-only{display:block!important}
 .wish-card.has-item{border:1px solid #c8e6d0;background:var(--color-bg);box-shadow:var(--shadow-sm)}
 .wish-card.has-item .wish-name{color:#1e6b3a;font-weight:800}
 .wish-card.has-item .wish-emoji{opacity:1;filter:none}
+.wish-card.is-published{border:1.5px solid var(--color-accent);background:var(--color-accent-soft)}
+.wish-pub-mark{font-size:14px;line-height:1}
+.wishlist-help{font-size:12px;color:var(--color-text-secondary);background:var(--color-accent-soft);border-radius:var(--radius-md);padding:10px 12px;margin:0 0 12px;text-align:center;line-height:1.5}
+.wishlist-help b{color:var(--color-accent)}
+/* 옷장 항목 동작 시트 */
+.wish-action-sheet{position:fixed;inset:0;z-index:60}
+.wish-action-sheet.hidden{display:none}
+.wish-action-backdrop{position:absolute;inset:0;background:rgba(60,45,30,.45)}
+.wish-action-panel{position:absolute;left:50%;transform:translateX(-50%);bottom:0;width:100%;max-width:var(--max-width);background:#fff;border-radius:22px 22px 0 0;padding:8px 16px calc(18px + env(safe-area-inset-bottom));box-shadow:0 -8px 30px rgba(0,0,0,.12)}
+.wish-action-title{text-align:center;font-size:15px;font-weight:800;margin:8px 0 14px}
+.wish-act-btn{display:block;width:100%;text-align:left;padding:15px 16px;margin-bottom:8px;border:1px solid var(--color-border-light);border-radius:var(--radius-md);background:var(--color-bg);font-size:14px;font-weight:700;color:var(--color-text);cursor:pointer}
+.wish-act-btn:active{background:var(--color-bg-subtle)}
+.wish-act-btn.danger{color:#e23b3b}
+.wish-action-cancel{display:block;width:100%;padding:14px;margin-top:4px;border:none;border-radius:var(--radius-md);background:var(--color-bg-muted);font-size:14px;font-weight:700;color:var(--color-text-secondary);cursor:pointer}
 .wish-priority{font-size:8px;font-weight:700;padding:2px 6px;border-radius:4px;line-height:1.3;flex-shrink:0}
 .p-required{background:#ffe0e0;color:#e74c3c}
 .p-recommended{background:#fff3d6;color:#e67e22}
