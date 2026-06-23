@@ -37,9 +37,9 @@ function applyFamilyState(data) {
   if (data.inbox) state.inbox = data.inbox;
   if (data.profile) {
     state.profile = { ...state.profile, ...data.profile };
-    if (data.profile.currentAge != null) {
-      state.currentAgeTab = String(data.profile.currentAge);
-    }
+    // 피드는 기본 '전체'로 둔다. (예전엔 currentAge 숫자를 그대로 넣어
+    // 연령칩 id('m9' 등)와 어긋나 모든 글이 필터링돼 안 보였음)
+    state.currentAgeTab = "all";
   }
   if (data.wishlist) state.wishlist = data.wishlist;
   if (data.owned) state.owned = data.owned;
