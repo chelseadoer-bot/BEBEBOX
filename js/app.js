@@ -1854,7 +1854,7 @@ function openAiApp(slug,label){
              ||(typeof getInviteCode==="function"&&getInviteCode())||"";
     if(code)url+=(url.indexOf("?")<0?"?":"&")+"uid="+encodeURIComponent(String(code).toUpperCase());
   }catch(_){}
-  url+=(url.indexOf("?")<0?"?":"&")+"_v=3";   // 앱 정적파일 캐시 무력화
+  url+=(url.indexOf("?")<0?"?":"&")+"_v=4";   // 앱 정적파일 캐시 무력화
   $("#app-frame-title").textContent=label||"";
   $("#app-frame").src=url;            // 앱 안에서 iframe 으로 띄움
   showOverlay("#app-frame-view");
@@ -1871,31 +1871,74 @@ function closeAppFrame(){
  * 동기화한다. 미니앱 산출물 DB(per-app)와 동일한 가족코드(uid)로 묶여
  * 운영자 대시보드의 고객여정에서 함께 조회된다.
  */
+/* 앱별 결과 보기 비용(알). 작명·당번 등 저토큰/무-LLM 앱은 0(무료),
+ * 이미지·영상 등 토큰이 많이 드는 앱은 높게. 한 곳에서 조정한다. */
+const MINIAPP_COST={
+  naming:0,        // 글로벌 작명소 (저토큰) — 무료
+  chores:0,        // 집안일 당번 (무-LLM) — 무료
+  temperament:0,   // 성향·기질 (저토큰 텍스트) — 무료
+  health:10,       // 아이 건강 체크 (텍스트)
+  pastlife:10,     // 전생 인연 (텍스트)
+  doodle:20,       // 낙서 심리 (이미지 입력)
+  vlog:20,         // 브이로그 (영상 합성)
+  studio:30,       // AI 컨셉스튜디오 (이미지 생성, 최고토큰)
+};
 const MINIAPP_RULES={
-  generateCost:POINT_RULES.gameCost||20,  // 산출물 생성 1회당 차감(알)
   shareReward:POINT_RULES.share||30,      // 결과 공유 시 적립(알)
 };
+function miniAppCost(slug){
+  slug=slug||(_activeMiniApp&&_activeMiniApp.slug);
+  const c=MINIAPP_COST[slug];
+  return (typeof c==="number")?c:0;
+}
+/* 결과 보기 전 결제 게이트: 미니앱(iframe)이 요청 → 비용만큼 모달로 확인/차감
+ * → 허용 여부를 iframe 에 회신. 무료 앱은 모달 없이 즉시 통과. */
+function handleMiniAppGate(data){
+  const slug=_activeMiniApp&&_activeMiniApp.slug;
+  const cost=miniAppCost(slug);
+  const reply=(allow)=>{
+    const f=$("#app-frame");
+    try{f&&f.contentWindow&&f.contentWindow.postMessage(
+      {type:"kidikidi-gate-reply",requestId:data.requestId,allow:!!allow},"*");}catch(_){}
+  };
+  if(!cost){_lastCharge=0;reply(true);return;}           // 무료 앱 → 통과
+  openRevealGate(cost,(confirmed)=>{
+    if(confirmed&&typeof spendPoints==="function"&&spendPoints(cost,"miniapp_reveal")){
+      _lastCharge=cost;                                  // 실패 시 환불 대비
+      if(typeof track==="function")track("miniapp_spend",{app:slug,amount:cost});
+      _syncProfileChange();
+      reply(true);
+    }else{
+      _lastCharge=0;
+      reply(false);
+    }
+  });
+}
+let _lastCharge=0;   // 직전 결제(차감) 금액 — 생성 실패 시 환불용
 function handleMiniAppEvent(data){
   const app=_activeMiniApp||{slug:(data&&data.app)||"miniapp",label:"AI 앱"};
   const ev=data&&data.event;
   if(ev==="request"){
-    // 생성요청: 고객 DB에 행동만 적치(포인트 변동 없음)
     if(typeof track==="function")track("miniapp_request",{app:app.slug});
     return;
   }
-  if(ev==="generated"){
-    if(data&&data.from_cache)return;   // 캐시(동일입력 재조회)는 과금하지 않음
-    // (생성 자체는 서버 ai_backend 가 miniapp_generate 로 고객 DB에 적치)
-    let msg="";
-    if(typeof spendPoints==="function"&&spendPoints(MINIAPP_RULES.generateCost,"miniapp")){
-      msg=`AI 결과 생성 · -${MINIAPP_RULES.generateCost}알 🥚`;
-      if(typeof track==="function")track("miniapp_spend",{app:app.slug,amount:MINIAPP_RULES.generateCost});
-    }else{
-      msg="AI 결과가 완성됐어요 ✨";
+  if(ev==="failed"){
+    // 생성 실패 → 게이트에서 차감한 포인트 환불
+    if(_lastCharge>0){
+      if(typeof addPoints==="function")addPoints(_lastCharge,"miniapp_refund");
+      if(typeof track==="function")track("miniapp_refund",{app:app.slug,amount:_lastCharge});
+      if(typeof showToast==="function")showToast(`생성에 실패해 ${_lastCharge}알을 돌려드렸어요`);
+      _lastCharge=0;_syncProfileChange();
     }
-    // 미니앱 이용을 '오늘의 미션'(달성조건)에도 1조각 반영 → 보상으로 연결
+    return;
+  }
+  if(ev==="generated"){
+    if(data&&data.from_cache){_lastCharge=0;return;}
+    _lastCharge=0;   // 결제 확정
+    // 결제는 게이트에서 끝났고, 여기선 달성조건(오늘의 미션) 1조각 반영 + 동기화
+    // (생성 자체는 서버 ai_backend 가 miniapp_generate 로 고객 DB에 적치)
     if(typeof addPuzzlePieces==="function")addPuzzlePieces(1,"miniapp");
-    if(typeof showToast==="function")showToast(msg);
+    if(typeof showToast==="function")showToast("AI 결과가 완성됐어요 ✨");
     _syncProfileChange();
     return;
   }
@@ -1907,6 +1950,25 @@ function handleMiniAppEvent(data){
     return;
   }
 }
+// 결제 게이트 모달 (결과 보기 전 중간 단계)
+let _gateCb=null;
+function openRevealGate(cost,cb){
+  _gateCb=cb;
+  const bal=typeof getPoints==="function"?getPoints():0;
+  const enough=bal>=cost;
+  $("#miniapp-gate-cost").textContent=cost;
+  $("#miniapp-gate-balance").textContent=bal.toLocaleString("ko-KR");
+  const confirm=$("#btn-miniapp-gate-confirm");
+  confirm.disabled=!enough;
+  confirm.textContent=enough?`🥚 ${cost}알 쓰고 결과 보기`:"알이 부족해요";
+  $("#miniapp-gate-short").classList.toggle("hidden",enough);
+  $("#miniapp-gate-modal").classList.remove("hidden");
+}
+function closeRevealGate(confirmed){
+  $("#miniapp-gate-modal").classList.add("hidden");
+  const cb=_gateCb;_gateCb=null;
+  if(cb)cb(!!confirmed);
+}
 function _syncProfileChange(){
   try{if(typeof save==="function")save();}catch(_){}
   try{if(typeof pushFamilyDataToServerNow==="function")pushFamilyDataToServerNow();}catch(_){}
@@ -1914,7 +1976,9 @@ function _syncProfileChange(){
 }
 window.addEventListener("message",function(e){
   const d=e&&e.data;
-  if(d&&d.type==="kidikidi-miniapp")handleMiniAppEvent(d);
+  if(!d)return;
+  if(d.type==="kidikidi-gate")handleMiniAppGate(d);
+  else if(d.type==="kidikidi-miniapp")handleMiniAppEvent(d);
 });
 
 /* ─── AI 컨셉스튜디오: 컨셉별 샘플 미리보기 ─────────────────────── */
@@ -2184,6 +2248,9 @@ function bindEvents(){
   });
   renderAllContent();
   $("#btn-app-frame-back")?.addEventListener("click",closeAppFrame);
+  $("#btn-miniapp-gate-confirm")?.addEventListener("click",()=>closeRevealGate(true));
+  $("#btn-miniapp-gate-cancel")?.addEventListener("click",()=>closeRevealGate(false));
+  $("#miniapp-gate-backdrop")?.addEventListener("click",()=>closeRevealGate(false));
   $("#stage-prev").onclick=()=>{if(state.currentStage>0){state.currentStage--;renderStageNav();renderWishlistGrid();}};
   $("#stage-next").onclick=()=>{if(state.currentStage<STAGES.length-1){state.currentStage++;renderStageNav();renderWishlistGrid();}};
   let tx=0;

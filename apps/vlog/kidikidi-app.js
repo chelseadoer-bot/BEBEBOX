@@ -60,17 +60,44 @@
     } catch (e) {}
   };
 
+  // 결과 보기 전 포인트 결제 게이트: 부모(베베박스)에 결제를 요청하고 허용 여부를
+  // 응답받는다. 부모가 없으면(단독 실행) 그냥 통과한다.
+  KD._gate = function () {
+    return new Promise(function (resolve) {
+      if (!(window.parent && window.parent !== window)) { resolve(true); return; }
+      var id = 'g' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
+      var settled = false;
+      function onMsg(e) {
+        var d = e.data;
+        if (d && d.type === 'kidikidi-gate-reply' && d.requestId === id) {
+          settled = true; window.removeEventListener('message', onMsg); resolve(!!d.allow);
+        }
+      }
+      window.addEventListener('message', onMsg);
+      window.parent.postMessage({ type: 'kidikidi-gate', requestId: id, uid: KD.uid() }, '*');
+      setTimeout(function () { if (!settled) { window.removeEventListener('message', onMsg); resolve(true); } }, 8000);
+    });
+  };
+
   // ── API ────────────────────────────────────────────
   KD.run = async function (inputs) {
     KD._emit('request');
-    var resp = await fetch('api/run', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ uid: KD.uid(), inputs: inputs }),
-    });
-    var json = await resp.json();
-    if (!resp.ok || json.ok === false) {
-      throw new Error((json && json.error) || ('API ' + resp.status));
+    var allowed = await KD._gate();   // 결과 받기 전 포인트 차감 단계
+    if (!allowed) { var ce = new Error('포인트가 부족하거나 결과 보기를 취소했어요.'); ce.cancelled = true; throw ce; }
+    var json;
+    try {
+      var resp = await fetch('api/run', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ uid: KD.uid(), inputs: inputs }),
+      });
+      json = await resp.json();
+      if (!resp.ok || json.ok === false) {
+        throw new Error((json && json.error) || ('API ' + resp.status));
+      }
+    } catch (err) {
+      KD._emit('failed');   // 생성 실패 → 부모가 차감 포인트 환불
+      throw err;
     }
     KD._emit('generated', { from_cache: !!json.from_cache, record_id: json.record_id });
     return json; // {ok, uid, record_id, output, media, from_cache}

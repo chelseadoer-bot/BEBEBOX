@@ -645,6 +645,15 @@ body.is-guest .guest-only{display:block!important}
 .concept-cta{width:100%;margin-top:12px;padding:15px;border:none;border-radius:12px;background:#e6e6e6;color:#fff;font-size:15px;font-weight:800;cursor:not-allowed;font-family:var(--font);transition:background .15s}
 .concept-cta.on{background:#191919;cursor:pointer}
 .concept-cta.on:active{opacity:.85}
+.miniapp-gate-content{max-width:320px;text-align:center;padding:26px 22px 22px}
+.miniapp-gate-emoji{font-size:42px;line-height:1;margin-bottom:10px}
+.miniapp-gate-content h3{font-size:18px;font-weight:800;letter-spacing:-.02em;line-height:1.4}
+.miniapp-gate-content h3 span{color:#e8556e}
+.miniapp-gate-desc{font-size:13px;color:#888;margin-top:8px}
+.miniapp-gate-desc strong{color:#191919}
+.miniapp-gate-short{font-size:12px;color:#e8556e;margin-top:10px;line-height:1.4}
+.miniapp-gate-content .journey-gift-btn{margin-top:18px}
+.miniapp-gate-content .game-retry-btn{margin-top:8px}
 .game-minigame-content{max-width:380px;padding:20px 20px 24px}
 .game-minigame-content h3{font-size:18px;font-weight:800;margin-bottom:4px;letter-spacing:-.02em}
 .game-minigame-desc{font-size:13px;color:var(--color-text-secondary);margin-bottom:12px}
