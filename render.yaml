@@ -18,7 +18,10 @@ services:
         value: /data
       - key: BEBEBOX_UPLOAD_DIR
         value: /data/uploads
-      # 아래 3개는 대시보드에서 직접 값 입력(보안상 코드에 넣지 않음)
+      # 아래 값들은 대시보드에서 직접 입력(보안상 코드에 넣지 않음)
+      # GEMINI_API_KEY: AI 그라운드 미니앱(작명/심리/기질/얼굴예측 등) 동작에 필수
+      - key: GEMINI_API_KEY
+        sync: false
       - key: KAKAO_REST_API_KEY
         sync: false
       - key: KAKAO_CLIENT_SECRET
