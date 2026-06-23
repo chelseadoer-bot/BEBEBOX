@@ -77,6 +77,17 @@ img{display:block;max-width:100%}
 .bb-planshop-tx b{font-size:15px;font-weight:800;color:#7a3d22;letter-spacing:-.02em}
 .bb-planshop-tx span{font-size:12px;color:#b07a5e}
 .bb-planshop-go{font-size:22px;color:#ff6b3d;font-weight:800;flex:0 0 auto}
+.shelf-block{margin:2px 0 18px}
+.shelf-h{font-size:14px;font-weight:800;color:#5a3a26;margin-bottom:12px}
+.gift-shelf-wrap{display:flex;flex-direction:column;gap:16px}
+.shelf-objs{display:flex;justify-content:space-around;align-items:flex-end;gap:6px;padding:0 4px;min-height:64px}
+.shelf-item{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;min-width:0;max-width:25%}
+.shelf-giver{font-size:10px;font-weight:700;color:#7a3d22;background:#fff;border:1px solid #ffd9c6;border-radius:9px;padding:1px 7px;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.shelf-giver.muted{color:#b0a89e;border-color:#eee}
+.shelf-obj{font-size:36px;line-height:1}
+.shelf-obj img{width:44px;height:44px;border-radius:9px;object-fit:cover;display:block}
+.shelf-board{height:11px;margin-top:3px;border-radius:3px;background:linear-gradient(#e0bd92,#caa06f);box-shadow:0 5px 10px rgba(150,110,70,.24)}
+.shelf-empty{font-size:13px;color:#a99;text-align:center;padding:16px 0}
 .bb-board{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:6px 0 4px}
 .bb-tile{aspect-ratio:1;border-radius:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden}
 .bb-tile.empty{background:repeating-linear-gradient(135deg,#f3ece1,#f3ece1 8px,#efe6d8 8px,#efe6d8 16px)}

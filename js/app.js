@@ -1171,10 +1171,45 @@ function toggleHideItem(itemId){
   save();renderWishlistGrid();
   showToast(state.hidden[itemId]?"선물 받기 싫은 항목으로 숨겼어요":"다시 보이게 했어요");
 }
+// 받은 선물을 선반에 올리고 그 위에 준 사람 이름을 단다.
+function collectReceivedGifts(){
+  const out=[],seen={};
+  Object.values(state.wishlist||{}).forEach(arr=>(arr||[]).forEach(it=>{
+    if(it&&state.owned[it.id]&&!seen[it.id]){
+      seen[it.id]=1;
+      out.push({emoji:it.emoji||"🎁",name:it.name,giver:state.giftedBy[it.id]||""});
+    }
+  }));
+  (state.giftPuzzles||[]).forEach(g=>{
+    const filled=(g.pieces||[]).length,total=g.total||9;
+    if(filled>=total){
+      const givers=[...new Set((g.pieces||[]).map(p=>p&&p.from).filter(Boolean))];
+      out.push({emoji:"🎁",image:g.image,name:g.productName||"선물",giver:givers.join(", ")});
+    }
+  });
+  return out;
+}
+function giftShelfHtml(gifts,emptyMsg){
+  if(!gifts.length)return `<div class="shelf-empty">${esc(emptyMsg)}</div>`;
+  const per=4,rows=[];
+  for(let i=0;i<gifts.length;i+=per)rows.push(gifts.slice(i,i+per));
+  return `<div class="gift-shelf-wrap">`+rows.map(row=>
+    `<div class="shelf"><div class="shelf-objs">`+row.map(g=>{
+      const obj=g.image?`<span class="shelf-obj"><img src="${esc(g.image)}" alt=""/></span>`:`<span class="shelf-obj">${esc(g.emoji||"🎁")}</span>`;
+      const giver=g.giver?`<span class="shelf-giver">${esc(g.giver)}</span>`:`<span class="shelf-giver muted">선물</span>`;
+      return `<span class="shelf-item">${giver}${obj}</span>`;
+    }).join("")+`</div><div class="shelf-board"></div></div>`
+  ).join("")+`</div>`;
+}
+function renderGiftShelf(){
+  const el=$("#gift-shelf");if(!el)return;
+  el.innerHTML=giftShelfHtml(collectReceivedGifts(),"아직 받은 선물이 없어요");
+}
 function renderWishlistGrid(){
   const stage=STAGES[state.currentStage];
   const items=state.wishlist[stage.id]||[];
   const grid=$("#wishlist-grid");
+  renderGiftShelf();
   if(!items.length){grid.innerHTML='<div class="wish-empty">아직 등록된 위시리스트가 없어요</div>';return;}
   grid.innerHTML=items.map(item=>{
     const pub=!!state.published[item.id];
