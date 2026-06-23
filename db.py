@@ -42,6 +42,20 @@ CREATE TABLE IF NOT EXISTS sessions (
     user       TEXT NOT NULL,
     created_at INTEGER NOT NULL
 );
+
+-- 고객 여정(이벤트) 로그: 모든 핵심 행동이 여기에 쌓인다.
+CREATE TABLE IF NOT EXISTS events (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    family_id  TEXT NOT NULL,
+    actor      TEXT,            -- parent | guest
+    name       TEXT,            -- 행위자 이름(지인 등)
+    type       TEXT NOT NULL,   -- signup/record/share/gift_click/gift_done/heart/comment/coupon ...
+    item_id    TEXT,
+    meta       TEXT DEFAULT '{}',
+    created_at INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_events_family ON events (family_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_events_type ON events (type);
 """
 
 
@@ -223,3 +237,69 @@ def import_legacy_photos_json(json_path):
         })
         count += 1
     return count
+
+
+# ---------------------------------------------------- 고객 여정(이벤트)
+def insert_event(family_id, type_, actor=None, name=None, item_id=None, meta=None):
+    fam = (family_id or "BEBEBOX").strip().upper()
+    with _conn() as conn:
+        conn.execute(
+            """INSERT INTO events (family_id, actor, name, type, item_id, meta, created_at)
+               VALUES (?, ?, ?, ?, ?, ?, ?)""",
+            (fam, actor, name, type_, item_id,
+             json.dumps(meta or {}, ensure_ascii=False), now_ms()),
+        )
+    return True
+
+
+def journey_summary(family_id):
+    """한 가족(고객)의 여정 요약: 단계별 카운트 + 지인 목록 + 최근 활동."""
+    fam = (family_id or "BEBEBOX").strip().upper()
+    with _conn() as conn:
+        rows = conn.execute(
+            "SELECT actor, name, type, item_id, meta, created_at FROM events WHERE family_id = ? ORDER BY created_at DESC",
+            (fam,),
+        ).fetchall()
+    counts, guests, recent = {}, {}, []
+    for r in rows:
+        counts[r["type"]] = counts.get(r["type"], 0) + 1
+        if r["actor"] == "guest" and r["name"]:
+            g = guests.setdefault(r["name"], {"name": r["name"], "gift_click": 0, "gift_done": 0, "heart": 0, "comment": 0})
+            if r["type"] in g:
+                g[r["type"]] += 1
+        if len(recent) < 30:
+            recent.append({
+                "actor": r["actor"], "name": r["name"], "type": r["type"],
+                "item_id": r["item_id"], "created_at": r["created_at"],
+            })
+    # 전환 깔때기(가족 단위)
+    funnel = {
+        "views": counts.get("share_view", 0),
+        "gift_clicks": counts.get("gift_click", 0),
+        "gifts_done": counts.get("gift_done", 0),
+        "hearts": counts.get("heart", 0),
+        "comments": counts.get("comment", 0),
+        "records": counts.get("record", 0),
+        "shares": counts.get("share", 0),
+    }
+    return {
+        "family_id": fam,
+        "funnel": funnel,
+        "counts": counts,
+        "guests": sorted(guests.values(), key=lambda x: -(x["gift_done"] * 10 + x["gift_click"])),
+        "recent": recent,
+        "total_events": len(rows),
+    }
+
+
+def global_stats():
+    """플랫폼 전체 지표(운영자용)."""
+    with _conn() as conn:
+        fam = conn.execute("SELECT COUNT(*) AS n FROM family_data").fetchone()["n"]
+        ev = conn.execute("SELECT COUNT(*) AS n FROM events").fetchone()["n"]
+        by = conn.execute("SELECT type, COUNT(*) AS n FROM events GROUP BY type").fetchall()
+    return {
+        "families": fam,
+        "events": ev,
+        "by_type": {r["type"]: r["n"] for r in by},
+    }

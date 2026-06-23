@@ -431,6 +431,36 @@ function save(){
 }
 window.saveLocalCache=saveLocalCache;
 function showToast(m){const t=$("#toast");t.textContent=m;t.classList.remove("hidden");clearTimeout(showToast._t);showToast._t=setTimeout(()=>t.classList.add("hidden"),2500);}
+// 고객 여정 이벤트 적재(서버 events 테이블에 쌓임)
+function track(type,meta){
+  try{
+    fetch("/api/track",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({family:(typeof getFamilyId==="function"?getFamilyId():"BEBEBOX"),actor:"parent",type:type,meta:meta||{}})}).catch(()=>{});
+  }catch(_){}
+}
+window.track=track;
+async function loadJourneyStats(){
+  const el=$("#journey-stats");
+  if(!el)return;
+  try{
+    const fam=encodeURIComponent(typeof getFamilyId==="function"?getFamilyId():"BEBEBOX");
+    const r=await fetch("/api/journey?family="+fam);
+    const j=await r.json();
+    const f=j.funnel||{};
+    const guests=(j.guests||[]).slice(0,8);
+    el.innerHTML=
+      `<div class="jr-grid">
+        <div class="jr-cell"><span class="jr-num">${f.views||0}</span><span class="jr-label">👀 본 사람</span></div>
+        <div class="jr-cell"><span class="jr-num">${f.gift_clicks||0}</span><span class="jr-label">🛍 선물 클릭</span></div>
+        <div class="jr-cell"><span class="jr-num">${f.gifts_done||0}</span><span class="jr-label">🎁 선물 완료</span></div>
+        <div class="jr-cell"><span class="jr-num">${f.hearts||0}</span><span class="jr-label">❤️ 하트</span></div>
+        <div class="jr-cell"><span class="jr-num">${f.comments||0}</span><span class="jr-label">💬 댓글</span></div>
+        <div class="jr-cell"><span class="jr-num">${f.records||0}</span><span class="jr-label">📷 기록</span></div>
+      </div>`+
+      (guests.length?`<div class="jr-guests"><p class="jr-guests-title">함께한 지인</p>`+
+        guests.map(g=>`<div class="jr-guest"><b>${esc(g.name)}</b><span>${g.gift_done?`🎁${g.gift_done} `:""}${g.heart?`❤️${g.heart} `:""}${g.comment?`💬${g.comment}`:""}</span></div>`).join("")+`</div>`:`<p class="jr-empty">공유 링크를 보내면 지인 반응이 여기에 쌓여요</p>`);
+  }catch(_){el.innerHTML='<p class="jr-empty">성과를 불러올 수 없어요</p>';}
+}
 const TAB_VIEWS={home:"#profile-view",puzzle:"#puzzle-tab-view",game:"#game-tab-view",settings:"#settings-tab-view"};
 let currentMainTab="home";
 function showTabBar(){
@@ -537,6 +567,7 @@ function renderSettingsTab(){
   const st=$("#my-stat-total");if(st)st.textContent=mTotal;
   const sm=$("#my-stat-month");if(sm)sm.textContent=mMonth;
   const sh=$("#my-stat-heart");if(sh)sh.textContent=mHeart;
+  loadJourneyStats();
   renderPointsUI();
   const kakao=typeof getStoredKakaoUser==="function"?getStoredKakaoUser():null;
   const accountSection=$("#settings-account-section");
@@ -786,6 +817,7 @@ async function submitPost(){
   save();
   // 새로고침 경합으로 글이 사라지지 않게 즉시 서버에도 반영
   if(typeof pushFamilyDataToServerNow==="function")pushFamilyDataToServerNow().catch(()=>{});
+  track("record",{photos:srcs.length,hasText:!!text});
   if(btn)btn.disabled=false;
   closeComposer();
   switchMainTab("home");
@@ -1120,7 +1152,7 @@ function renderWishlistGrid(){
 }
 function togglePublish(id){
   if(state.published[id]){delete state.published[id];showToast("공유 위시에서 내렸어요");}
-  else{state.published[id]=true;showToast("공유 위시에 공개했어요 ❤️");}
+  else{state.published[id]=true;track("publish",{item:id});showToast("공유 위시에 공개했어요 ❤️");}
   save();renderWishlistGrid();
 }
 function openWishActionSheet(id){
@@ -1806,6 +1838,7 @@ function openShareLinkModal(url){
 }
 async function shareProfileLink(){
   const url=getShareUrl();
+  track("share");
   const title=`${babyName()}의 베베박스`;
   const text=`${babyName()}에게 선물하고 키디키디 쿠폰도 받아가세요 🎁`;
   showToast("공유 이미지를 만드는 중...");
@@ -1879,6 +1912,7 @@ function bindEvents(){
   $("#btn-settings-exchange")?.addEventListener("click",()=>{
     const coupon=exchangeCoupon();
     if(!coupon){showToast("알이 부족해요 🥚 (1,000알 필요)");return;}
+    track("coupon",{amount:coupon.amount||0});
     renderSettingsTab();
     showToast("1,000원 장바구니 쿠폰으로 교환했어요! 🎟️");
   });
