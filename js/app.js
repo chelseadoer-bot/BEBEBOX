@@ -1842,25 +1842,80 @@ const AI_APPS={
   studio:"/apps/studio/",        // AI 컨셉스튜디오
   pastlife:"/apps/pastlife/",    // 전생 인연(추천)
 };
+let _activeMiniApp=null;   // 현재 열려있는 미니앱 {slug,label} — 트리거 이벤트 적치용
 function openAiApp(slug,label){
   let url=AI_APPS[slug];
   if(typeof track==="function")track("ai_app",{app:slug});
   if(!url){showToast(`${label||"앱"} 준비 중이에요`);return;}
+  _activeMiniApp={slug,label:label||slug};
   // 가족코드를 uid 로 넘겨 AI 앱 기록이 고객(USERID)별로 적치되게 한다.
   try{
     const code=(typeof ensureInviteCode==="function"&&ensureInviteCode(true))
              ||(typeof getInviteCode==="function"&&getInviteCode())||"";
     if(code)url+=(url.indexOf("?")<0?"?":"&")+"uid="+encodeURIComponent(String(code).toUpperCase());
   }catch(_){}
-  url+=(url.indexOf("?")<0?"?":"&")+"_v=2";   // 앱 정적파일 캐시 무력화
+  url+=(url.indexOf("?")<0?"?":"&")+"_v=3";   // 앱 정적파일 캐시 무력화
   $("#app-frame-title").textContent=label||"";
   $("#app-frame").src=url;            // 앱 안에서 iframe 으로 띄움
   showOverlay("#app-frame-view");
 }
 function closeAppFrame(){
   const f=$("#app-frame");if(f)f.src="about:blank";
+  _activeMiniApp=null;
   switchMainTab("game");
 }
+
+/* ─── 미니앱 트리거 → 고객 프로필(포인트/달성) 변경 ──────────────────
+ * 미니앱 iframe(KD._emit)이 보내는 생성요청·생성완료·결과공유 이벤트를 받아
+ * 고객 프로필(state.points: 알 경제)을 적립/차감하고, 변경분을 고객 DB에
+ * 동기화한다. 미니앱 산출물 DB(per-app)와 동일한 가족코드(uid)로 묶여
+ * 운영자 대시보드의 고객여정에서 함께 조회된다.
+ */
+const MINIAPP_RULES={
+  generateCost:POINT_RULES.gameCost||20,  // 산출물 생성 1회당 차감(알)
+  shareReward:POINT_RULES.share||30,      // 결과 공유 시 적립(알)
+};
+function handleMiniAppEvent(data){
+  const app=_activeMiniApp||{slug:(data&&data.app)||"miniapp",label:"AI 앱"};
+  const ev=data&&data.event;
+  if(ev==="request"){
+    // 생성요청: 고객 DB에 행동만 적치(포인트 변동 없음)
+    if(typeof track==="function")track("miniapp_request",{app:app.slug});
+    return;
+  }
+  if(ev==="generated"){
+    if(data&&data.from_cache)return;   // 캐시(동일입력 재조회)는 과금하지 않음
+    // (생성 자체는 서버 ai_backend 가 miniapp_generate 로 고객 DB에 적치)
+    let msg="";
+    if(typeof spendPoints==="function"&&spendPoints(MINIAPP_RULES.generateCost,"miniapp")){
+      msg=`AI 결과 생성 · -${MINIAPP_RULES.generateCost}알 🥚`;
+      if(typeof track==="function")track("miniapp_spend",{app:app.slug,amount:MINIAPP_RULES.generateCost});
+    }else{
+      msg="AI 결과가 완성됐어요 ✨";
+    }
+    // 미니앱 이용을 '오늘의 미션'(달성조건)에도 1조각 반영 → 보상으로 연결
+    if(typeof addPuzzlePieces==="function")addPuzzlePieces(1,"miniapp");
+    if(typeof showToast==="function")showToast(msg);
+    _syncProfileChange();
+    return;
+  }
+  if(ev==="shared"){
+    if(typeof addPoints==="function")addPoints(MINIAPP_RULES.shareReward,"miniapp_share");
+    if(typeof track==="function")track("miniapp_share",{app:app.slug});
+    if(typeof showToast==="function")showToast(`결과 공유 · +${MINIAPP_RULES.shareReward}알 🥚`);
+    _syncProfileChange();
+    return;
+  }
+}
+function _syncProfileChange(){
+  try{if(typeof save==="function")save();}catch(_){}
+  try{if(typeof pushFamilyDataToServerNow==="function")pushFamilyDataToServerNow();}catch(_){}
+  try{if(typeof renderPointsUI==="function")renderPointsUI();}catch(_){}
+}
+window.addEventListener("message",function(e){
+  const d=e&&e.data;
+  if(d&&d.type==="kidikidi-miniapp")handleMiniAppEvent(d);
+});
 
 /* ─── AI 컨셉스튜디오: 컨셉별 샘플 미리보기 ─────────────────────── */
 const STUDIO_CONCEPTS={
