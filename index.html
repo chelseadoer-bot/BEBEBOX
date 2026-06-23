@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
 <title>베베박스</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css"/>
-<link rel="stylesheet" href="css/style.css?v=32"/>
+<link rel="stylesheet" href="css/style.css?v=33"/>
 <link rel="stylesheet" href="css/onboarding.css?v=5"/>
 <link rel="stylesheet" href="css/theme.css?v=4"/>
 </head>
@@ -731,6 +731,13 @@
 <button type="button" class="wish-action-cancel" id="wish-action-cancel">닫기</button>
 </div>
 </div>
+<div id="app-frame-view" class="view app-frame-view">
+<header class="app-frame-top">
+<button type="button" class="icon-btn dark" id="btn-app-frame-back">←</button>
+<span class="app-frame-title" id="app-frame-title"></span>
+</header>
+<iframe id="app-frame" class="app-frame" title="앱" src="about:blank" allow="camera;microphone;clipboard-write;fullscreen" referrerpolicy="no-referrer"></iframe>
+</div>
 <nav class="bottom-tab-bar hidden" id="bottom-tab-bar" aria-label="하단 메뉴">
 <button type="button" class="tab-bar-item active" data-tab="home"><span class="tab-bar-icon">📷</span><span>기록</span></button>
 <button type="button" class="tab-bar-item" data-tab="game"><span class="tab-bar-icon">🎮</span><span>게임</span></button>
@@ -749,6 +756,6 @@
 <script src="js/family-data.js?v=2"></script>
 <script src="js/kakao-auth.js?v=1"></script>
 <script src="js/onboarding.js?v=7"></script>
-<script src="js/app.js?v=52"></script>
+<script src="js/app.js?v=53"></script>
 </body>
 </html>

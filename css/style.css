@@ -676,6 +676,12 @@ body.is-guest .guest-only{display:block!important}
 .post-vis{font-size:10.5px;font-weight:700;color:var(--color-text-tertiary);margin-left:4px}
 .post-vis.pub{color:var(--color-accent)}
 .post-menu-btn{margin-left:auto;border:none;background:none;color:var(--color-text-tertiary);font-size:20px;line-height:1;cursor:pointer;padding:4px 6px}
+/* 인앱 웹뷰(AI 그라운드 앱) */
+.app-frame-view{display:none;flex-direction:column;height:100vh;background:#fff}
+.app-frame-view.active{display:flex}
+.app-frame-top{display:flex;align-items:center;gap:10px;padding:calc(10px + env(safe-area-inset-top)) 14px 10px;border-bottom:1px solid var(--color-border-light);background:#fff;flex-shrink:0}
+.app-frame-title{font-size:15px;font-weight:800;letter-spacing:-.02em}
+.app-frame{flex:1;width:100%;border:none;display:block}
 
 /* ===== 프로필 게이미피케이션 ===== */
 .pstats-content{max-width:340px;width:90%;border-radius:20px;padding:22px 20px;position:relative;text-align:left}
