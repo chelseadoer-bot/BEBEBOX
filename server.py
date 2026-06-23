@@ -317,6 +317,11 @@ class H(SimpleHTTPRequestHandler):
                 "photos": [public_photo(p) for p in db.list_photos(family)],
                 "family": family,
             })
+        if path == "/api/journey":
+            family = norm_family(self._query("family"))
+            return json_response(self, 200, db.journey_summary(family))
+        if path == "/api/admin/stats":
+            return json_response(self, 200, db.global_stats())
         if path == "/api/auth/me":
             session, _ = current_session(self)
             user = ka.public_user(session)
@@ -340,6 +345,23 @@ class H(SimpleHTTPRequestHandler):
             _, token = current_session(self)
             db.delete_session(token)
             return json_response(self, 200, {"ok": True}, [clear_session_cookie()])
+        if path == "/api/track":
+            try:
+                body = read_json_body(self)
+            except json.JSONDecodeError:
+                return json_response(self, 400, {"error": "invalid_json"})
+            etype = (body.get("type") or "").strip()
+            if not etype:
+                return json_response(self, 400, {"error": "missing_type"})
+            db.insert_event(
+                norm_family(body.get("family")),
+                etype,
+                actor=body.get("actor"),
+                name=(body.get("name") or None),
+                item_id=(body.get("item_id") or None),
+                meta=body.get("meta") if isinstance(body.get("meta"), dict) else None,
+            )
+            return json_response(self, 200, {"ok": True})
         if path != "/api/photos/upload":
             return json_response(self, 404, {"error": "not_found"})
         try:

@@ -40,6 +40,15 @@
   async function fetchJSON(url) {
     try { var r = await fetch(url); if (!r.ok) return null; return await r.json(); } catch (_) { return null; }
   }
+  // 고객 여정 이벤트 적재(지인 행동이 서버에 쌓임)
+  function track(type, meta, name) {
+    try {
+      fetch("/api/track", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ family: BABY_ID, actor: "guest", type: type, name: name || null, item_id: (meta && meta.item_id) || null, meta: meta || {} })
+      }).catch(function () {});
+    } catch (_) {}
+  }
   function collectPhotos(data) {
     var srcs = [];
     (data.posts || []).slice().sort(function (a, b) { return (b.createdAt || 0) - (a.createdAt || 0); })
@@ -163,6 +172,7 @@
     var btn = card && card.querySelector(".post-emotion-btn");
     if (btn) { btn.classList.remove("pop"); void btn.offsetWidth; btn.classList.add("pop"); }
     persistSoon();
+    if (p.gauge % 5 === 1) track("heart", { item_id: id });
   }
 
   function openComments(id) {
@@ -193,6 +203,7 @@
     document.getElementById("cmt-text").value = "";
     renderCommentList();
     persistNow();
+    track("comment", { item_id: CMT_PID }, name);
     var link = document.querySelector('[data-cmt="' + (window.CSS && CSS.escape ? CSS.escape(CMT_PID) : CMT_PID) + '"]');
     if (link) link.textContent = "💬 댓글 " + p.comments.length + "개";
   }
@@ -384,6 +395,7 @@
     FLOW_PIECE = piece;
     // Step 1: 키디키디로 이동
     var url = kidikidiLink({ url: piece.url, brand: piece.brand, productName: piece.base, name: piece.base });
+    track("gift_click", { item_id: piece.id, base: piece.base });
     window.open(url, "_blank", "noopener");
     showFlow(
       '<div class="flow-emoji">🛍️</div>' +
@@ -448,6 +460,8 @@
     if (!Array.isArray(CURRENT_DATA.guestbook)) CURRENT_DATA.guestbook = [];
     CURRENT_DATA.guestbook.push({ item_id: data.item_id, relationship: data.relationship, guest_name: data.guest_name, message: data.message, at: Date.now() });
     persistNow();
+    // 고객 DB(events)에도 선물 완료 적재
+    track("gift_done", { item_id: data.item_id, relationship: data.relationship, message: data.message }, data.guest_name);
   }
 
   /* ===== 컨페티 ===== */
@@ -504,5 +518,6 @@
     });
     CURRENT_DATA = data;
     render(data);
+    track("share_view");
   })();
 })();

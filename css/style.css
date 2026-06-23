@@ -755,6 +755,19 @@ body.is-guest .guest-only{display:block!important}
 .settings-exchange-btn.is-ready{background:linear-gradient(135deg,#ff7043,#ff5722);box-shadow:0 4px 14px rgba(255,87,34,.3)}
 .settings-exchange-btn:disabled{cursor:default}
 
+/* 공유 성과(고객 여정) */
+.journey-stats{font-size:13px;color:var(--color-text-secondary)}
+.jr-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.jr-cell{background:var(--color-bg-subtle);border-radius:var(--radius-md);padding:12px 6px;text-align:center;display:flex;flex-direction:column;gap:4px}
+.jr-num{font-size:18px;font-weight:800;color:var(--color-accent)}
+.jr-label{font-size:11px;color:var(--color-text-secondary);font-weight:600}
+.jr-guests{margin-top:14px}
+.jr-guests-title{font-size:12.5px;font-weight:700;color:var(--color-text-secondary);margin-bottom:8px}
+.jr-guest{display:flex;justify-content:space-between;align-items:center;padding:9px 12px;border:1px solid var(--color-border-light);border-radius:var(--radius-md);margin-bottom:6px;font-size:13px}
+.jr-guest b{font-weight:700}
+.jr-guest span{color:var(--color-text-tertiary);font-size:12px;font-weight:600}
+.jr-empty{font-size:12.5px;color:var(--color-text-tertiary);text-align:center;padding:14px 0;line-height:1.5}
+
 /* 이미지 라이트박스(좋아요/메타 숨김) */
 .photo-detail.lightbox-only .detail-actions,.photo-detail.lightbox-only .detail-meta{display:none}
 /* 성장 저니를 탭으로 쓸 때 하단바 여백 */
