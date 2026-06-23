@@ -163,8 +163,8 @@ img{display:block;max-width:100%}
 .s-wl-item.have .s-wl-status{color:var(--muted)}
 
 /* 플로팅 선물 버튼 */
-.s-fab{position:fixed;right:max(16px,calc((100vw - var(--maxw))/2 + 16px));bottom:20px;z-index:40;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;width:60px;height:60px;border-radius:50%;border:none;background:var(--accent);color:#fff;font-size:24px;cursor:pointer;box-shadow:0 6px 20px rgba(255,87,34,.45)}
-.s-fab-label{font-size:10px;font-weight:800}
+.s-fab{position:fixed;right:max(16px,calc((100vw - var(--maxw))/2 + 16px));bottom:22px;z-index:40;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;width:72px;height:72px;border-radius:50%;border:none;background:var(--accent);color:#fff;font-size:29px;cursor:pointer;box-shadow:0 8px 24px rgba(255,87,34,.5)}
+.s-fab-label{font-size:11px;font-weight:800}
 .s-fab:active{transform:scale(.95)}
 
 /* 푸터 CTA */
