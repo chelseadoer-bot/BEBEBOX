@@ -27,6 +27,7 @@ function packFamilyState() {
     coupons: state.coupons,
     posts: state.posts,
     giftPuzzles: state.giftPuzzles,
+    likeAwarded: state.likeAwarded,
     inviteCode: typeof getInviteCode === "function" ? getInviteCode() : null,
   };
 }
@@ -59,6 +60,7 @@ function applyFamilyState(data) {
   if (Array.isArray(data.coupons)) state.coupons = data.coupons;
   if (Array.isArray(data.posts)) state.posts = data.posts;
   if (Array.isArray(data.giftPuzzles)) state.giftPuzzles = data.giftPuzzles;
+  if (typeof data.likeAwarded === "number") state.likeAwarded = data.likeAwarded;
   if (data.inviteCode && typeof ensureInviteCode === "function") {
     localStorage.setItem("photoShare_invite_code", data.inviteCode);
     if (state.profile) state.profile.inviteCode = data.inviteCode;
