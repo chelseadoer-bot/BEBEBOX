@@ -67,6 +67,13 @@ CREATE TABLE IF NOT EXISTS coupon_fulfillment (
     note         TEXT DEFAULT '',
     PRIMARY KEY (family_id, coupon_id)
 );
+
+-- 사이트 전역 설정(운영자 편집): 게임 탭 상단 배너 등.
+CREATE TABLE IF NOT EXISTS site_config (
+    key        TEXT PRIMARY KEY,
+    value      TEXT,
+    updated_at INTEGER
+);
 """
 
 
@@ -509,6 +516,27 @@ def coupon_queue():
             })
     out.sort(key=lambda c: (c["fulfilled"], -(c["created_at"] or 0)))
     return out
+
+
+def get_config(key, default=None):
+    with _conn() as conn:
+        r = conn.execute("SELECT value FROM site_config WHERE key=?", (key,)).fetchone()
+    if not r or r["value"] is None:
+        return default
+    try:
+        return json.loads(r["value"])
+    except (json.JSONDecodeError, TypeError):
+        return default
+
+
+def set_config(key, value):
+    with _conn() as conn:
+        conn.execute(
+            "INSERT INTO site_config(key, value, updated_at) VALUES(?,?,?) "
+            "ON CONFLICT(key) DO UPDATE SET value=excluded.value, updated_at=excluded.updated_at",
+            (key, json.dumps(value, ensure_ascii=False), now_ms()),
+        )
+    return True
 
 
 def set_coupon_fulfilled(family_id, coupon_id, fulfilled=True, note=""):
