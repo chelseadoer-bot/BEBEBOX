@@ -266,38 +266,216 @@
   }
 
   // 선물(조각 채우기) 오버레이
+  /* ===== 감성 큐레이션: 베이비샤워 위시리스트 ===== */
+  // 상품명 키워드 → 감성 카피
+  var EMO = [
+    { k: "엽산", t: "첫 영양소 👶", d: "아기의 첫 세포 성장을 위한 매일의 필수 영양소" },
+    { k: "철분", t: "튼튼 철분 🩸", d: "엄마와 아기의 건강한 혈액을 채워주는 영양" },
+    { k: "튼살", t: "엄마 토닥토닥 크림 🤰", d: "변화하는 엄마 피부를 사랑으로 지키는 보습 크림" },
+    { k: "실내복", t: "보들보들 첫 옷 🍼", d: "아기 살에 직접 닿는 가장 부드러운 순면" },
+    { k: "바디", t: "꼬물이 우주복 👕", d: "기저귀 갈기 편한 보들보들 데일리 옷" },
+    { k: "우주복", t: "꼬물이 우주복 👕", d: "기저귀 갈기 편한 보들보들 데일리 옷" },
+    { k: "배냇", t: "처음 만나는 배냇저고리 👶", d: "세상에서 가장 보드라운 아기의 첫 옷" },
+    { k: "속싸개", t: "포근 속싸개 🧣", d: "엄마 품처럼 아늑하게 감싸주는 첫 이불" },
+    { k: "젖병", t: "첫 수유 젖병 🍼", d: "아기의 첫 식사를 함께할 안심 젖병" },
+    { k: "카시트", t: "첫 드라이브 카시트 🚗", d: "안전한 첫 외출을 지켜주는 든든한 보호막" },
+    { k: "유모차", t: "첫 산책 유모차 🛒", d: "세상 구경 나가는 아기의 첫 마차" },
+    { k: "이유식", t: "냠냠 이유식 세트 🥣", d: "생애 첫 미음을 응원하는 식기 세트" },
+    { k: "턱받이", t: "침받이 턱받이 👶", d: "이유식 시간을 뽀송하게 지켜줄 필수템" },
+    { k: "기저귀", t: "뽀송 기저귀 🧷", d: "하루에도 몇 번씩, 아기를 보송하게" },
+    { k: "체온계", t: "안심 체온계 🌡️", d: "작은 변화도 놓치지 않는 부모의 눈" },
+    { k: "하이체어", t: "아기 식탁 의자 🪑", d: "가족과 함께 식탁에 앉는 첫 자리" },
+    { k: "치발기", t: "오물오물 치발기 🦷", d: "이앓이 시기를 시원하게 달래줘요" },
+    { k: "모빌", t: "빙글빙글 모빌 🎠", d: "아기의 첫 시선을 사로잡는 장난감" },
+    { k: "수유", t: "편안한 수유 시간 🤱", d: "엄마와 아기 모두 편안한 수유를 위해" }
+  ];
+  function emoFor(name) {
+    name = name || "";
+    for (var i = 0; i < EMO.length; i++) if (name.indexOf(EMO[i].k) >= 0) return EMO[i];
+    return { t: name + " 🎁", d: "우리 아이에게 필요한 소중한 선물" };
+  }
+  function guestbookFor(id) {
+    var gb = (CURRENT_DATA.guestbook || []).filter(function (g) { return g.item_id === id; });
+    return gb.length ? gb[gb.length - 1] : null;
+  }
+  // 보드/카드에 쓸 9조각: 선물 퍼즐 + 옷장 필요 항목
+  function buildPieces() {
+    var out = [], seen = {};
+    (CURRENT_DATA.giftPuzzles || []).forEach(function (g) {
+      if (seen[g.id]) return; seen[g.id] = 1;
+      var e = emoFor(g.productName);
+      out.push({ id: g.id, base: g.productName, title: e.t, desc: e.d, emoji: (e.t.match(/\p{Emoji}/u) || ["🎁"])[0], url: g.url, brand: g.brand });
+    });
+    var wl = CURRENT_DATA.wishlist || {}, owned = CURRENT_DATA.owned || {}, hidden = CURRENT_DATA.hidden || {};
+    STAGES.forEach(function (st) {
+      (wl[st.id] || []).forEach(function (it) {
+        if (out.length >= 9 || !it || hidden[it.id] || owned[it.id] || seen[it.id]) return;
+        seen[it.id] = 1; ITEM_INDEX[it.id] = it;
+        var e = emoFor(it.name);
+        out.push({ id: it.id, base: it.name, title: e.t, desc: e.d, emoji: it.emoji || (e.t.match(/\p{Emoji}/u) || ["🎁"])[0], url: it.url });
+      });
+    });
+    return out.slice(0, 9);
+  }
+
+  var PIECES = [];
   function openGiftSheet() {
-    var body = document.getElementById("gift-sheet-body");
-    var inner = renderPuzzles(CURRENT_DATA.giftPuzzles || []) + renderWishlist(CURRENT_DATA);
-    body.innerHTML = '<p class="s-section-sub">선물하면 ' + esc(CUR_BABY) + "에게 한 조각이 채워지고, 나도 키디키디 쿠폰을 받아요</p>" +
-      (inner || '<p class="s-photo-empty">아직 등록된 선물이 없어요</p>');
-    document.getElementById("gift-sheet-title").textContent = CUR_BABY + "의 조각 채우기";
-    body.querySelectorAll("[data-gift]").forEach(function (btn) {
-      btn.onclick = function () {
-        var g = (CURRENT_DATA.giftPuzzles || []).find(function (x) { return x.id === btn.dataset.gift; });
-        if (g) openGiftModal(g, CUR_BABY);
-      };
-    });
-    body.querySelectorAll("[data-wl]").forEach(function (btn) {
-      btn.onclick = function () { var it = ITEM_INDEX[btn.dataset.wl]; if (it) openGiftModal(it, CUR_BABY); };
-    });
+    PIECES = buildPieces();
+    document.getElementById("gift-sheet-title").textContent = CUR_BABY + "의 베이비샤워 위시";
+    document.getElementById("gift-sheet-body").innerHTML = renderRegistry();
+    bindRegistry();
     document.getElementById("gift-sheet").classList.remove("hidden");
   }
   function closeGiftSheet() { document.getElementById("gift-sheet").classList.add("hidden"); }
 
-  function openGiftModal(item, baby) {
-    var name = item.productName || item.name || "선물";
-    document.getElementById("gift-modal-title").textContent = name;
-    document.getElementById("gift-modal-desc").textContent =
-      baby + "에게 “" + name + "”을(를) 선물해 주세요!";
-    document.getElementById("gift-modal-go").href = kidikidiLink(item);
-    document.getElementById("gift-modal").classList.remove("hidden");
+  function renderRegistry() {
+    if (!PIECES.length) return '<p class="s-photo-empty">아직 등록된 선물이 없어요</p>';
+    // 3x3 보드
+    var board = '<div class="bb-board">' + Array.from({ length: 9 }).map(function (_, i) {
+      var p = PIECES[i];
+      if (!p) return '<div class="bb-tile empty"><span class="bb-lock">🔒</span></div>';
+      var gb = guestbookFor(p.id);
+      if (gb) return '<div class="bb-tile filled"><span class="bb-foot">👣</span><span class="bb-bubble">' + esc(gb.guest_name) + '</span></div>';
+      return '<div class="bb-tile locked"><span class="bb-emoji">' + esc(p.emoji) + '</span></div>';
+    }).join("") + "</div>";
+    var done = PIECES.filter(function (p) { return guestbookFor(p.id); }).length;
+    var progress = '<p class="bb-progress">🧩 ' + done + " / " + PIECES.length + " 조각이 채워졌어요</p>";
+    // 카드
+    var cards = '<div class="bb-cards">' + PIECES.map(function (p) {
+      var gb = guestbookFor(p.id);
+      if (gb) {
+        return '<div class="bb-card gifted">' +
+          '<div class="bb-card-emoji">' + esc(p.emoji) + "</div>" +
+          '<div class="bb-card-title">' + esc(p.title) + "</div>" +
+          '<div class="bb-chat">' + esc(gb.guest_name) + ": " + esc(gb.message || "선물 완료! 🎁") + "</div>" +
+          '<div class="bb-gifted-badge">✓ 선물 완료</div></div>';
+      }
+      return '<div class="bb-card">' +
+        '<div class="bb-card-emoji">' + esc(p.emoji) + "</div>" +
+        '<div class="bb-card-title">' + esc(p.title) + "</div>" +
+        '<div class="bb-card-desc">' + esc(p.desc) + "</div>" +
+        '<button type="button" class="bb-card-cta" data-piece="' + esc(p.id) + '">' + esc(CUR_BABY) + "에게 이 조각 선물하기 🎁</button></div>";
+    }).join("") + "</div>";
+    return board + progress + cards;
   }
-  function closeGiftModal() { document.getElementById("gift-modal").classList.add("hidden"); }
-  document.getElementById("gift-modal-close").onclick = closeGiftModal;
-  document.getElementById("gift-modal-backdrop").onclick = closeGiftModal;
+  function bindRegistry() {
+    document.querySelectorAll("[data-piece]").forEach(function (btn) {
+      btn.onclick = function () {
+        var p = PIECES.find(function (x) { return x.id === btn.dataset.piece; });
+        if (p) startGiftFlow(p);
+      };
+    });
+  }
+
+  /* ===== 3단계 선물 + 방명록 플로우 ===== */
+  var FLOW_PIECE = null;
+  function showFlow(html) {
+    document.getElementById("flow-card").innerHTML = html;
+    document.getElementById("flow-modal").classList.remove("hidden");
+  }
+  function closeFlow() { document.getElementById("flow-modal").classList.add("hidden"); FLOW_PIECE = null; }
+
+  function startGiftFlow(piece) {
+    FLOW_PIECE = piece;
+    // Step 1: 키디키디로 이동
+    var url = kidikidiLink({ url: piece.url, brand: piece.brand, productName: piece.base, name: piece.base });
+    window.open(url, "_blank", "noopener");
+    showFlow(
+      '<div class="flow-emoji">🛍️</div>' +
+      '<h3 class="flow-title">키디키디로 이동했어요</h3>' +
+      '<p class="flow-desc">새 탭에서 “' + esc(piece.base) + '”을(를) 구매한 뒤<br/>이 화면으로 돌아와 주세요.</p>' +
+      '<button type="button" class="flow-primary" id="flow-step2">구매하고 돌아왔어요</button>' +
+      '<button type="button" class="flow-ghost" id="flow-cancel">취소</button>'
+    );
+    document.getElementById("flow-step2").onclick = stepConfirm;
+    document.getElementById("flow-cancel").onclick = closeFlow;
+  }
+  function stepConfirm() {
+    showFlow(
+      '<div class="flow-emoji">🎉</div>' +
+      '<h3 class="flow-title">' + esc(CUR_BABY) + "에게 선물을 완료하셨나요?</h3>" +
+      '<p class="flow-desc">완료하셨다면 따뜻한 축하 한마디를 남겨주세요!</p>' +
+      '<button type="button" class="flow-primary" id="flow-yes">네, 선물 완료! 🎁</button>' +
+      '<button type="button" class="flow-ghost" id="flow-back">돌아가기</button>'
+    );
+    document.getElementById("flow-yes").onclick = stepForm;
+    document.getElementById("flow-back").onclick = closeFlow;
+  }
+  var REL = ["이모", "고모", "삼촌", "외삼촌", "할머니", "할아버지", "친구", "기타"];
+  var pickedRel = "이모";
+  function stepForm() {
+    pickedRel = "이모";
+    showFlow(
+      '<h3 class="flow-title">축하 남기기 ✍️</h3>' +
+      '<p class="flow-label">관계</p>' +
+      '<div class="flow-chips" id="flow-chips">' + REL.map(function (r, i) {
+        return '<button type="button" class="flow-chip' + (i === 0 ? " on" : "") + '" data-rel="' + r + '">' + r + "</button>";
+      }).join("") + "</div>" +
+      '<p class="flow-label">이름/닉네임</p>' +
+      '<input type="text" id="flow-name" class="flow-input" placeholder="예: 체리이모" maxlength="16"/>' +
+      '<p class="flow-label">축하 메시지</p>' +
+      '<textarea id="flow-msg" class="flow-textarea" rows="3" maxlength="200" placeholder="민우야 이모가 사준 옷 입고 꿀잠 자~ ❤️"></textarea>' +
+      '<button type="button" class="flow-primary" id="flow-submit">축하 남기고 완료 🎀</button>'
+    );
+    document.querySelectorAll("[data-rel]").forEach(function (c) {
+      c.onclick = function () {
+        document.querySelectorAll("[data-rel]").forEach(function (x) { x.classList.remove("on"); });
+        c.classList.add("on"); pickedRel = c.dataset.rel;
+      };
+    });
+    document.getElementById("flow-submit").onclick = submitGuestbook;
+  }
+  function submitGuestbook() {
+    if (!FLOW_PIECE) return;
+    var name = (document.getElementById("flow-name").value || "").trim() || pickedRel;
+    var msg = (document.getElementById("flow-msg").value || "").trim();
+    var data = { item_id: FLOW_PIECE.id, relationship: pickedRel, guest_name: name, message: msg };
+    handleGuestbookSubmit(data);
+    closeFlow();
+    fireConfetti();
+    // 보드/카드 갱신
+    document.getElementById("gift-sheet-body").innerHTML = renderRegistry();
+    bindRegistry();
+  }
+  // 백엔드 연동용 핸들러(콘솔 출력 + 가족 데이터에 저장)
+  function handleGuestbookSubmit(data) {
+    console.log("[handleGuestbookSubmit]", data);
+    if (!Array.isArray(CURRENT_DATA.guestbook)) CURRENT_DATA.guestbook = [];
+    CURRENT_DATA.guestbook.push({ item_id: data.item_id, relationship: data.relationship, guest_name: data.guest_name, message: data.message, at: Date.now() });
+    persistNow();
+  }
+
+  /* ===== 컨페티 ===== */
+  function fireConfetti() {
+    var cv = document.getElementById("confetti");
+    if (!cv) return;
+    var ctx = cv.getContext("2d");
+    cv.width = window.innerWidth; cv.height = window.innerHeight;
+    var colors = ["#ff6b3d", "#ffd166", "#ff8fab", "#a0e7a0", "#8ec5ff", "#c8a2ff"];
+    var parts = [];
+    for (var i = 0; i < 140; i++) parts.push({
+      x: cv.width / 2, y: cv.height * 0.35,
+      vx: (Math.random() - 0.5) * 14, vy: Math.random() * -15 - 4,
+      g: 0.35 + Math.random() * 0.2, s: 6 + Math.random() * 6,
+      c: colors[(Math.random() * colors.length) | 0], r: Math.random() * 6, vr: (Math.random() - 0.5) * 0.4
+    });
+    var t0 = Date.now();
+    (function frame() {
+      var el = Date.now() - t0;
+      ctx.clearRect(0, 0, cv.width, cv.height);
+      parts.forEach(function (p) {
+        p.vy += p.g; p.x += p.vx; p.y += p.vy; p.r += p.vr;
+        ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.r);
+        ctx.fillStyle = p.c; ctx.fillRect(-p.s / 2, -p.s / 2, p.s, p.s * 0.6); ctx.restore();
+      });
+      if (el < 2600) requestAnimationFrame(frame);
+      else ctx.clearRect(0, 0, cv.width, cv.height);
+    })();
+  }
+
   document.getElementById("gift-sheet-backdrop").onclick = closeGiftSheet;
   document.getElementById("gift-sheet-close").onclick = closeGiftSheet;
+  document.getElementById("flow-backdrop").onclick = closeFlow;
   document.getElementById("cmt-backdrop").onclick = closeComments;
   document.getElementById("cmt-send").onclick = sendComment;
   document.getElementById("cmt-text").addEventListener("keydown", function (e) { if (e.key === "Enter") sendComment(); });

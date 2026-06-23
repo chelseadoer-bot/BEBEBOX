@@ -12,7 +12,7 @@
 <meta property="og:image" content="{{OG_IMAGE}}"/>
 <meta name="twitter:card" content="summary_large_image"/>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css"/>
-<link rel="stylesheet" href="/css/share.css?v=5"/>
+<link rel="stylesheet" href="/css/share.css?v=6"/>
 <script>window.__BABY_ID__="{{BABY_ID}}";</script>
 </head>
 <body>
@@ -31,6 +31,14 @@
 <a class="gift-modal-go" id="gift-modal-go" href="#" target="_blank" rel="noopener">키디키디에서 선물하기 →</a>
 </div>
 </div>
+
+<!-- 선물 + 방명록 3단계 플로우 모달 -->
+<div class="flow-modal hidden" id="flow-modal">
+<div class="flow-backdrop" id="flow-backdrop"></div>
+<div class="flow-card" id="flow-card"></div>
+</div>
+<canvas id="confetti" class="confetti-canvas"></canvas>
+
 
 <div class="gift-sheet hidden" id="gift-sheet">
 <div class="gift-sheet-backdrop" id="gift-sheet-backdrop"></div>
@@ -57,6 +65,6 @@
 </div>
 </div>
 
-<script src="/js/share.js?v=4"></script>
+<script src="/js/share.js?v=5"></script>
 </body>
 </html>
