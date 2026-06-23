@@ -7,6 +7,7 @@
     ? window.__BABY_ID__
     : decodeURIComponent((location.pathname.split("/share/")[1] || "BEBEBOX").split("/")[0] || "BEBEBOX");
   var KIDIKIDI_HOME = "https://kidikidi.elandmall.co.kr/";
+  var KIDIKIDI_PLANSHOP = "https://kidikidi.elandmall.co.kr/p/planshop?exhibitionNo=202606096019";
   var STAGES = [
     { id: "s1", name: "임신 초기" }, { id: "s2", name: "임신 중기" }, { id: "s3", name: "임신 후기" },
     { id: "s4", name: "출산 전후" }, { id: "s5", name: "0-3개월" }, { id: "s6", name: "4-6개월" },
@@ -346,7 +347,12 @@
   function closeGiftSheet() { document.getElementById("gift-sheet").classList.add("hidden"); }
 
   function renderRegistry() {
-    if (!PIECES.length) return '<p class="s-photo-empty">아직 등록된 선물이 없어요</p>';
+    // 키디키디 추천 선물 기획전 바로가기 (조각이 없어도 항상 노출)
+    var planshop = '<a class="bb-planshop" id="bb-planshop" href="' + KIDIKIDI_PLANSHOP + '" target="_blank" rel="noopener">' +
+      '<span class="bb-planshop-ic">🎁</span>' +
+      '<span class="bb-planshop-tx"><b>추천 선물 한번에 보기</b><span>키디키디 베이비 기획전에서 골라보세요</span></span>' +
+      '<span class="bb-planshop-go">›</span></a>';
+    if (!PIECES.length) return planshop + '<p class="s-photo-empty">아직 등록된 선물이 없어요</p>';
     // 3x3 보드
     var board = '<div class="bb-board">' + Array.from({ length: 9 }).map(function (_, i) {
       var p = PIECES[i];
@@ -373,9 +379,11 @@
         '<div class="bb-card-desc">' + esc(p.desc) + "</div>" +
         '<button type="button" class="bb-card-cta" data-piece="' + esc(p.id) + '">' + esc(CUR_BABY) + "에게 이 조각 선물하기 🎁</button></div>";
     }).join("") + "</div>";
-    return board + progress + cards;
+    return planshop + board + progress + cards;
   }
   function bindRegistry() {
+    var ps = document.getElementById("bb-planshop");
+    if (ps) ps.onclick = function () { track("gift_click", { via: "planshop" }); };
     document.querySelectorAll("[data-piece]").forEach(function (btn) {
       btn.onclick = function () {
         var p = PIECES.find(function (x) { return x.id === btn.dataset.piece; });
