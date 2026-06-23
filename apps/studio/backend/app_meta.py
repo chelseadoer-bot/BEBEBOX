@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
-"""2세 얼굴 예측 앱 메타."""
-APP_NO = 13
-APP_ID = "futurebaby"
-TITLE = "2세 얼굴 예측"
-SUBTITLE = "엄마·아빠 사진으로 아이의 연령별 얼굴을 볼수 있어요"
+"""AI 컨셉스튜디오 앱 메타."""
+APP_NO = 15
+APP_ID = "emoticon"
+TITLE = "AI 컨셉스튜디오"
+SUBTITLE = "특별한 장소에 가지 않아도 예쁜 아이 사진을 완성해요."
 AI_TYPE = "image"
-PORT = 8013
+PORT = 8015
 
 PERSIST = True
 DEDUP = False
-SINGLE_RECORD = True   # 한 고객당 1개의 input+output만 적치 (재생성 시 교체)
+STRIP_INPUT_KEYS = ["photo"]   # 엑셀 G: INPUT(사진) 미적치, OUTPUT만 적치
 
 META = {
     "app_no": APP_NO, "app_id": APP_ID, "title": TITLE,
