@@ -296,7 +296,11 @@
   }
   function guestbookFor(id) {
     var gb = (CURRENT_DATA.guestbook || []).filter(function (g) { return g.item_id === id; });
-    return gb.length ? gb[gb.length - 1] : null;
+    if (gb.length) return gb[gb.length - 1];
+    // 부모가 옷장에서 '받았어요'로 기록한 경우도 완료로 표시
+    var owned = CURRENT_DATA.owned || {}, by = CURRENT_DATA.giftedBy || {};
+    if (owned[id]) return { guest_name: by[id] || "가족", message: "" };
+    return null;
   }
   // 보드/카드에 쓸 9조각: 선물 퍼즐 + 옷장 필요 항목
   function buildPieces() {
@@ -306,16 +310,17 @@
       var e = emoFor(g.productName);
       out.push({ id: g.id, base: g.productName, title: e.t, desc: e.d, emoji: (e.t.match(/\p{Emoji}/u) || ["🎁"])[0], url: g.url, brand: g.brand });
     });
-    var wl = CURRENT_DATA.wishlist || {}, owned = CURRENT_DATA.owned || {}, hidden = CURRENT_DATA.hidden || {};
+    // 부모가 옷장에서 '공개(published)'로 설정한 항목만 노출
+    var wl = CURRENT_DATA.wishlist || {}, published = CURRENT_DATA.published || {};
     STAGES.forEach(function (st) {
       (wl[st.id] || []).forEach(function (it) {
-        if (out.length >= 9 || !it || hidden[it.id] || owned[it.id] || seen[it.id]) return;
+        if (!it || !published[it.id] || seen[it.id]) return;
         seen[it.id] = 1; ITEM_INDEX[it.id] = it;
         var e = emoFor(it.name);
         out.push({ id: it.id, base: it.name, title: e.t, desc: e.d, emoji: it.emoji || (e.t.match(/\p{Emoji}/u) || ["🎁"])[0], url: it.url });
       });
     });
-    return out.slice(0, 9);
+    return out;
   }
 
   var PIECES = [];

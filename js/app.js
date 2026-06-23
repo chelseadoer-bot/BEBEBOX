@@ -147,7 +147,7 @@ function reorderItemProducts(itemId,from,to){
 }
 function fmtPrice(n){return n.toLocaleString("ko-KR")+"원";}
 function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
-let state={photos:[],friends:[],inbox:[],profile:{...DEFAULT_PROFILE},wishlist:{},owned:{},hidden:{},itemProducts:{},funding:{},fundingGauge:{},gaugePuzzles:{},collectQuests:{},contributors:{},journeyGifts:{},journeyMemories:{},parentQuestPhotos:{},points:0,coupons:[],posts:[],giftPuzzles:[],journeyJustCleared:null,viewingPostId:null,currentStage:0,currentAgeTab:"all",pendingGift:null,viewingPhotoId:null,pendingFunding:null,pendingContribute:null,pendingJourneyNode:null,pendingRaidNode:null,pendingJourneyEditNode:null};
+let state={photos:[],friends:[],inbox:[],profile:{...DEFAULT_PROFILE},wishlist:{},owned:{},hidden:{},itemProducts:{},funding:{},fundingGauge:{},gaugePuzzles:{},collectQuests:{},contributors:{},journeyGifts:{},journeyMemories:{},parentQuestPhotos:{},points:0,coupons:[],posts:[],giftPuzzles:[],published:{},giftedBy:{},journeyJustCleared:null,viewingPostId:null,currentStage:0,currentAgeTab:"all",pendingGift:null,viewingPhotoId:null,pendingFunding:null,pendingContribute:null,pendingJourneyNode:null,pendingRaidNode:null,pendingJourneyEditNode:null};
 function isGuest(){return new URLSearchParams(location.search).has("guest");}
 function babyName(){return state.profile.babyName||state.profile.name.replace(/의 일기$/,"")||"다엘이";}
 function hasItem(id){return!!state.owned[id];}
@@ -372,6 +372,8 @@ function load(){
   state.owned=owned?JSON.parse(owned):{};
   const hidden=localStorage.getItem(STORAGE_KEYS.wishlist+"_hidden");
   state.hidden=hidden?JSON.parse(hidden):{};
+  try{state.published=JSON.parse(localStorage.getItem(STORAGE_KEYS.wishlist+"_published")||"{}")||{};}catch(_){state.published={};}
+  try{state.giftedBy=JSON.parse(localStorage.getItem(STORAGE_KEYS.wishlist+"_giftedby")||"{}")||{};}catch(_){state.giftedBy={};}
   const products=localStorage.getItem(STORAGE_KEYS.wishlist+"_products");
   state.itemProducts=products?JSON.parse(products):{};
   const fund=localStorage.getItem(STORAGE_KEYS.wishlist+"_funding");
@@ -407,6 +409,8 @@ function saveLocalCache(){
   localStorage.setItem(STORAGE_KEYS.wishlist,JSON.stringify(state.wishlist));
   localStorage.setItem(STORAGE_KEYS.wishlist+"_owned",JSON.stringify(state.owned));
   localStorage.setItem(STORAGE_KEYS.wishlist+"_hidden",JSON.stringify(state.hidden));
+  localStorage.setItem(STORAGE_KEYS.wishlist+"_published",JSON.stringify(state.published||{}));
+  localStorage.setItem(STORAGE_KEYS.wishlist+"_giftedby",JSON.stringify(state.giftedBy||{}));
   localStorage.setItem(STORAGE_KEYS.wishlist+"_products",JSON.stringify(state.itemProducts));
   localStorage.setItem(STORAGE_KEYS.wishlist+"_funding",JSON.stringify(state.funding));
   localStorage.setItem(STORAGE_KEYS.wishlist+"_funding_gauge",JSON.stringify(state.fundingGauge));
@@ -780,6 +784,8 @@ async function submitPost(){
   const post=ensurePostMeta({id:"post"+Date.now(),text,photos:srcs,ageMonth:state.profile.currentAge||9,createdAt:Date.now(),gauge:0,comments:[]});
   state.posts.unshift(post);
   save();
+  // 새로고침 경합으로 글이 사라지지 않게 즉시 서버에도 반영
+  if(typeof pushFamilyDataToServerNow==="function")pushFamilyDataToServerNow().catch(()=>{});
   if(btn)btn.disabled=false;
   closeComposer();
   switchMainTab("home");
@@ -1077,19 +1083,22 @@ function renderWishlistGrid(){
   const grid=$("#wishlist-grid");
   if(!items.length){grid.innerHTML='<div class="wish-empty">아직 등록된 위시리스트가 없어요</div>';return;}
   grid.innerHTML=items.map(item=>{
-    const hidden=!!state.hidden[item.id];
+    const pub=!!state.published[item.id];
     const has=hasItem(item.id);
+    const giver=state.giftedBy[item.id];
     const pc=PRIORITY_CLASS[item.priority]||"";
-    const chip=hidden?"hidden-label":has?"have":"need";
-    const chipText=hidden?"숨김":has?"있음":"아직 없음";
-    return`<div class="wish-card${has?" has-item":" needed"}${hidden?" is-hidden":""}" data-id="${item.id}" data-stage="${stage.id}">
+    let chip,chipText;
+    if(has){chip="have";chipText=giver?`${esc(giver)}님이 줬어요`:"받았어요";}
+    else if(pub){chip="need";chipText="공개중";}
+    else{chip="";chipText="비공개";}
+    return`<div class="wish-card${has?" has-item":""}${pub?" is-published":""}" data-id="${item.id}" data-stage="${stage.id}">
       <div class="wish-card-top">
         <span class="wish-priority ${pc}">${item.priority}</span>
-        <button class="wish-hide-btn${hidden?" active":""}" type="button" aria-label="${hidden?"다시 보이기":"숨기기"}">${hidden?EYE_OFF:EYE_ON}</button>
+        <span class="wish-pub-mark">${has?"🎁":pub?"❤️":"🤍"}</span>
       </div>
       <div class="wish-card-body">
         <span class="wish-emoji">${item.emoji}</span>
-        <span class="wish-name">${item.name}</span>
+        <span class="wish-name">${esc(item.name)}</span>
       </div>
       <div class="wish-card-foot">
         <span class="wish-target">${TARGET_LABEL[item.target]||item.target}</span>
@@ -1098,9 +1107,52 @@ function renderWishlistGrid(){
     </div>`;
   }).join("");
   grid.querySelectorAll(".wish-card").forEach(card=>{
-    card.querySelector(".wish-hide-btn").onclick=e=>{e.stopPropagation();toggleHideItem(card.dataset.id);};
-    card.onclick=()=>openProductPicker(card.dataset.stage,card.dataset.id);
+    const id=card.dataset.id;
+    let timer=null,longed=false;
+    card.oncontextmenu=e=>e.preventDefault();
+    const start=()=>{longed=false;clearTimeout(timer);timer=setTimeout(()=>{longed=true;openWishActionSheet(id);},480);};
+    const cancel=()=>clearTimeout(timer);
+    card.addEventListener("pointerdown",start);
+    card.addEventListener("pointerup",()=>{cancel();if(!longed)togglePublish(id);});
+    card.addEventListener("pointerleave",cancel);
+    card.addEventListener("pointercancel",cancel);
   });
+}
+function togglePublish(id){
+  if(state.published[id]){delete state.published[id];showToast("공유 위시에서 내렸어요");}
+  else{state.published[id]=true;showToast("공유 위시에 공개했어요 ❤️");}
+  save();renderWishlistGrid();
+}
+function openWishActionSheet(id){
+  const item=(state.wishlist[STAGES[state.currentStage].id]||[]).find(i=>i.id===id);
+  if(!item)return;
+  const has=hasItem(id),pub=!!state.published[id];
+  const rows=[];
+  rows.push(`<button type="button" class="wish-act-btn" data-act="received">🎁 받았어요 · 준 사람 적기</button>`);
+  rows.push(`<button type="button" class="wish-act-btn" data-act="pub">${pub?"🙈 공개 취소":"❤️ 공유 위시에 공개"}</button>`);
+  rows.push(`<button type="button" class="wish-act-btn" data-act="products">🛍 상품 고르기</button>`);
+  if(has)rows.push(`<button type="button" class="wish-act-btn" data-act="unreceive">↩️ 받음 취소</button>`);
+  rows.push(`<button type="button" class="wish-act-btn danger" data-act="delete">🗑 삭제 (공개·기록 지우기)</button>`);
+  $("#wish-action-title").textContent=`${item.emoji} ${item.name}`;
+  $("#wish-action-body").innerHTML=rows.join("");
+  $("#wish-action-body").querySelectorAll("[data-act]").forEach(b=>b.onclick=()=>doWishAction(id,b.dataset.act));
+  $("#wish-action-sheet").classList.remove("hidden");
+}
+function closeWishActionSheet(){$("#wish-action-sheet")?.classList.add("hidden");}
+function doWishAction(id,act){
+  if(act==="received"){
+    const who=(prompt("누가 선물해 줬나요? (예: 체리이모)")||"").trim();
+    if(who){state.owned[id]=true;state.giftedBy[id]=who;state.published[id]=true;showToast(`${who}님 선물로 기록했어요 🎁`);}
+  }else if(act==="pub"){
+    if(state.published[id])delete state.published[id];else state.published[id]=true;
+  }else if(act==="products"){
+    closeWishActionSheet();return openProductPicker(STAGES[state.currentStage].id,id);
+  }else if(act==="unreceive"){
+    delete state.owned[id];delete state.giftedBy[id];showToast("받음 표시를 취소했어요");
+  }else if(act==="delete"){
+    delete state.published[id];delete state.owned[id];delete state.giftedBy[id];showToast("삭제했어요");
+  }
+  save();renderWishlistGrid();closeWishActionSheet();
 }
 function updatePickerOwnedUI(owned){
   $("#picker-owned-check").checked=owned;
@@ -1833,6 +1885,8 @@ function bindEvents(){
   $("#btn-settings-share")?.addEventListener("click",()=>shareProfileLink());
   $("#btn-settings-preview")?.addEventListener("click",()=>{window.open(getShareUrl(),"_blank");});
   $("#btn-settings-wishlist")?.addEventListener("click",openWishlist);
+  $("#wish-action-backdrop")?.addEventListener("click",closeWishActionSheet);
+  $("#wish-action-cancel")?.addEventListener("click",closeWishActionSheet);
   $("#btn-kakao-logout")?.addEventListener("click",()=>{
     if(typeof logoutKakao==="function")logoutKakao();
   });

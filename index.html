@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
 <title>베베박스</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css"/>
-<link rel="stylesheet" href="css/style.css?v=29"/>
+<link rel="stylesheet" href="css/style.css?v=30"/>
 <link rel="stylesheet" href="css/onboarding.css?v=5"/>
 <link rel="stylesheet" href="css/theme.css?v=4"/>
 </head>
@@ -400,6 +400,7 @@
 <p class="gp-section-desc">갖고 싶은 선물을 퍼즐로 만들고, 친구가 한 조각씩 채워주면 할인 쿠폰을 받아요</p>
 <div id="gift-puzzle-list"></div>
 </section>
+<p class="wishlist-help">❤️ <b>탭</b>하면 공유 위시에 공개돼요 · <b>길게 누르면</b> 준 사람 기록·삭제</p>
 <div class="wishlist-grid" id="wishlist-grid"></div>
 </div>
 </div>
@@ -705,6 +706,15 @@
 </div>
 </div>
 </div>
+<div class="wish-action-sheet hidden" id="wish-action-sheet">
+<div class="wish-action-backdrop" id="wish-action-backdrop"></div>
+<div class="wish-action-panel">
+<div class="comment-handle"></div>
+<p class="wish-action-title" id="wish-action-title"></p>
+<div class="wish-action-body" id="wish-action-body"></div>
+<button type="button" class="wish-action-cancel" id="wish-action-cancel">닫기</button>
+</div>
+</div>
 <nav class="bottom-tab-bar hidden" id="bottom-tab-bar" aria-label="하단 메뉴">
 <button type="button" class="tab-bar-item active" data-tab="home"><span class="tab-bar-icon">📷</span><span>기록</span></button>
 <button type="button" class="tab-bar-item" data-tab="game"><span class="tab-bar-icon">🎮</span><span>게임</span></button>
@@ -723,6 +733,6 @@
 <script src="js/family-data.js?v=2"></script>
 <script src="js/kakao-auth.js?v=1"></script>
 <script src="js/onboarding.js?v=7"></script>
-<script src="js/app.js?v=48"></script>
+<script src="js/app.js?v=49"></script>
 </body>
 </html>
