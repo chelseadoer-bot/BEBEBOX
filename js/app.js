@@ -679,6 +679,8 @@ function getPost(id){return state.posts.find(p=>p.id===id);}
 function filterPostsByAge(){
   const all=[...state.posts].sort((a,b)=>b.createdAt-a.createdAt);
   if(state.currentAgeTab==="all")return all;
+  // 유효하지 않은(예전 형식의) 탭 값이면 전체를 보여줘 글이 사라지지 않게 한다.
+  if(!ageStepById(state.currentAgeTab)){state.currentAgeTab="all";return all;}
   return all.filter(p=>ageChipId(p.ageMonth)===state.currentAgeTab);
 }
 function renderFeed(){
