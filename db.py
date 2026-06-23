@@ -57,6 +57,16 @@ CREATE TABLE IF NOT EXISTS events (
 );
 CREATE INDEX IF NOT EXISTS idx_events_family ON events (family_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_events_type ON events (type);
+
+-- 쿠폰 지급(발급) 상태: 운영자가 키디키디 쿠폰을 실제로 발급했는지 체크.
+CREATE TABLE IF NOT EXISTS coupon_fulfillment (
+    family_id    TEXT NOT NULL,
+    coupon_id    TEXT NOT NULL,
+    fulfilled    INTEGER DEFAULT 0,
+    fulfilled_at INTEGER,
+    note         TEXT DEFAULT '',
+    PRIMARY KEY (family_id, coupon_id)
+);
 """
 
 
@@ -296,19 +306,25 @@ def list_members(q=None):
         fam = row["family_id"]
         profile = data.get("profile") or {}
         baby = profile.get("babyName") or (profile.get("name") or "").replace("의 일기", "") or "우리 아기"
-        if q and q not in fam.lower() and q not in baby.lower():
+        kidikidi = (profile.get("kidikidiId") or "").strip()
+        if q and q not in fam.lower() and q not in baby.lower() and q not in kidikidi.lower():
             continue
         published = sum(1 for v in (data.get("published") or {}).values() if v)
         received = sum(1 for v in (data.get("owned") or {}).values() if v)
-        j = journey_summary(fam)["funnel"]
+        summary = journey_summary(fam)
+        j = summary["funnel"]
         out.append({
             "family_id": fam, "user_id": fam, "baby": baby,
+            "kidikidi_id": (profile.get("kidikidiId") or "").strip(),
+            "points": int(data.get("points") or 0),
+            "coupons": len(data.get("coupons") or []),
             "records": len(data.get("posts") or []),
             "published": published, "received": received,
             "views": j["views"], "gift_clicks": j["gift_clicks"], "gifts_done": j["gifts_done"],
-            "guests": len(journey_summary(fam)["guests"]),
+            "guests": len(summary["guests"]),
             "updated_at": row["updated_at"],
         })
+    out.sort(key=lambda m: -(m["points"]))
     return out
 
 
@@ -364,8 +380,24 @@ def member_detail(family_id):
             g["items"].append(names.get(iid))
 
     js = journey_summary(fam)
+    fmap = _fulfillment_map()
+    coupons = []
+    for c in (data.get("coupons") or []):
+        cid = c.get("id") or ""
+        ful = fmap.get((fam, cid))
+        coupons.append({
+            "coupon_id": cid, "amount": c.get("amount") or 0,
+            "code": c.get("code") or "", "created_at": c.get("createdAt") or 0,
+            "expires": c.get("expires") or "",
+            "fulfilled": bool(ful and ful["fulfilled"]),
+            "fulfilled_at": (ful or {}).get("fulfilled_at"),
+        })
+    coupons.sort(key=lambda c: (c["fulfilled"], -(c["created_at"] or 0)))
     return {
         "family_id": fam, "user_id": fam, "baby": baby,
+        "kidikidi_id": (profile.get("kidikidiId") or "").strip(),
+        "points": int(data.get("points") or 0),
+        "coupons": coupons,
         "funnel": js["funnel"],
         "to_give": to_give,
         "givers": sorted(givers.values(), key=lambda x: -x["pieces"]),
@@ -421,8 +453,74 @@ def global_stats():
         fam = conn.execute("SELECT COUNT(*) AS n FROM family_data").fetchone()["n"]
         ev = conn.execute("SELECT COUNT(*) AS n FROM events").fetchone()["n"]
         by = conn.execute("SELECT type, COUNT(*) AS n FROM events GROUP BY type").fetchall()
+    q = coupon_queue()
+    pending = sum(1 for c in q if not c["fulfilled"])
     return {
         "families": fam,
         "events": ev,
         "by_type": {r["type"]: r["n"] for r in by},
+        "coupons_total": len(q),
+        "coupons_pending": pending,
+        "coupons_done": len(q) - pending,
     }
+
+
+# ------------------------------------------------------- 쿠폰 지급(발급) 관리
+def _fulfillment_map():
+    """{(family_id, coupon_id): row} 형태로 발급 상태를 반환."""
+    with _conn() as conn:
+        rows = conn.execute("SELECT * FROM coupon_fulfillment").fetchall()
+    return {(r["family_id"], r["coupon_id"]): dict(r) for r in rows}
+
+
+def coupon_queue():
+    """전 회원의 '교환된 쿠폰' 목록 = 운영자가 키디키디 쿠폰을 발급해 줘야 할 큐.
+
+    각 항목: 아기/가족코드, 키디키디 아이디, 쿠폰(금액·코드·교환일), 발급 여부.
+    미발급(대기)을 위로, 최신 교환순으로 정렬한다.
+    """
+    fmap = _fulfillment_map()
+    out = []
+    for row in _all_family_rows():
+        try:
+            data = json.loads(row["data"] or "{}")
+        except json.JSONDecodeError:
+            data = {}
+        fam = row["family_id"]
+        profile = data.get("profile") or {}
+        baby = profile.get("babyName") or (profile.get("name") or "").replace("의 일기", "") or "우리 아기"
+        kidikidi = (profile.get("kidikidiId") or "").strip()
+        points = int(data.get("points") or 0)
+        for c in (data.get("coupons") or []):
+            cid = c.get("id") or ""
+            ful = fmap.get((fam, cid))
+            out.append({
+                "family_id": fam, "baby": baby, "kidikidi_id": kidikidi,
+                "coupon_id": cid,
+                "amount": c.get("amount") or 0,
+                "code": c.get("code") or "",
+                "label": c.get("label") or "장바구니 쿠폰",
+                "created_at": c.get("createdAt") or 0,
+                "expires": c.get("expires") or "",
+                "points": points,
+                "fulfilled": bool(ful and ful["fulfilled"]),
+                "fulfilled_at": (ful or {}).get("fulfilled_at"),
+                "missing_kidikidi": not kidikidi,
+            })
+    out.sort(key=lambda c: (c["fulfilled"], -(c["created_at"] or 0)))
+    return out
+
+
+def set_coupon_fulfilled(family_id, coupon_id, fulfilled=True, note=""):
+    fam = (family_id or "").strip().upper()
+    cid = (coupon_id or "").strip()
+    if not fam or not cid:
+        return False
+    with _conn() as conn:
+        conn.execute(
+            "INSERT INTO coupon_fulfillment(family_id, coupon_id, fulfilled, fulfilled_at, note) "
+            "VALUES(?,?,?,?,?) ON CONFLICT(family_id, coupon_id) DO UPDATE SET "
+            "fulfilled=excluded.fulfilled, fulfilled_at=excluded.fulfilled_at, note=excluded.note",
+            (fam, cid, 1 if fulfilled else 0, now_ms() if fulfilled else None, note or ""),
+        )
+    return True
