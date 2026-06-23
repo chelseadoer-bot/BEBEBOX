@@ -29,6 +29,7 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 
 import db
 import kakao_auth as ka
+import ai_backend
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 # 배포 시 영구 디스크 경로를 환경변수로 지정할 수 있다(없으면 로컬 uploads/).
@@ -347,6 +348,27 @@ class H(SimpleHTTPRequestHandler):
             return self._kakao_callback()
         if path == "/api/kidikidi/search":
             return self._kidikidi_search()
+        # AI 그라운드 미니앱: /apps/<slug>/api/* 및 /apps/<slug>/storage/*
+        m = re.match(r"^/apps/([^/]+)/(api|storage)(?:/(.*))?$", path)
+        if m:
+            slug, kind, rest = m.group(1), m.group(2), (m.group(3) or "")
+            if kind == "storage":
+                fp = ai_backend.storage_path(slug, urllib.parse.unquote(rest))
+                if not fp:
+                    return self.send_error(404)
+                ctype = mimetypes.guess_type(fp)[0] or "application/octet-stream"
+                with open(fp, "rb") as f:
+                    data = f.read()
+                self.send_response(200)
+                self.send_header("Content-Type", ctype)
+                self.send_header("Content-Length", str(len(data)))
+                self.send_header("Cache-Control", "public, max-age=86400")
+                self.end_headers()
+                return self.wfile.write(data)
+            q = {k: v[0] for k, v in
+                 urllib.parse.parse_qs(urllib.parse.urlparse(self.path).query).items()}
+            status, payload = ai_backend.handle("GET", slug, rest, q, None)
+            return json_response(self, status, payload)
         return super().do_GET()
 
     # ----------------------------------------------------------- POST
@@ -374,6 +396,16 @@ class H(SimpleHTTPRequestHandler):
                 user_id=(body.get("user_id") or None),
             )
             return json_response(self, 200, {"ok": True})
+        # AI 그라운드 미니앱 실행: POST /apps/<slug>/api/run
+        m = re.match(r"^/apps/([^/]+)/api/(.*)$", path)
+        if m:
+            slug, rest = m.group(1), m.group(2)
+            try:
+                body = read_json_body(self)
+            except json.JSONDecodeError:
+                return json_response(self, 400, {"ok": False, "error": "invalid_json"})
+            status, payload = ai_backend.handle("POST", slug, rest, {}, body)
+            return json_response(self, status, payload)
         if path != "/api/photos/upload":
             return json_response(self, 404, {"error": "not_found"})
         try:

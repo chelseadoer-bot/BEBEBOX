@@ -1843,9 +1843,15 @@ const AI_APPS={
   pastlife:"/apps/pastlife/",    // 전생 인연(추천)
 };
 function openAiApp(slug,label){
-  const url=AI_APPS[slug];
+  let url=AI_APPS[slug];
   if(typeof track==="function")track("ai_app",{app:slug});
   if(!url){showToast(`${label||"앱"} 준비 중이에요`);return;}
+  // 가족코드를 uid 로 넘겨 AI 앱 기록이 고객(USERID)별로 적치되게 한다.
+  try{
+    const code=(typeof ensureInviteCode==="function"&&ensureInviteCode(true))
+             ||(typeof getInviteCode==="function"&&getInviteCode())||"";
+    if(code)url+=(url.indexOf("?")<0?"?":"&")+"uid="+encodeURIComponent(String(code).toUpperCase());
+  }catch(_){}
   $("#app-frame-title").textContent=label||"";
   $("#app-frame").src=url;            // 앱 안에서 iframe 으로 띄움
   showOverlay("#app-frame-view");
