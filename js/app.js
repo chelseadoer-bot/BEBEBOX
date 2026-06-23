@@ -672,6 +672,7 @@ function ensurePostMeta(p){
   if(!Array.isArray(p.comments))p.comments=[];
   if(p.ageMonth==null)p.ageMonth=9;
   if(!p.createdAt)p.createdAt=Date.now();
+  if(p.visibility==null)p.visibility="all"; // all=전체공개, me=나만보기
   return p;
 }
 function getPost(id){return state.posts.find(p=>p.id===id);}
@@ -701,10 +702,12 @@ function renderFeed(){
     const imgs=p.photos.length?`<div class="post-photos-wrap"><div class="post-photos${multi?" multi":""}">${slides}</div>${nav}</div>${dots}`:"";
     const gpct=Math.min(100,p.gauge);
     const text=p.text?`<p class="post-text"><strong>${esc(state.profile.name)}</strong> ${esc(p.text)}</p>`:"";
+    const visBadge=p.visibility==="me"?`<span class="post-vis">🔒 나만</span>`:`<span class="post-vis pub">🌏 전체</span>`;
     return`<article class="post-card" data-id="${p.id}">
       <div class="post-head">
         <img class="post-avatar" src="${esc(state.profile.avatar)}" alt=""/>
-        <div class="post-head-meta"><div class="post-name">${esc(state.profile.name)}</div><div class="post-date">${esc(fmtPhotoDate(p.createdAt))} · ${esc(ageLabel(p.ageMonth))}</div></div>
+        <div class="post-head-meta"><div class="post-name">${esc(state.profile.name)} ${visBadge}</div><div class="post-date">${esc(fmtPhotoDate(p.createdAt))} · ${esc(ageLabel(p.ageMonth))}</div></div>
+        <button type="button" class="post-menu-btn owner-only" data-menu="${p.id}" aria-label="더보기">⋯</button>
       </div>
       ${imgs}
       <div class="post-emotion">
@@ -719,6 +722,7 @@ function renderFeed(){
   feed.querySelectorAll("img[data-img]").forEach(im=>im.onclick=()=>openImageLightbox(im.dataset.img));
   feed.querySelectorAll("[data-emotion]").forEach(b=>b.onclick=e=>{e.stopPropagation();bumpEmotion(b.dataset.emotion);});
   feed.querySelectorAll("[data-comment]").forEach(b=>b.onclick=()=>openPostCommentSheet(b.dataset.comment));
+  feed.querySelectorAll("[data-menu]").forEach(b=>b.onclick=e=>{e.stopPropagation();openPostMenu(b.dataset.menu);});
   feed.querySelectorAll(".post-nav").forEach(btn=>btn.onclick=e=>{
     e.stopPropagation();
     const scroller=btn.parentElement.querySelector(".post-photos");
@@ -764,6 +768,39 @@ function openImageLightbox(src){
   $("#photo-detail").classList.remove("hidden");
   document.body.style.overflow="hidden";
 }
+function openPostMenu(id){
+  const p=getPost(id);if(!p)return;
+  const priv=p.visibility==="me";
+  const body=$("#post-menu-body");
+  $("#post-menu-title").textContent=priv?"🔒 나만 보는 글":"🌏 전체 공개 글";
+  body.innerHTML=
+    `<button type="button" class="wish-act-btn" data-pa="vis">${priv?"🌏 전체 공개로 바꾸기":"🔒 나만 보기로 바꾸기"}</button>`+
+    `<button type="button" class="wish-act-btn" data-pa="edit">✏️ 글 내용 수정</button>`+
+    `<button type="button" class="wish-act-btn danger" data-pa="del">🗑 삭제</button>`;
+  body.querySelectorAll("[data-pa]").forEach(b=>b.onclick=()=>doPostAction(id,b.dataset.pa));
+  $("#post-menu-sheet").classList.remove("hidden");
+}
+function closePostMenu(){$("#post-menu-sheet")?.classList.add("hidden");}
+function doPostAction(id,act){
+  const p=getPost(id);
+  if(!p){closePostMenu();return;}
+  if(act==="vis"){
+    p.visibility=p.visibility==="me"?"all":"me";
+    showToast(p.visibility==="me"?"나만 보기로 바꿨어요 🔒":"전체 공개로 바꿨어요 🌏");
+  }else if(act==="edit"){
+    const t=prompt("글 내용 수정",p.text||"");
+    if(t===null)return;
+    p.text=t.trim();
+    showToast("글을 수정했어요");
+  }else if(act==="del"){
+    if(!confirm("이 글을 삭제할까요?"))return;
+    state.posts=state.posts.filter(x=>x.id!==id);
+    showToast("글을 삭제했어요");
+  }
+  save();
+  if(typeof pushFamilyDataToServerNow==="function")pushFamilyDataToServerNow().catch(()=>{});
+  renderFeed();closePostMenu();
+}
 function openPostCommentSheet(id){
   state.viewingPostId=id;
   renderComments();
@@ -775,9 +812,15 @@ function openPostCommentSheet(id){
 }
 /* ---------------------------------------------------- 글쓰기(인스타식) */
 let composerFiles=[];
+let composerVisibility="all";
+function setComposerVisibility(v){
+  composerVisibility=(v==="me")?"me":"all";
+  document.querySelectorAll("#composer-vis [data-vis]").forEach(b=>b.classList.toggle("on",b.dataset.vis===composerVisibility));
+}
 function openComposer(){
   composerFiles=[];
   const t=$("#composer-text");if(t)t.value="";
+  setComposerVisibility("all");
   renderComposerThumbs();
   $("#post-composer-modal")?.classList.remove("hidden");
 }
@@ -812,7 +855,7 @@ async function submitPost(){
     }
     if(!srcs.length){showToast("사진 업로드 실패. server.py 실행 중인지 확인해 주세요");if(btn)btn.disabled=false;return;}
   }
-  const post=ensurePostMeta({id:"post"+Date.now(),text,photos:srcs,ageMonth:state.profile.currentAge||9,createdAt:Date.now(),gauge:0,comments:[]});
+  const post=ensurePostMeta({id:"post"+Date.now(),text,photos:srcs,ageMonth:state.profile.currentAge||9,createdAt:Date.now(),gauge:0,comments:[],visibility:composerVisibility});
   state.posts.unshift(post);
   save();
   // 새로고침 경합으로 글이 사라지지 않게 즉시 서버에도 반영
@@ -1939,6 +1982,9 @@ function bindEvents(){
   $("#composer-backdrop")?.addEventListener("click",closeComposer);
   $("#btn-composer-submit")?.addEventListener("click",submitPost);
   $("#composer-photo-input")?.addEventListener("change",e=>{addComposerFiles(e.target.files);e.target.value="";});
+  $("#composer-vis")?.addEventListener("click",e=>{const b=e.target.closest("[data-vis]");if(b)setComposerVisibility(b.dataset.vis);});
+  $("#post-menu-backdrop")?.addEventListener("click",closePostMenu);
+  $("#post-menu-cancel")?.addEventListener("click",closePostMenu);
   // 프로필 사진 변경
   $("#btn-change-avatar")?.addEventListener("click",()=>$("#avatar-input")?.click());
   $("#avatar-input")?.addEventListener("change",e=>{changeAvatar(e.target.files[0]);e.target.value="";});

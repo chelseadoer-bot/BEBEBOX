@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
 <title>베베박스</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css"/>
-<link rel="stylesheet" href="css/style.css?v=31"/>
+<link rel="stylesheet" href="css/style.css?v=32"/>
 <link rel="stylesheet" href="css/onboarding.css?v=5"/>
 <link rel="stylesheet" href="css/theme.css?v=4"/>
 </head>
@@ -648,7 +648,20 @@
 </div>
 <div class="composer-thumbs" id="composer-thumbs"></div>
 <textarea id="composer-text" class="composer-text" rows="4" maxlength="500" placeholder="오늘 아이의 순간을 기록해 보세요..."></textarea>
+<div class="composer-vis" id="composer-vis">
+<button type="button" class="composer-vis-btn on" data-vis="all">🌏 전체 공개</button>
+<button type="button" class="composer-vis-btn" data-vis="me">🔒 나만 보기</button>
+</div>
 <input type="file" id="composer-photo-input" accept="image/*" multiple class="hidden-input"/>
+</div>
+</div>
+<div class="wish-action-sheet hidden" id="post-menu-sheet">
+<div class="wish-action-backdrop" id="post-menu-backdrop"></div>
+<div class="wish-action-panel">
+<div class="comment-handle"></div>
+<p class="wish-action-title" id="post-menu-title">글 관리</p>
+<div class="wish-action-body" id="post-menu-body"></div>
+<button type="button" class="wish-action-cancel" id="post-menu-cancel">닫기</button>
 </div>
 </div>
 <div class="modal hidden" id="profile-stats-modal">
@@ -737,6 +750,6 @@
 <script src="js/family-data.js?v=2"></script>
 <script src="js/kakao-auth.js?v=1"></script>
 <script src="js/onboarding.js?v=7"></script>
-<script src="js/app.js?v=50"></script>
+<script src="js/app.js?v=51"></script>
 </body>
 </html>
