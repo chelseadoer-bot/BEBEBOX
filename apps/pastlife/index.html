@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>아이와 나의 전생 — KIDIKIDI</title>
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" rel="stylesheet">
+<style>
+:root{
+  --bg:#F0F7FF;--bg2:#E8F4FD;--bg3:#DBEAFE;
+  --card:#FFFFFF;--ink:#1E293B;--ink2:#475569;--ink3:#64748B;--ink4:#94A3B8;
+  --border:#DBEAFE;
+  --brand:#4A90E2;--brand-l:#EFF6FF;--brand-d:#2563EB;
+  --accent:#6366F1;--accent-l:#EEF2FF;--accent-d:#4338CA;
+  --shadow:rgba(30,58,95,0.06);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Pretendard',-apple-system,sans-serif;background:var(--bg);min-height:100vh;color:var(--ink);display:flex;flex-direction:column;align-items:center;}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 70% 8%,rgba(74,144,226,0.07) 0%,transparent 55%),radial-gradient(ellipse at 8% 92%,rgba(56,189,248,0.05) 0%,transparent 55%);pointer-events:none;z-index:0;}
+.app{width:100%;max-width:480px;min-height:100vh;position:relative;z-index:1;padding-bottom:60px;}
+.header{padding:40px 24px 28px;text-align:center;position:relative;}
+.header-badge{display:inline-flex;align-items:center;gap:5px;background:var(--brand-l);color:var(--brand-d);font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:5px 12px;border-radius:100px;margin-bottom:14px;}
+.app-emoji{font-size:44px;display:block;margin-bottom:14px;}
+.header h1{font-family:'Pretendard',sans-serif;font-size:24px;font-weight:700;line-height:1.45;color:var(--ink);margin-bottom:8px;letter-spacing:-0.03em;}
+.header h1 .acc{color:var(--accent);}
+.header p{font-size:13px;color:var(--ink3);line-height:1.7;}
+.section{padding:0 20px 18px;}
+.sec-label{font-size:13px;font-weight:700;color:var(--ink);letter-spacing:-0.02em;margin-bottom:10px;display:flex;align-items:center;gap:7px;}.sec-label::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--brand);flex-shrink:0;}
+.ifield{width:100%;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 14px;font-family:'Pretendard',sans-serif;font-size:14px;font-weight:700;color:var(--ink);outline:none;transition:all 0.2s;}
+.ifield::placeholder{color:var(--ink4);font-weight:400;}
+.ifield:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-l);}
+.input-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+.igroup label{display:block;font-size:11px;font-weight:800;color:var(--ink3);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:6px;}
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:14px;}
+.chip{padding:7px 13px;border-radius:20px;border:1px solid var(--border);background:var(--card);color:var(--ink2);font-size:12px;font-weight:800;cursor:pointer;transition:all 0.15s;font-family:'Pretendard',sans-serif;}
+.chip:hover{border-color:var(--ink3);}
+.chip.sel{border-color:var(--accent);background:var(--accent-l);color:var(--accent-d);}
+.btn-primary{width:calc(100% - 40px);margin:0 20px 20px;padding:18px;border:none;border-radius:12px;background:var(--brand);color:#fff;font-family:'Pretendard',sans-serif;font-size:17px;font-weight:700;cursor:pointer;transition:all 0.2s;box-shadow:0 5px 20px rgba(74,144,226,0.3);display:none;position:relative;overflow:hidden;}
+.btn-primary::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,0.12) 0%,transparent 60%);}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(74,144,226,0.4);}
+.btn-primary:disabled{opacity:0.45;cursor:default;transform:none;box-shadow:none;}
+.loading-wrap{display:none;padding:0 20px 20px;}
+.loading-card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:36px 22px;text-align:center;box-shadow:0 4px 20px var(--shadow);}
+.loading-emoji{font-size:52px;display:block;margin-bottom:16px;animation:loadSpin 2s ease-in-out infinite;}
+@keyframes loadSpin{0%,100%{transform:scale(1)rotate(-5deg);}50%{transform:scale(1.08)rotate(5deg);}}
+.loading-title{font-family:'Pretendard',sans-serif;font-size:17px;color:var(--ink);margin-bottom:6px;}
+.loading-sub{font-size:13px;color:var(--ink3);line-height:1.6;margin-bottom:20px;}
+.step-list{display:flex;flex-direction:column;gap:8px;}
+.step-item{display:flex;align-items:center;gap:10px;padding:9px 13px;border-radius:11px;background:var(--bg2);font-size:12px;color:var(--ink4);font-weight:700;transition:all 0.4s;}
+.step-item.on{background:var(--accent-l);color:var(--accent-d);}
+.step-item.done{opacity:0.4;}
+.step-dot{width:7px;height:7px;border-radius:50%;background:var(--border);flex-shrink:0;transition:all 0.4s;}
+.step-item.on .step-dot{background:var(--accent);animation:dotBlink 0.7s infinite;}
+@keyframes dotBlink{0%,100%{opacity:1;}50%{opacity:0;}}
+.result-wrap{display:none;padding:0 20px 32px;}
+.r-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:13px;box-shadow:0 1px 3px var(--shadow);}
+.r-card-head{display:flex;align-items:center;gap:10px;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--border);}
+.r-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;background:var(--accent-l);}
+.r-title{font-size:13px;font-weight:800;color:var(--ink2);}
+.r-sub{font-size:11px;color:var(--ink3);font-weight:700;margin-top:1px;}
+.r-body{font-size:13px;font-weight:700;color:var(--ink2);line-height:1.8;}
+.r-hero{background:linear-gradient(135deg,var(--accent-l) 0%,#fff 100%);border:1px solid rgba(0,0,0,0.06);border-radius:18px;padding:24px 20px;margin-bottom:13px;text-align:center;position:relative;overflow:hidden;}
+.r-hero::after{content:attr(data-emoji);position:absolute;font-size:80px;opacity:0.07;right:-10px;bottom:-10px;}
+.r-hero-badge{display:inline-block;background:var(--accent-l);border:1px solid rgba(0,0,0,0.06);color:var(--accent-d);font-size:10px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;padding:4px 13px;border-radius:20px;margin-bottom:12px;}
+.r-hero-title{font-family:'Pretendard',sans-serif;font-size:22px;font-weight:700;color:var(--ink);margin-bottom:5px;line-height:1.3;}
+.r-hero-sub{font-size:13px;color:var(--ink3);}
+.score-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.score-label{font-size:12px;font-weight:800;color:var(--ink2);width:60px;flex-shrink:0;}
+.score-track{flex:1;height:8px;background:var(--bg3);border-radius:10px;overflow:hidden;}
+.score-fill{height:100%;background:var(--accent);border-radius:10px;transition:width 1.1s cubic-bezier(0.4,0,0.2,1);}
+.score-pct{font-size:12px;font-weight:800;color:var(--accent);width:34px;text-align:right;}
+.gift-card{background:#1E3A5F;border-radius:18px;padding:22px 20px;margin-bottom:13px;position:relative;overflow:hidden;}
+.gift-card::before{content:attr(data-emoji);position:absolute;font-size:80px;opacity:0.08;right:-8px;bottom:-8px;}
+.gift-label{font-size:10px;font-weight:800;letter-spacing:0.14em;color:rgba(255,255,255,0.35);text-transform:uppercase;margin-bottom:9px;}
+.gift-msg{font-family:'Pretendard',sans-serif;font-size:15px;line-height:1.85;color:rgba(255,255,255,0.9);}
+.share-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px;}
+.btn-share{padding:14px;border-radius:14px;font-family:'Pretendard',sans-serif;font-size:13px;font-weight:800;cursor:pointer;transition:all 0.18s;border:1px solid var(--border);background:var(--card);color:var(--ink2);text-align:center;}
+.btn-share.primary{background:var(--brand);color:#fff;border:none;box-shadow:0 4px 14px rgba(74,144,226,0.22);}
+.btn-share:hover{transform:translateY(-1px);}
+.err-box{display:none;margin:0 20px 18px;background:#FEF0EF;border:1px solid rgba(220,60,60,0.2);border-radius:14px;padding:16px;text-align:center;font-size:13px;font-weight:700;color:#C03020;line-height:1.6;}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:10px 22px;border-radius:30px;font-size:13px;font-weight:700;opacity:0;transition:all 0.3s;pointer-events:none;z-index:999;white-space:nowrap;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="header">
+  <div class="header-badge">전생 관계 감정소</div>
+  <span class="app-emoji">🔮</span>
+  <h1>우리가 <span class="acc">처음 만난 건</span><br>이번 생이 아니에요</h1>
+  <p>엄마(아빠)와 아이, 지금은 부모자식이지만<br>전생에는 어떤 사이였을까요?</p>
+</div>
+<div class="section" id="input-section">
+  <div class="sec-label">① 관계 선택</div>
+  <div class="chips">
+    <span class="chip sel" id="t-mom" onclick="setRel('mom')">👩‍👧 엄마 &amp; 아이</span>
+    <span class="chip" id="t-dad" onclick="setRel('dad')">👨‍👧 아빠 &amp; 아이</span>
+    <span class="chip" id="t-both" onclick="setRel('both')">👨‍👩‍👧 셋 다</span>
+  </div>
+  <div class="sec-label">② 이름</div>
+  <div class="input-row">
+    <div class="igroup"><label id="lbl-parent">엄마 이름</label><input class="ifield" id="p-name" placeholder="예: 김지영" maxlength="10"></div>
+    <div class="igroup"><label>아이 이름</label><input class="ifield" id="c-name" placeholder="예: 이서준" maxlength="10"></div>
+  </div>
+  <div class="sec-label">③ 현재 관계를 표현하면?</div>
+  <div class="chips" id="trait-chips">
+    <span class="chip" onclick="toggleChip(this)">눈만 마주쳐도 웃김</span>
+    <span class="chip" onclick="toggleChip(this)">말 안 해도 통함</span>
+    <span class="chip" onclick="toggleChip(this)">자꾸 부딪힘</span>
+    <span class="chip" onclick="toggleChip(this)">집착이 심함</span>
+    <span class="chip" onclick="toggleChip(this)">처음 봤는데 낯설지 않았음</span>
+    <span class="chip" onclick="toggleChip(this)">뭘 해도 용서됨</span>
+    <span class="chip" onclick="toggleChip(this)">서로 닮음</span>
+    <span class="chip" onclick="toggleChip(this)">자꾸 이기려 함</span>
+    <span class="chip" onclick="toggleChip(this)">한쪽이 너무 퍼줌</span>
+    <span class="chip" onclick="toggleChip(this)">눈빛이 똑같음</span>
+  </div>
+  <textarea class="ifield" id="extra" placeholder="추가 정보를 적어주세요. 예: 아이가 엄마 손만 잡고 자요." style="resize:none;min-height:72px;margin-bottom:0;"></textarea>
+</div>
+<button class="btn-primary" id="btn-divine" style="display:block;" onclick="divine()">👁️ 전생 관계 감정하기</button>
+<div class="loading-wrap" id="loading-wrap">
+  <div class="loading-card">
+    <span class="loading-emoji">🔮</span>
+    <div class="loading-title">아카식 레코드를 열람 중...</div>
+    <div class="loading-sub">수천 년의 기록을 뒤지고 있어요</div>
+    <div class="step-list">
+      <div class="step-item" id="s1"><div class="step-dot"></div>고대 시대 스캔 중...</div>
+      <div class="step-item" id="s2"><div class="step-dot"></div>조선시대 인연 기록 열람 중...</div>
+      <div class="step-item" id="s3"><div class="step-dot"></div>중세 유럽 생애 대조 중...</div>
+      <div class="step-item" id="s4"><div class="step-dot"></div>전생 인연 지수 계산 중...</div>
+      <div class="step-item" id="s5"><div class="step-dot"></div>이생 연결 패턴 분석 중...</div>
+    </div>
+  </div>
+</div>
+<div class="err-box" id="err-box"></div>
+<div class="result-wrap" id="result-wrap"></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="/kidikidi-app.js"></script>
+<script>
+function showToast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},2500);}
+function animSteps(ids,interval){
+  ids.forEach(function(id){var el=document.getElementById(id);if(el)el.className='step-item';});
+  var i=0;var timer=setInterval(function(){
+    if(i>0){var p=document.getElementById(ids[i-1]);if(p)p.classList.add('done');}
+    if(i<ids.length){var c=document.getElementById(ids[i]);if(c)c.classList.add('on');i++;}else clearInterval(timer);
+  },interval||1000);return timer;
+}
+function escHtml(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+var rel='mom'; var chips=new Set();
+function setRel(r){
+  rel=r;
+  ['mom','dad','both'].forEach(function(t){document.getElementById('t-'+t).classList.toggle('sel',t===r);});
+  var lbl={'mom':'엄마 이름','dad':'아빠 이름','both':'엄마/아빠 이름'};
+  document.getElementById('lbl-parent').textContent=lbl[r];
+}
+function toggleChip(el){el.classList.toggle('sel');var t=el.textContent.trim();if(el.classList.contains('sel'))chips.add(t);else chips.delete(t);}
+function setBtnState(disabled){var b=document.getElementById('btn-divine');if(b){b.disabled=disabled;b.style.opacity=disabled?'0.45':'1';}}
+
+async function divine(){
+  var parent=document.getElementById('p-name').value.trim();
+  var child=document.getElementById('c-name').value.trim();
+  if(!parent||!child){showToast('두 분 이름을 모두 입력해 주세요 🌙');return;}
+  setBtnState(true);
+  document.getElementById('loading-wrap').style.display='block';
+  document.getElementById('result-wrap').style.display='none';
+  document.getElementById('err-box').style.display='none';
+  var t=animSteps(['s1','s2','s3','s4','s5'],900);
+  try{
+    var res=await KD.run({rel:rel,parent:parent,child:child,chips:[...chips],extra:document.getElementById('extra').value.trim()});
+    clearInterval(t);
+    document.getElementById('loading-wrap').style.display='none';
+    if(res.from_cache)showToast('이미 기록된 결과가 있어요 🔮');
+    renderResult(res.output);
+    setBtnState(false);
+  }catch(e){
+    clearInterval(t);
+    document.getElementById('loading-wrap').style.display='none';
+    document.getElementById('err-box').textContent=(e&&e.message)?e.message:'전생 기록 열람에 실패했어요. 다시 시도해주세요 🌙';document.getElementById('err-box').style.display='block';
+    setBtnState(false);
+  }
+}
+
+function buildResultHtml(d){
+  d=d||{};
+  var parent=d.parent_name||'';
+  var child=d.child_name||'';
+  var evHtml=(d.evidence||[]).map(function(e){return '<div style="display:flex;gap:9px;align-items:flex-start;margin-bottom:9px;font-size:13px;font-weight:700;color:var(--ink2);line-height:1.5;"><span style="color:var(--accent);flex-shrink:0;">✦</span>'+escHtml(e)+'</div>';}).join('');
+  var karmaHtml=Object.keys(d.karma_scores||{}).map(function(k){var pct=parseInt(d.karma_scores[k],10)||0;return '<div class="score-row"><span class="score-label">'+escHtml(k)+'</span><div class="score-track"><div class="score-fill" style="width:'+pct+'%;"></div></div><span class="score-pct">'+pct+'%</span></div>';}).join('');
+  return '<div class="r-hero" data-emoji="🔮"><div class="r-hero-badge">📜 '+escHtml(d.era)+'</div><div style="display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:14px;"><div style="text-align:center;"><span style="font-size:36px;display:block;margin-bottom:5px;">'+escHtml(d.parent_emoji)+'</span><div style="font-size:12px;font-weight:800;color:var(--ink2);">'+escHtml(parent)+'</div><div style="font-size:11px;color:var(--ink3);">'+escHtml(d.parent_past_role)+'</div></div><div style="font-size:22px;color:var(--accent);">⟷</div><div style="text-align:center;"><span style="font-size:36px;display:block;margin-bottom:5px;">'+escHtml(d.child_emoji)+'</span><div style="font-size:12px;font-weight:800;color:var(--ink2);">'+escHtml(child)+'</div><div style="font-size:11px;color:var(--ink3);">'+escHtml(d.child_past_role)+'</div></div></div><div class="r-hero-title">'+escHtml(d.relation_type)+'</div><div class="r-hero-sub">'+escHtml(d.relation_subtitle)+'</div></div>'
+    +'<div class="r-card"><div class="r-card-head"><div class="r-icon">✦</div><div><div class="r-title">전생 스토리</div></div></div><div class="r-body">'+escHtml(d.story)+'</div></div>'
+    +'<div class="r-card"><div class="r-card-head"><div class="r-icon">🔍</div><div><div class="r-title">이생에서 보이는 전생의 흔적</div></div></div>'+evHtml+'</div>'
+    +'<div class="r-card"><div class="r-card-head"><div class="r-icon">📊</div><div><div class="r-title">인연 지수 분석</div></div></div>'+karmaHtml+'</div>'
+    +'<div class="gift-card" data-emoji="🔮"><div class="gift-label">✦ 전생이 이생에 전하는 말</div><div class="gift-msg">"'+escHtml(d.this_life_quote)+'"</div><div style="margin-top:10px;font-size:12px;font-weight:700;color:rgba(255,255,255,0.55);">'+escHtml(d.this_life_interpret)+'</div></div>';
+}
+
+function renderResult(d){
+  d=d||{};
+  document.getElementById('input-section').style.display='none';
+  document.getElementById('btn-divine').style.display='none';
+  var html=buildResultHtml(d)+'<div class="share-row"><button class="btn-share" onclick="copyRes()">📋 결과 복사</button><button class="btn-share primary" onclick="location.reload()">🔮 다시 감정</button></div>';
+  var wrap=document.getElementById('result-wrap');
+  wrap.innerHTML=html; wrap.style.display='block';
+  window._copyText='🔮 전생 관계 감정 | '+(d.era||'')+' | '+(d.parent_name||'')+'('+(d.parent_past_role||'')+') x '+(d.child_name||'')+'('+(d.child_past_role||'')+') | '+(d.relation_type||'')+' | '+(d.story||'')+' | '+(d.this_life_quote||'');
+  setTimeout(function(){wrap.scrollIntoView({behavior:'smooth',block:'start'});},150);
+}
+function copyRes(){KD.copyShot({filename:'kidikidi-pastlife.png'});}
+
+KD.mountHistory({
+  mountTarget: document.querySelector('.app'),
+  label: function(r){ var o=r.output||{}; return (o.parent_name||'')+' ⟷ '+(o.child_name||'')+' · '+(o.era||''); },
+  renderRecord: function(rec, c){ c.innerHTML=buildResultHtml(rec.output||{}); }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>키디키디 K-TYPE 기질 검사</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Gowun+Dodum&family=Jua&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FFF8F3; --card:#FFFFFF; --main:#FF7043; --main-d:#F4511E;
+    --main-soft:#FFE0B2; --main-softer:#FFF1E0; --text:#3E2723; --text-soft:#8D6E63;
+    --border:#F5E6D6; --brand:#FF7043; --brand-d:#F4511E; --brand-l:#FFF1E0;
+    --ink:#3E2723; --ink2:#5D4037; --ink3:#8D6E63;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'Gowun Dodum',sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;}
+  .app{max-width:480px;margin:0 auto;min-height:100vh;}
+  .font-display{font-family:'Jua',sans-serif;}
+  .font-cute{font-family:'Gaegu',sans-serif;}
+  .screen{display:none;}
+  .screen.on{display:block;animation:fadeInUp .5s ease-out;}
+  @keyframes fadeInUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+  @keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-12px);}}
+  @keyframes sway{0%,100%{transform:rotate(-2deg);}50%{transform:rotate(2deg);}}
+  @keyframes pulse-glow{0%,100%{box-shadow:0 4px 14px rgba(255,112,67,.3);}50%{box-shadow:0 6px 20px rgba(255,112,67,.5);}}
+  @keyframes bounce{0%,80%,100%{transform:translateY(0);}40%{transform:translateY(-8px);}}
+  .animate-float{animation:float 3s ease-in-out infinite;}
+  .animate-sway{animation:sway 3s ease-in-out infinite;transform-origin:top center;}
+
+  .center{text-align:center;}
+  .pad{padding:32px 24px 40px;}
+  .muted{color:var(--text-soft);}
+  .small{font-size:13px;}
+  .xs{font-size:12px;}
+
+  .btn-main{display:block;width:100%;background:var(--main);color:#fff;border:none;padding:16px;border-radius:18px;font-family:inherit;font-weight:700;font-size:17px;cursor:pointer;transition:all .2s;}
+  .btn-main:hover{background:var(--main-d);transform:translateY(-1px);}
+  .btn-main:disabled{background:#E0E0E0;color:#9E9E9E;cursor:not-allowed;transform:none;}
+  .btn-line{display:block;width:100%;background:#fff;border:2px solid var(--main-soft);color:var(--text-soft);padding:13px;border-radius:18px;font-family:inherit;font-weight:700;font-size:15px;cursor:pointer;}
+  .btn-line.brand{border-color:var(--main);color:var(--main);}
+
+  .result-box{background:#fff;border-radius:20px;border:1px solid var(--border);padding:20px;}
+  .hashtag{display:inline-block;background:var(--main-soft);color:var(--main);font-weight:700;font-size:12px;padding:5px 13px;border-radius:20px;margin:2px 3px 2px 0;}
+
+  /* 진행률 */
+  .progress-wrap{padding:24px 24px 0;}
+  .progress-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+  .progress-top button{background:none;border:none;color:var(--text-soft);font-size:14px;font-family:inherit;cursor:pointer;}
+  .progress-num{font-size:14px;font-weight:700;color:var(--main);}
+  .progress-bar{height:8px;background:var(--main-soft);border-radius:10px;overflow:hidden;}
+  .progress-bar > i{display:block;height:100%;background:var(--main);border-radius:10px;transition:width .5s cubic-bezier(.4,0,.2,1);}
+
+  /* 질문 */
+  .q-emoji{font-size:48px;margin-bottom:14px;}
+  .q-scene{font-family:'Jua',sans-serif;font-size:18px;color:var(--main);margin-bottom:10px;}
+  .q-title{font-size:21px;font-weight:700;line-height:1.5;margin-bottom:28px;}
+  .option-card{display:flex;align-items:flex-start;gap:12px;width:100%;text-align:left;background:#fff;border:2px solid var(--main-soft);border-radius:18px;padding:16px;margin-bottom:12px;font-family:inherit;cursor:pointer;transition:all .2s;}
+  .option-card:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(255,112,67,.15);}
+  .option-card.selected{background:var(--main-softer);border-color:var(--main);}
+  .option-radio{flex-shrink:0;width:24px;height:24px;border-radius:50%;border:2px solid var(--main-soft);margin-top:2px;display:flex;align-items:center;justify-content:center;}
+  .option-card.selected .option-radio{border-color:var(--main);background:var(--main);}
+  .option-text{font-size:15px;line-height:1.55;flex:1;}
+
+  /* 로딩 */
+  .dot{display:inline-block;width:8px;height:8px;background:var(--main);border-radius:50%;margin:0 3px;animation:bounce 1.2s infinite;}
+
+  /* 결과 */
+  .result-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px;}
+  .result-title{text-align:center;font-family:'Jua',sans-serif;font-size:34px;margin-bottom:28px;}
+  .result-title span{color:var(--main);}
+  .result-id{display:flex;align-items:center;gap:16px;margin-bottom:28px;}
+  .result-id .info{flex:1;}
+  .result-id .info .row{display:flex;gap:8px;margin-bottom:8px;font-size:14px;}
+  .result-id .info .row b{color:var(--main);}
+  .sect{margin-bottom:22px;}
+  .sect h3{font-size:16px;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+  .sect h3 .name{color:var(--main);font-weight:700;}
+  .sect ul{list-style:none;}
+  .sect ul li{display:flex;gap:8px;font-size:14px;line-height:1.7;margin-bottom:8px;}
+  .sect ul li span:first-child{color:var(--text-soft);}
+  .sect p{font-size:14px;line-height:1.8;white-space:pre-line;}
+  .bar-row{margin-bottom:12px;}
+  .bar-row .lab{display:flex;justify-content:space-between;font-size:14px;margin-bottom:5px;}
+  .bar-row .lab b{color:var(--main);}
+  .bar-track{height:8px;background:var(--main-softer);border-radius:10px;overflow:hidden;}
+  .bar-track > i{display:block;height:100%;background:var(--main);border-radius:10px;}
+  .actions{padding:0 16px 32px;}
+  .actions .row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px;}
+
+  /* 곰돌이 */
+  .bear-wrap svg{display:inline-block;}
+
+  /* 토스트 */
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:10px 22px;border-radius:30px;font-size:13px;font-weight:700;opacity:0;transition:all .3s;pointer-events:none;z-index:9999;white-space:nowrap;}
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- 랜딩 -->
+  <section class="screen on" id="s-landing">
+    <div class="pad center">
+      <div class="font-cute small muted" style="margin-bottom:8px;">키디키디 Kidi Kidi</div>
+      <div class="bear-wrap" id="bear-landing"></div>
+      <h1 class="font-display" style="font-size:34px;color:var(--main);margin:22px 0 12px;">K-TYPE 기질 검사</h1>
+      <p style="font-size:18px;line-height:1.6;margin-bottom:8px;">우리 아이의 기질,<br><b>2분이면 알 수 있어요</b></p>
+      <p class="small muted" style="margin-bottom:36px;">16개의 질문으로 알아보는<br>우리 아이만의 K-TYPE</p>
+      <button class="btn-main" id="btn-start" style="animation:pulse-glow 2s infinite;">무료로 검사 시작하기</button>
+      <button class="btn-line" id="btn-history-open" style="margin-top:12px;">⏰ 기존 결과물 보기</button>
+      <p class="xs muted" style="margin-top:14px;">총 16문항 · 약 2~3분 소요</p>
+
+      <div class="result-box" style="margin-top:44px;text-align:left;">
+        <p class="small" style="font-weight:700;color:var(--main);margin-bottom:14px;">K-TYPE이란?</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div style="background:var(--main-softer);border-radius:14px;padding:12px;"><div style="font-size:22px;">😊</div><div style="font-weight:700;font-size:14px;">순한 아이</div><div class="xs muted">규칙적이고 적응 잘함</div></div>
+          <div style="background:var(--main-softer);border-radius:14px;padding:12px;"><div style="font-size:22px;">🌱</div><div style="font-weight:700;font-size:14px;">느린 아이</div><div class="xs muted">천천히 적응하는</div></div>
+          <div style="background:var(--main-softer);border-radius:14px;padding:12px;"><div style="font-size:22px;">🌶️</div><div style="font-weight:700;font-size:14px;">까다로운 아이</div><div class="xs muted">예민하고 개성있는</div></div>
+          <div style="background:var(--main-softer);border-radius:14px;padding:12px;"><div style="font-size:22px;">🌈</div><div style="font-weight:700;font-size:14px;">혼합 유형</div><div class="xs muted">다채로운 매력의</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 정보 입력 -->
+  <section class="screen" id="s-info">
+    <div class="pad">
+      <button class="btn-line" id="btn-info-back" style="width:auto;border:none;padding:0;text-align:left;font-size:14px;margin-bottom:24px;">← 뒤로</button>
+      <h2 class="font-display center" style="font-size:24px;color:var(--main);margin-bottom:8px;">우리 아이를 알려주세요</h2>
+      <p class="small muted center" style="margin-bottom:36px;">입력하신 정보는 결과지에만 사용돼요</p>
+      <label class="small" style="font-weight:700;display:block;margin-bottom:8px;">아이 이름</label>
+      <input id="in-name" type="text" placeholder="예) 이서현" style="width:100%;padding:13px 16px;border-radius:14px;border:2px solid var(--main-soft);font-family:inherit;font-size:15px;outline:none;margin-bottom:20px;background:#fff;">
+      <label class="small" style="font-weight:700;display:block;margin-bottom:8px;">생년월일</label>
+      <input id="in-birth" type="date" style="width:100%;padding:13px 16px;border-radius:14px;border:2px solid var(--main-soft);font-family:inherit;font-size:15px;outline:none;margin-bottom:40px;background:#fff;">
+      <button class="btn-main" id="btn-info-next" disabled>검사 시작하기</button>
+    </div>
+  </section>
+
+  <!-- 질문 -->
+  <section class="screen" id="s-quiz">
+    <div class="progress-wrap">
+      <div class="progress-top">
+        <button id="btn-prev"></button>
+        <span class="progress-num" id="q-num">1 / 16</span>
+      </div>
+      <div class="progress-bar"><i id="q-progress" style="width:6.25%"></i></div>
+    </div>
+    <div class="pad center" style="padding-top:24px;">
+      <div class="q-emoji" id="q-emoji">🌅</div>
+      <div class="q-scene" id="q-scene"></div>
+      <h2 class="q-title" id="q-title"></h2>
+      <div id="q-options" style="text-align:left;"></div>
+    </div>
+  </section>
+
+  <!-- 로딩 -->
+  <section class="screen" id="s-loading">
+    <div class="pad center" style="padding-top:120px;">
+      <div class="bear-wrap" id="bear-loading"></div>
+      <h2 class="font-display" style="font-size:24px;color:var(--main);margin-top:24px;">결과를 분석하고 있어요</h2>
+      <p class="small muted" style="margin-top:10px;">우리 아이의 기질을 알아보는 중...</p>
+      <div style="margin-top:22px;"><span class="dot"></span><span class="dot" style="animation-delay:.2s"></span><span class="dot" style="animation-delay:.4s"></span></div>
+    </div>
+  </section>
+
+  <!-- 결과 -->
+  <section class="screen" id="s-result">
+    <div style="padding:24px 16px 0;">
+      <div id="result-card" style="background:var(--bg);border-radius:24px;padding:24px;">
+        <div class="result-head">
+          <span class="xs muted" id="r-date"></span>
+          <span class="font-cute muted small">키디키디</span>
+        </div>
+        <h1 class="result-title font-display"><span>K-TYPE</span> 결과지</h1>
+        <div class="result-id">
+          <div class="bear-wrap" id="bear-result"></div>
+          <div class="info">
+            <div class="row"><b>●</b><span>이름 : <b id="r-name" style="color:var(--text)"></b></span></div>
+            <div class="row"><b>●</b><span>생년월일 : <span id="r-birth"></span></span></div>
+            <div class="row"><b>●</b><span>기질 유형 : <b id="r-type" style="color:var(--main)"></b></span></div>
+            <div id="r-tags" style="margin-top:4px;"></div>
+          </div>
+        </div>
+        <div class="sect">
+          <h3><span style="color:var(--main)">●</span> <span class="name" id="r-type2"></span> 특징</h3>
+          <div class="result-box"><ul id="r-desc"></ul></div>
+        </div>
+        <div class="sect">
+          <h3><span style="color:var(--main)">●</span> <span class="name" id="r-type3"></span> 양육방법</h3>
+          <div class="result-box"><p id="r-parenting"></p></div>
+        </div>
+        <div class="sect">
+          <h3><span style="color:var(--main)">●</span> <b>나의 답변 분포</b></h3>
+          <div class="result-box" id="r-bars"></div>
+        </div>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn-main" id="btn-save" style="margin-top:14px;">📥 결과지 이미지 저장</button>
+      <div class="row">
+        <button class="btn-line brand" id="btn-copy">📋 결과 복사</button>
+        <button class="btn-line" id="btn-restart">다시 검사</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="/kidikidi-app.js"></script>
+<script>
+/* ========== 데이터 (0529 최초 기획 원본) ========== */
+var QUESTIONS = [
+  {scene:"굿 모닝!",emoji:"🌅",question:"잠에서 깬 아이가 불편함을 느끼면 어떻게 표현하나요?",options:[
+    {t:"울음을 터뜨리려 하나 엄마가 안아주면 바로 괜찮아져요.",type:"easy"},
+    {t:"어느 정도 울음이 지속되고 나서야 진정돼요.",type:"slow"},
+    {t:"울면서 계속 떼를 써요. 원하는 것이 주어져도 울음이 쉽게 진정되지 않아요.",type:"difficult"}]},
+  {scene:"즐거운 아침 식사 시간!",emoji:"🍼",question:"우리 아이는 처음 맛보는 이유식이나 음식에 어떤 반응인가요?",options:[
+    {t:"처음부터 경계심 없이 잘 받아먹어요.",type:"easy"},
+    {t:"새로운 맛에 호기심을 갖지만 처음엔 뱉어낼 수 있어요. 몇 번 먹어보면 잘 먹어요.",type:"slow"},
+    {t:"일단 바로 뱉거나 안 먹으려 해요. 편식이 있어 새로운 것을 먹이는데 시간이 오래 걸려요.",type:"difficult"}]},
+  {scene:"외출을 위해 옷을 갈아입어요!",emoji:"👕",question:"아이는 옷 색이나 촉감에 대해 민감하게 반응하나요?",options:[
+    {t:"어떤 옷을 입혀도 크게 다른 반응이 없어요.",type:"easy"},
+    {t:"가끔 투정을 부리지만 설득하면 잘 입어요.",type:"slow"},
+    {t:"옷을 갈아 입히는 것이 전쟁인 것처럼 싫어하며 우는 경우가 많아요.",type:"difficult"}]},
+  {scene:"놀이터에 갔어요!",emoji:"🛝",question:"새로운 친구를 만났을 때 아이의 반응은 어떤가요?",options:[
+    {t:"금방 즐겁게 어울려요.",type:"easy"},
+    {t:"낯가리고 수줍어 하나 시간이 지나면 친구와 함께 놀아요.",type:"slow"},
+    {t:"새로운 친구를 사귀는 것을 어려워하고 엄마와 함께 놀자고 해요.",type:"difficult"}]},
+  {scene:"꼬르륵~ 점심시간이에요!",emoji:"🍚",question:"아이의 식사량은 어떤가요?",options:[
+    {t:"매일 일정한 양의 분유와 이유식을 먹어요.",type:"easy"},
+    {t:"먹는 양은 비슷하나 가끔은 너무 적게 먹거나 많이 먹어요.",type:"slow"},
+    {t:"매일 먹는 양이 다르고 밥을 먹이는 게 힘들어요.",type:"difficult"}]},
+  {scene:"또래 친구 집에 갔어요!",emoji:"🏠",question:"낯선 장소에 간 아이의 행동은 어떤가요?",options:[
+    {t:"눈을 크게 뜨거나 돌아다니며 주변을 적극적으로 관찰해요.",type:"easy"},
+    {t:"엄마 품에 안겨 조심스럽게 행동하나 곧 적응해요.",type:"slow"},
+    {t:"보호자로부터 안 떨어지거나 울며 적응하는데 오랜 시간이 필요해요.",type:"difficult"}]},
+  {scene:"또래 친구와 함께 놀이를 해요!",emoji:"🧸",question:"장난감 조작이 원하는 대로 안 될 때 아이는 어떤 편인가요?",options:[
+    {t:"살짝 보채지만 금방 받아들여요.",type:"easy"},
+    {t:"징징거리며 불만을 표현하지만 도와주거나 달래주면 괜찮아져요.",type:"slow"},
+    {t:"화내고 짜증을 부리거나 장난감을 던지며 포기해요.",type:"difficult"}]},
+  {scene:"이제 집으로 돌아가요.",emoji:"🚶",question:"아이는 집으로 돌아갈 때 어떤 반응인가요?",options:[
+    {t:"별 반응 없이 잘 따라요.",type:"easy"},
+    {t:"칭얼거림으로 아쉬움을 표현하지만 곧 잘 따라와요.",type:"slow"},
+    {t:"싫어하며 울음으로 거부 반응을 먼저 보여요.",type:"difficult"}]},
+  {scene:"신호등에서 누군가 인사했어요!",emoji:"👋",question:"처음 보는 사람을 만났을 때 아이의 행동은 어떤가요?",options:[
+    {t:"상대방을 보며 웃어요.",type:"easy"},
+    {t:"처음에는 수줍어하나 곧 상대방에게 관심을 가져요.",type:"slow"},
+    {t:"상대방을 보고 무서워하며 엄마한테 떨어지지 않으려고 해요.",type:"difficult"}]},
+  {scene:"집에 돌아와 기저귀를 갈아요.",emoji:"🍼",question:"우리 아이는 기저귀를 갈 때 어떤 반응을 보이나요?",options:[
+    {t:"울지 않고 끝날 때까지 얌전히 잘 기다려줘요.",type:"easy"},
+    {t:"징징거리지만 장난감 등을 쥐어주며 달래주면 괜찮아요.",type:"slow"},
+    {t:"기저귀를 갈아주는 내내 울며 싫어해요.",type:"difficult"}]},
+  {scene:"아이가 잠시 혼자 있어요.",emoji:"😢",question:"아이가 칭얼거리거나 보챌 때 어떻게 해야 진정되나요?",options:[
+    {t:"부모가 와서 관심을 보여주면 금방 웃어요.",type:"easy"},
+    {t:"조금 달래주어야 하며 원하는 것을 해주어야 괜찮아져요.",type:"slow"},
+    {t:"쉽게 그치지 않아요. 아이가 원하는 것이 무엇인지 잘 모를 때가 있어요.",type:"difficult"}]},
+  {scene:"외출 준비를 위해 기저귀를 챙겨요.",emoji:"⏰",question:"아이의 배변활동은 어떤가요?",options:[
+    {t:"매일 규칙적으로 힘들지 않게 잘하고 있어요.",type:"easy"},
+    {t:"시간이 다르지만 크게 신경 쓸 정도는 아니에요.",type:"slow"},
+    {t:"배변활동을 어려워하여 많이 신경을 써줘야 해요.",type:"difficult"}]},
+  {scene:"저녁 일정이 있어 외출했어요.",emoji:"🍽️",question:"식당에서 다른 사람들과 함께 있을 때 아이의 반응은?",options:[
+    {t:"누구든 관심 갖고 놀아주면 좋아하고 식사시간을 잘 인내해줘요.",type:"easy"},
+    {t:"조금 지루해할 때가 있지만 안아주거나 산책하면 괜찮아져요.",type:"slow"},
+    {t:"계속 언제 나가는지 보채고, 기다리는 것을 힘들어해요.",type:"difficult"}]},
+  {scene:"아이도 저녁을 먹어요.",emoji:"🥄",question:"아이가 배고프다고 느끼는 시간은 규칙적인가요?",options:[
+    {t:"규칙적인 시간에 배고파해요.",type:"easy"},
+    {t:"때론 일정하지 않지만 밥시간에 먹여주면 잘 먹어요.",type:"slow"},
+    {t:"배고픈 시간이 규칙적이지 않아서 먹여줘도 안 먹을 때가 많아요.",type:"difficult"}]},
+  {scene:"이제 어느덧 밤이 되었어요!",emoji:"🌙",question:"아이의 취침시간은 어떤가요?",options:[
+    {t:"매일 비슷한 시간에 자요.",type:"easy"},
+    {t:"매일 조금씩 다르지만 대체로 규칙적이에요.",type:"slow"},
+    {t:"취침시간이 불규칙적이에요.",type:"difficult"}]},
+  {scene:"하루를 돌이켜봐요.",emoji:"💭",question:"오늘 하루, 아이가 어떤 감정 표현을 많이 했나요?",options:[
+    {t:"대체로 웃고 긍정적인 정서를 보여요.",type:"easy"},
+    {t:"잘 웃기도 하나 잘 울기도 해요.",type:"slow"},
+    {t:"웃음보다 화, 짜증, 울음으로 부정적인 정서를 더 강하게 표현해요.",type:"difficult"}]}
+];
+var TYPE_TO_IDX = {easy:0, slow:1, difficult:2};
+
+var RESULT_DATA = {
+  easy:{code:"E",name:"순한 아이",ratio:"약 40% 정도",hashtags:["#명랑함","#규칙적","#적응력UP"],
+    description:["명랑하며 식습관, 수면습관, 배변활동 등 생물학적 기능이 규칙적이에요.","새로운 환경에 쉽게 적응할 수 있어요.","상황에 유연성이 있어서 부모가 다루기에 큰 어려움이 없어요."],
+    parenting:"아이에게 다양한 자극에 노출시켜 발달이 지연되지 않도록 환경을 제공해 주는 것이 바람직해요. 온순하다고 혼자서 지내는 시간이 많아지지 않도록 부모는 항상 아이에게 관심을 가져줘야 해요. 아이가 울기 전에 식사, 기저귀 갈기 등 필요한 부분을 세심하게 챙겨주세요."},
+  slow:{code:"S",name:"느린 아이",ratio:"약 15% 정도",hashtags:["#천천히","#수줍음","#섬세함"],
+    description:["순한 아이에 비해 변화에 적응하는데 시간이 좀 더 많이 걸려요.","활동성이 높기보다는 온순한 반응을 보여요.","수줍음, 침묵 등 온순한 방법으로 새로운 상황을 회피하는 경향이 있어요.","새로운 사람을 만나거나 환경에서는 별다른 반응 없어 보이는 모습은 사실 아이는 긴장하고 떨리는 상황일 수도 있어요."],
+    parenting:"새로운 자극에 익숙해지는 데 시간이 오래 걸려서 다양한 활동보다는 한 가지 활동에 집중할 수 있게 하여 충분히 적응할 수 있는 시간을 제공해주는 것이 필요해요. \"왜 말을 안해?\", \"왜 이렇게 수줍어해?\" 등의 말은 아이를 더 위축시킬 수 있으니, 아이가 충분히 주위를 둘러보며 경계를 풀고 적응할 수 있도록 기다려주세요. 수줍어하거나 소극적이라고 다그치지 마시고 조금만 기다려주면 우리 아이도 잘 적응할 수 있어요."},
+  difficult:{code:"D",name:"까다로운 아이",ratio:"약 10% 정도",hashtags:["#예민함","#개성있는","#특별함"],
+    description:["잘 보채고 새로운 환경에 대해 부정적으로 반응하며 회피하려고 해요.","생물학적 기능도 불규칙적이에요.","때로는 왜 우는지 알 수 없을 정도로 심하게 울 수 있어요.","감정 표현이 강한 만큼, 자신의 의사를 분명히 전달할 줄 아는 아이에요."],
+    parenting:"자극에 대해 매우 예민하므로, 우선 자극이 별로 없는 편안한 환경을 제공하며 민감하게 아이의 상태를 파악하여 대처해야 해요. 아이의 기질 특성을 이해하고 아이가 환경에 잘 적응할 수 있도록 도와주는 양육이 필요해요. 이 과정에서 때론 부모가 지쳐 아이에게 감정적으로 대하는 일이 없도록 조심해야 해요."}
+};
+
+function mixedResult(p1, p2){
+  var p=RESULT_DATA[p1], s=RESULT_DATA[p2];
+  var code=p.code+s.code+" 혼합유형";
+  return {code:code,name:code,ratio:"약 35% 정도",
+    hashtags:p.hashtags.slice(0,2).concat(s.hashtags.slice(0,1)),
+    description:p.description.slice(0,2).concat(s.description.slice(0,2)),
+    parenting:"우리 아이는 "+p.name+"의 특성과 "+s.name+"의 특성이 함께 보이는 혼합유형이에요. 식습관, 새로운 환경에 대한 적응, 낯선 사람에 대한 반응, 좌절에 대한 반응, 정서 등 어떤 부분에서 아이가 어떤 유형을 보이는지 잘 파악하는 것이 중요해요. 잘하는 부분은 지속적으로 잘 적응하도록 관심과 격려를 보이며, 예민하고 느린 부분에 대해서는 기다려주고 천천히 자극을 받아들일 수 있도록 지도해주세요."};
+}
+
+function calculateResult(answers){
+  var count={easy:0,slow:0,difficult:0};
+  answers.forEach(function(a){ if(a) count[a]++; });
+  var order=["easy","slow","difficult"];
+  var sorted=order.slice().sort(function(a,b){return count[b]-count[a];});
+  var first=sorted[0], second=sorted[1];
+  var res;
+  if(count[first]/16 >= 0.6){ res=Object.assign({},RESULT_DATA[first]); res.isMixed=false; }
+  else if(count[first]-count[second] <= 3){ res=mixedResult(first,second); res.isMixed=true; }
+  else { res=Object.assign({},RESULT_DATA[first]); res.isMixed=false; }
+  res.counts=count;
+  return res;
+}
+
+/* ========== 곰돌이 SVG ========== */
+function bearSVG(size){
+  size = size || 200;
+  return '<svg width="'+size+'" height="'+(size*1.3)+'" viewBox="0 0 200 260" xmlns="http://www.w3.org/2000/svg">'
+    +'<path d="M 100 180 Q 102 200 100 240" stroke="#8D6E63" stroke-width="1" fill="none" class="animate-sway"/>'
+    +'<g class="animate-float">'
+    +'<ellipse cx="100" cy="95" rx="75" ry="85" fill="#FF7043"/>'
+    +'<ellipse cx="78" cy="65" rx="18" ry="25" fill="#FFAB91" opacity="0.6"/>'
+    +'<ellipse cx="100" cy="100" rx="55" ry="55" fill="#FFFFFF"/>'
+    +'<circle cx="55" cy="55" r="14" fill="#FF7043"/><circle cx="55" cy="55" r="7" fill="#FFFFFF"/>'
+    +'<circle cx="145" cy="55" r="14" fill="#FF7043"/><circle cx="145" cy="55" r="7" fill="#FFFFFF"/>'
+    +'<ellipse cx="80" cy="95" rx="3" ry="4" fill="#3E2723"/><ellipse cx="120" cy="95" rx="3" ry="4" fill="#3E2723"/>'
+    +'<circle cx="68" cy="110" r="6" fill="#FFAB91" opacity="0.6"/><circle cx="132" cy="110" r="6" fill="#FFAB91" opacity="0.6"/>'
+    +'<ellipse cx="100" cy="108" rx="2.5" ry="2" fill="#3E2723"/>'
+    +'<path d="M 95 115 Q 100 120 105 115" stroke="#3E2723" stroke-width="1.5" fill="none" stroke-linecap="round"/>'
+    +'<ellipse cx="100" cy="140" rx="14" ry="10" fill="#F4A460"/>'
+    +'<circle cx="98" cy="138" r="1.5" fill="#8B4513"/><circle cx="102" cy="141" r="1.5" fill="#8B4513"/><circle cx="100" cy="143" r="1.5" fill="#8B4513"/>'
+    +'<path d="M 95 178 L 100 184 L 105 178 Z" fill="#FF7043"/>'
+    +'</g>'
+    +'<ellipse cx="100" cy="248" rx="40" ry="4" fill="#FFAB91" opacity="0.3"/>'
+    +'</svg>';
+}
+
+/* ========== 상태/렌더 ========== */
+var state = { step:'landing', userInfo:null, answers:new Array(16).fill(null), currentQ:0, result:null };
+var $ = function(id){ return document.getElementById(id); };
+
+function showToast(msg){
+  var t=$('toast'); if(!t) return;
+  t.textContent=msg; t.style.opacity='1'; t.style.transform='translateX(-50%) translateY(0)';
+  setTimeout(function(){ t.style.opacity='0'; t.style.transform='translateX(-50%) translateY(20px)'; },2200);
+}
+
+function goStep(step){
+  state.step=step;
+  document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('on'); });
+  $('s-'+step).classList.add('on');
+  window.scrollTo(0,0);
+}
+
+function renderQuestion(){
+  var q=QUESTIONS[state.currentQ], n=state.currentQ;
+  $('q-num').textContent=(n+1)+' / 16';
+  $('q-progress').style.width=(((n+1)/16)*100)+'%';
+  $('q-emoji').textContent=q.emoji;
+  $('q-scene').textContent=q.scene;
+  $('q-title').textContent=q.question;
+  $('btn-prev').textContent = n>0 ? '← 이전' : '';
+  var cur=state.answers[n];
+  var html='';
+  q.options.forEach(function(opt){
+    var sel = cur===opt.type;
+    html += '<button class="option-card'+(sel?' selected':'')+'" data-type="'+opt.type+'">'
+      + '<span class="option-radio">'+(sel?'<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6L5 9L10 3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>':'')+'</span>'
+      + '<span class="option-text">'+opt.t+'</span></button>';
+  });
+  $('q-options').innerHTML=html;
+  Array.prototype.forEach.call($('q-options').querySelectorAll('.option-card'), function(btn){
+    btn.onclick=function(){ answerQ(btn.getAttribute('data-type')); };
+  });
+}
+
+function answerQ(type){
+  state.answers[state.currentQ]=type;
+  renderQuestion();
+  setTimeout(function(){
+    if(state.currentQ < QUESTIONS.length-1){
+      state.currentQ++; renderQuestion();
+      window.scrollTo(0,0);
+    } else {
+      finishQuiz();
+    }
+  }, 280);
+}
+
+function persistRecord(){
+  try{
+    if(!(window.KD && KD.run)) return;
+    var idx = state.answers.map(function(t){ return t==null?null:TYPE_TO_IDX[t]; });
+    KD.run({ answers:idx, child_name:(state.userInfo&&state.userInfo.name)||'', birthdate:(state.userInfo&&state.userInfo.birthdate)||'' }).catch(function(){});
+  }catch(e){}
+}
+
+function finishQuiz(){
+  goStep('loading');
+  var calculated=calculateResult(state.answers);
+  state.result=calculated;
+  persistRecord();
+  setTimeout(function(){ renderResult(state.userInfo, calculated); goStep('result'); }, 1500);
+}
+
+function fmtBirth(b){
+  var d=new Date(b);
+  if(isNaN(d)) return b||'';
+  return d.getFullYear()+'.'+('0'+(d.getMonth()+1)).slice(-2)+'.'+('0'+d.getDate()).slice(-2);
+}
+
+function renderResult(userInfo, result){
+  var today=new Date();
+  $('r-date').textContent='검사일 : '+today.getFullYear()+'.'+('0'+(today.getMonth()+1)).slice(-2)+'.'+('0'+today.getDate()).slice(-2);
+  $('r-name').textContent=(userInfo&&userInfo.name)||'';
+  $('r-birth').textContent=fmtBirth(userInfo&&userInfo.birthdate);
+  $('r-type').textContent=result.name;
+  $('r-type2').textContent=result.name;
+  $('r-type3').textContent=result.name;
+  $('r-tags').innerHTML=(result.hashtags||[]).map(function(t){return '<span class="hashtag">'+t+'</span>';}).join('');
+  $('r-desc').innerHTML=(result.description||[]).map(function(d){return '<li><span>•</span><span>'+d+'</span></li>';}).join('');
+  $('r-parenting').textContent=result.parenting||'';
+  var c=result.counts||{easy:0,slow:0,difficult:0};
+  $('r-bars').innerHTML = bar('😊 순한 반응',c.easy)+bar('🌱 느린 반응',c.slow)+bar('🌶️ 까다로운 반응',c.difficult);
+  $('bear-result').innerHTML=bearSVG(140);
+}
+
+function bar(label,cnt){
+  var pct=Math.round((cnt/16)*100);
+  return '<div class="bar-row"><div class="lab"><span>'+label+'</span><b>'+cnt+'개</b></div><div class="bar-track"><i style="width:'+pct+'%"></i></div></div>';
+}
+
+/* ========== 기존 결과물 보기 모달 렌더 ========== */
+function buildResultHtml(d){
+  d=d||{};
+  var counts=d.counts||{easy:0,slow:0,difficult:0};
+  var tags=(d.hashtags||[]).map(function(t){return '<span class="hashtag">'+t+'</span>';}).join('');
+  var desc=(d.description||[]).map(function(s){return '<li><span>•</span><span>'+s+'</span></li>';}).join('');
+  return '<div class="result-box" style="font-family:\'Gowun Dodum\',sans-serif;">'
+    +'<div style="font-size:18px;font-weight:800;color:var(--main);margin-bottom:6px;">'+(d.name||'')+'</div>'
+    +(d.child_name?('<div class="small muted" style="margin-bottom:8px;">아이 : '+d.child_name+'</div>'):'')
+    +'<div style="margin-bottom:14px;">'+tags+'</div>'
+    +'<div class="small" style="font-weight:700;margin-bottom:6px;">특징</div>'
+    +'<ul style="list-style:none;font-size:13px;line-height:1.7;margin-bottom:14px;">'+desc+'</ul>'
+    +'<div class="small" style="font-weight:700;margin-bottom:6px;">양육방법</div>'
+    +'<p class="small" style="line-height:1.8;margin-bottom:14px;white-space:pre-line;">'+(d.parenting||'')+'</p>'
+    +'<div class="small" style="font-weight:700;margin-bottom:8px;">답변 분포</div>'
+    +bar('😊 순한 반응',counts.easy)+bar('🌱 느린 반응',counts.slow)+bar('🌶️ 까다로운 반응',counts.difficult)
+    +'</div>';
+}
+
+/* ========== 이벤트 바인딩 ========== */
+$('bear-landing').innerHTML=bearSVG(200);
+$('bear-loading').innerHTML=bearSVG(160);
+
+$('btn-start').onclick=function(){ goStep('info'); };
+$('btn-info-back').onclick=function(){ goStep('landing'); };
+$('btn-history-open').onclick=function(){ if(window.KD&&KD.openHistory) KD.openHistory(); };
+
+function checkInfo(){
+  var ok = $('in-name').value.trim() && $('in-birth').value;
+  $('btn-info-next').disabled = !ok;
+}
+$('in-name').oninput=checkInfo;
+$('in-birth').oninput=checkInfo;
+$('btn-info-next').onclick=function(){
+  if(this.disabled) return;
+  state.userInfo={ name:$('in-name').value.trim(), birthdate:$('in-birth').value };
+  state.currentQ=0; state.answers=new Array(16).fill(null);
+  renderQuestion(); goStep('quiz');
+};
+$('btn-prev').onclick=function(){ if(state.currentQ>0){ state.currentQ--; renderQuestion(); window.scrollTo(0,0); } };
+
+$('btn-save').onclick=function(){
+  if(window.KD&&KD.copyShot){ KD.copyShot({target:'#result-card',bg:'#FFF8F3',filename:'kidikidi-ktype.png',toast:showToast}); }
+};
+$('btn-copy').onclick=function(){
+  if(window.KD&&KD.copyShot){ KD.copyShot({target:'#result-card',bg:'#FFF8F3',filename:'kidikidi-ktype.png',toast:showToast}); }
+};
+$('btn-restart').onclick=function(){
+  state={ step:'landing', userInfo:null, answers:new Array(16).fill(null), currentQ:0, result:null };
+  $('in-name').value=''; $('in-birth').value=''; checkInfo();
+  goStep('landing');
+};
+
+/* ========== 기존 결과물 보기 (KIDIKIDI 공용) ========== */
+if(window.KD && KD.mountHistory){
+  var _hidden=document.createElement('div'); _hidden.style.display='none'; document.body.appendChild(_hidden);
+  KD.mountHistory({
+    mountTarget:_hidden,
+    label:function(r){ var o=r.output||{}; return (o.child_name?o.child_name+' · ':'')+(o.name||'기질 결과'); },
+    renderRecord:function(rec,c){ c.innerHTML=buildResultHtml(rec.output||{}); }
+  });
+}
+</script>
+</body>
+</html>

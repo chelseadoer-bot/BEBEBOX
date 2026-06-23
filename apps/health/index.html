@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>AI 건강 체크 — KIDIKIDI</title>
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" rel="stylesheet">
+<style>
+:root{
+  --bg:#F0F7FF;--bg2:#E8F4FD;--bg3:#DBEAFE;
+  --card:#FFFFFF;--ink:#1E293B;--ink2:#475569;--ink3:#64748B;--ink4:#94A3B8;
+  --border:#DBEAFE;
+  --brand:#4A90E2;--brand-l:#EFF6FF;--brand-d:#2563EB;
+  --accent:#7DD3FC;--accent-l:#E0F7FF;--accent-d:#0284C7;
+  --shadow:rgba(30,58,95,0.06);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Pretendard',-apple-system,sans-serif;background:var(--bg);min-height:100vh;color:var(--ink);display:flex;flex-direction:column;align-items:center;}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 70% 8%,rgba(74,144,226,0.07) 0%,transparent 55%),radial-gradient(ellipse at 8% 92%,rgba(56,189,248,0.05) 0%,transparent 55%);pointer-events:none;z-index:0;}
+.app{width:100%;max-width:480px;min-height:100vh;position:relative;z-index:1;padding-bottom:60px;}
+.header{padding:40px 24px 28px;text-align:center;position:relative;}
+.header-badge{display:inline-flex;align-items:center;gap:5px;background:var(--brand-l);color:var(--brand-d);font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:5px 12px;border-radius:100px;margin-bottom:14px;}
+.app-emoji{font-size:44px;display:block;margin-bottom:14px;}
+.header h1{font-family:'Pretendard',sans-serif;font-size:24px;font-weight:700;line-height:1.45;color:var(--ink);margin-bottom:8px;letter-spacing:-0.03em;}
+.header h1 .acc{color:var(--accent);}
+.header p{font-size:13px;color:var(--ink3);line-height:1.7;}
+.section{padding:0 20px 18px;}
+.sec-label{font-size:13px;font-weight:700;color:var(--ink);letter-spacing:-0.02em;margin-bottom:10px;display:flex;align-items:center;gap:7px;}.sec-label::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--brand);flex-shrink:0;}
+.ifield{width:100%;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 14px;font-family:'Pretendard',sans-serif;font-size:14px;font-weight:700;color:var(--ink);outline:none;transition:all 0.2s;}
+.ifield::placeholder{color:var(--ink4);font-weight:400;}
+.ifield:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-l);}
+.input-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+.igroup label{display:block;font-size:11px;font-weight:800;color:var(--ink3);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:6px;}
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:14px;}
+.chip{padding:7px 13px;border-radius:20px;border:1px solid var(--border);background:var(--card);color:var(--ink2);font-size:12px;font-weight:800;cursor:pointer;transition:all 0.15s;font-family:'Pretendard',sans-serif;}
+.chip:hover{border-color:var(--ink3);}
+.chip.sel{border-color:var(--accent);background:var(--accent-l);color:var(--accent-d);}
+.btn-primary{width:calc(100% - 40px);margin:0 20px 20px;padding:18px;border:none;border-radius:12px;background:var(--brand);color:#fff;font-family:'Pretendard',sans-serif;font-size:17px;font-weight:700;cursor:pointer;transition:all 0.2s;box-shadow:0 5px 20px rgba(74,144,226,0.3);display:none;position:relative;overflow:hidden;}
+.btn-primary::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,0.12) 0%,transparent 60%);}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(74,144,226,0.4);}
+.btn-primary:disabled{opacity:0.45;cursor:default;transform:none;box-shadow:none;}
+.loading-wrap{display:none;padding:0 20px 20px;}
+.loading-card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:36px 22px;text-align:center;box-shadow:0 4px 20px var(--shadow);}
+.loading-emoji{font-size:52px;display:block;margin-bottom:16px;animation:loadSpin 2s ease-in-out infinite;}
+@keyframes loadSpin{0%,100%{transform:scale(1)rotate(-5deg);}50%{transform:scale(1.08)rotate(5deg);}}
+.loading-title{font-family:'Pretendard',sans-serif;font-size:17px;color:var(--ink);margin-bottom:6px;}
+.loading-sub{font-size:13px;color:var(--ink3);line-height:1.6;margin-bottom:20px;}
+.step-list{display:flex;flex-direction:column;gap:8px;}
+.step-item{display:flex;align-items:center;gap:10px;padding:9px 13px;border-radius:11px;background:var(--bg2);font-size:12px;color:var(--ink4);font-weight:700;transition:all 0.4s;}
+.step-item.on{background:var(--accent-l);color:var(--accent-d);}
+.step-item.done{opacity:0.4;}
+.step-dot{width:7px;height:7px;border-radius:50%;background:var(--border);flex-shrink:0;transition:all 0.4s;}
+.step-item.on .step-dot{background:var(--accent);animation:dotBlink 0.7s infinite;}
+@keyframes dotBlink{0%,100%{opacity:1;}50%{opacity:0;}}
+.result-wrap{display:none;padding:0 20px 32px;}
+.r-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:13px;box-shadow:0 1px 3px var(--shadow);}
+.r-card-head{display:flex;align-items:center;gap:10px;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--border);}
+.r-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;background:var(--accent-l);}
+.r-title{font-size:13px;font-weight:800;color:var(--ink2);}
+.r-sub{font-size:11px;color:var(--ink3);font-weight:700;margin-top:1px;}
+.r-body{font-size:13px;font-weight:700;color:var(--ink2);line-height:1.8;}
+.tags{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:12px;}
+.tag{padding:5px 12px;border-radius:20px;font-size:12px;font-weight:800;background:var(--accent-l);color:var(--accent-d);}
+.tag.neutral{background:var(--bg2);color:var(--ink3);}
+.share-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px;}
+.btn-share{padding:14px;border-radius:14px;font-family:'Pretendard',sans-serif;font-size:13px;font-weight:800;cursor:pointer;transition:all 0.18s;border:1px solid var(--border);background:var(--card);color:var(--ink2);text-align:center;}
+.btn-share.primary{background:var(--brand);color:#fff;border:none;box-shadow:0 4px 14px rgba(74,144,226,0.22);}
+.btn-share:hover{transform:translateY(-1px);}
+.err-box{display:none;margin:0 20px 18px;background:#FEF0EF;border:1px solid rgba(220,60,60,0.2);border-radius:14px;padding:16px;text-align:center;font-size:13px;font-weight:700;color:#C03020;line-height:1.6;}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:10px 22px;border-radius:30px;font-size:13px;font-weight:700;opacity:0;transition:all 0.3s;pointer-events:none;z-index:999;white-space:nowrap;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="header">
+  <div class="header-badge">KIDIKIDI 건강 가이드</div>
+  <span class="app-emoji">🩺</span>
+  <h1>우리 아이 지금<br><span class="acc">어디가 불편한가요?</span></h1>
+  <p>병원 가기 전 빠르게 증상을 확인하고<br>대처 방법을 알아보세요</p>
+</div>
+<div id="step1" class="section">
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;"><div style="display:flex;gap:4px;"><div style="width:28px;height:4px;border-radius:2px;background:var(--accent);"></div><div style="width:28px;height:4px;border-radius:2px;background:var(--bg3);"></div></div><span style="font-size:11px;font-weight:800;color:var(--ink3);">STEP 1 / 2</span></div>
+  <div class="r-card" style="margin-bottom:14px;">
+    <div style="font-size:15px;font-weight:800;color:var(--ink);margin-bottom:14px;">해당하는 증상을 모두 선택해주세요</div>
+    <div class="sec-label">열 / 전신</div>
+    <div class="chips"><span class="chip" onclick="toggleChip(this)">🌡️ 열이 나요</span><span class="chip" onclick="toggleChip(this)">🥶 오한이 있어요</span><span class="chip" onclick="toggleChip(this)">😴 축 처져요</span></div>
+    <div class="sec-label" style="margin-top:10px;">호흡기</div>
+    <div class="chips"><span class="chip" onclick="toggleChip(this)">😮‍💨 기침해요</span><span class="chip" onclick="toggleChip(this)">🤧 콧물이 나요</span><span class="chip" onclick="toggleChip(this)">😤 코가 막혀요</span><span class="chip" onclick="toggleChip(this)">🔴 목이 아파요</span></div>
+    <div class="sec-label" style="margin-top:10px;">소화기</div>
+    <div class="chips"><span class="chip" onclick="toggleChip(this)">🤮 구토해요</span><span class="chip" onclick="toggleChip(this)">🚽 설사해요</span><span class="chip" onclick="toggleChip(this)">😣 배가 아파요</span><span class="chip" onclick="toggleChip(this)">🍽️ 밥을 안 먹어요</span></div>
+    <div class="sec-label" style="margin-top:10px;">기타</div>
+    <div class="chips"><span class="chip" onclick="toggleChip(this)">👂 귀가 아파요</span><span class="chip" onclick="toggleChip(this)">👁️ 눈이 이상해요</span><span class="chip" onclick="toggleChip(this)">🔴 발진·두드러기</span><span class="chip" onclick="toggleChip(this)">🤕 머리가 아파요</span></div>
+    <div class="sec-label" style="margin-top:10px;">직접 입력 (선택)</div>
+    <textarea class="ifield" id="note" placeholder="증상을 자세히 적어주세요 (최대 500자)" maxlength="500" style="resize:none;min-height:64px;"></textarea>
+  </div>
+  <button class="btn-primary" id="btn-s1" style="display:block;opacity:0.45;" disabled onclick="goStep2()">다음 단계 →</button>
+</div>
+<div id="step2" style="display:none;" class="section">
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;"><div style="display:flex;gap:4px;"><div style="width:28px;height:4px;border-radius:2px;background:var(--accent);"></div><div style="width:28px;height:4px;border-radius:2px;background:var(--accent);"></div></div><span style="font-size:11px;font-weight:800;color:var(--ink3);">STEP 2 / 2</span></div>
+  <div class="r-card" style="margin-bottom:14px;">
+    <div style="font-size:15px;font-weight:800;color:var(--ink);margin-bottom:16px;">조금 더 알려주세요 🩺</div>
+    <div class="sec-label">① 아이 나이는요?</div>
+    <div class="chips" id="age-chips">
+      <span class="chip" onclick="selSingle(this,'age','0~3개월')">👶 0~3개월 <span style="color:var(--accent);font-size:10px;">고위험</span></span>
+      <span class="chip" onclick="selSingle(this,'age','4~12개월')">🍼 4~12개월</span>
+      <span class="chip" onclick="selSingle(this,'age','1~3세')">🧒 1~3세</span>
+      <span class="chip" onclick="selSingle(this,'age','4~7세')">🧒 4~7세</span>
+      <span class="chip" onclick="selSingle(this,'age','8세 이상')">🧑 8세 이상</span>
+    </div>
+    <div class="sec-label" style="margin-top:12px;">② 열이 있다면 어느 정도예요?</div>
+    <div class="chips" id="fever-chips">
+      <span class="chip" onclick="selSingle(this,'fever','열 없음')">✅ 열 없음</span>
+      <span class="chip" onclick="selSingle(this,'fever','미열 37.5~38도')">🌡️ 미열</span>
+      <span class="chip" onclick="selSingle(this,'fever','고열 38~39도')">🔥 고열</span>
+      <span class="chip" onclick="selSingle(this,'fever','심한 고열 39도 이상')">🚨 심한 고열</span>
+    </div>
+    <div class="sec-label" style="margin-top:12px;">③ 증상이 얼마나 됐나요?</div>
+    <div class="chips" id="dur-chips">
+      <span class="chip" onclick="selSingle(this,'dur','오늘 시작')">⏰ 오늘 시작</span>
+      <span class="chip" onclick="selSingle(this,'dur','1~2일')">📅 1~2일</span>
+      <span class="chip" onclick="selSingle(this,'dur','3일 이상')">📆 3일 이상</span>
+    </div>
+  </div>
+  <div style="display:flex;gap:10px;padding-bottom:20px;">
+    <button onclick="goStep(1)" style="width:52px;height:52px;border:1px solid var(--border);border-radius:14px;background:var(--card);font-size:18px;cursor:pointer;">←</button>
+    <button id="btn-s2" disabled onclick="checkSymptoms()" style="flex:1;height:52px;border:none;border-radius:14px;background:linear-gradient(135deg,var(--brand),var(--brand-d));color:#fff;font-family:'Pretendard',sans-serif;font-size:15px;font-weight:800;cursor:pointer;opacity:0.45;box-shadow:0 4px 16px rgba(74,144,226,0.3);">🔍 결과 보기</button>
+  </div>
+</div>
+<div class="loading-wrap" id="loading-wrap">
+  <div class="loading-card">
+    <span class="loading-emoji">🩺</span>
+    <div class="loading-title">증상을 분석하는 중이에요</div>
+    <div class="loading-sub">아이에게 맞는 대처법을 찾고 있어요</div>
+    <div class="step-list">
+      <div class="step-item" id="s1"><div class="step-dot"></div>증상 조합 분석 중...</div>
+      <div class="step-item" id="s2"><div class="step-dot"></div>위험도 평가 중...</div>
+      <div class="step-item" id="s3"><div class="step-dot"></div>대처법 안내 작성 중...</div>
+    </div>
+  </div>
+</div>
+<div class="err-box" id="err-box"></div>
+<div class="result-wrap" id="result-wrap"></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="/kidikidi-app.js"></script>
+<script>
+function showToast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},2500);}
+function animSteps(ids,interval){
+  ids.forEach(function(id){var el=document.getElementById(id);if(el)el.className='step-item';});
+  var i=0;var timer=setInterval(function(){
+    if(i>0){var p=document.getElementById(ids[i-1]);if(p)p.classList.add('done');}
+    if(i<ids.length){var c=document.getElementById(ids[i]);if(c)c.classList.add('on');i++;}else clearInterval(timer);
+  },interval||1000);return timer;
+}
+function escHtml(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+var symptoms=new Set(), ageVal='', feverVal='', durVal='';
+function setBtn2State(ok){var b=document.getElementById('btn-s2');if(b){b.disabled=!ok;b.style.opacity=ok?'1':'0.45';}}
+function syncBtn1(){var b=document.getElementById('btn-s1');var note=document.getElementById('note').value.trim();var ok=symptoms.size>0||note.length>0;b.disabled=!ok;b.style.opacity=ok?'1':'0.45';}
+function toggleChip(el){
+  el.classList.toggle('sel');
+  var t=el.textContent.trim();
+  if(el.classList.contains('sel'))symptoms.add(t);else symptoms.delete(t);
+  syncBtn1();
+}
+function selSingle(el,group,val){
+  document.querySelectorAll('#'+group+'-chips .chip').forEach(function(c){c.classList.remove('sel');});
+  el.classList.add('sel');
+  if(group==='age')ageVal=val;
+  else if(group==='fever')feverVal=val;
+  else if(group==='dur')durVal=val;
+  setBtn2State(!!(ageVal&&feverVal&&durVal));
+}
+function goStep2(){document.getElementById('step1').style.display='none';document.getElementById('step2').style.display='block';}
+function goStep(n){document.getElementById('step1').style.display=n===1?'block':'none';document.getElementById('step2').style.display=n===2?'block':'none';}
+document.getElementById('note').addEventListener('input',syncBtn1);
+
+async function checkSymptoms(){
+  document.getElementById('step2').style.display='none';
+  document.getElementById('loading-wrap').style.display='block';
+  document.getElementById('err-box').style.display='none';
+  var t=animSteps(['s1','s2','s3'],900);
+  try{
+    var res=await KD.run({symptoms:[...symptoms],age:ageVal,fever:feverVal,dur:durVal,note:document.getElementById('note').value.trim()});
+    clearInterval(t);
+    document.getElementById('loading-wrap').style.display='none';
+    renderResult(res.output);
+    setBtn2State(true);
+  }catch(e){
+    clearInterval(t);
+    document.getElementById('loading-wrap').style.display='none';
+    document.getElementById('err-box').textContent=(e&&e.message)?e.message:'분석 중 오류가 발생했어요. 다시 시도해주세요.';document.getElementById('err-box').style.display='block';
+    document.getElementById('step2').style.display='block';
+    setBtn2State(true);
+  }
+}
+
+function buildResultHtml(d){
+  d=d||{};
+  var urgencyMap={'즉시응급':{color:'#D44040',bg:'#FAE8E8',label:'🚨 즉시 응급실 방문'},'오늘병원':{color:'#D47020',bg:'#FEF0E0',label:'🏥 오늘 병원에 가세요'},'내일병원':{color:'#D4A020',bg:'#FEF8E0',label:'📅 내일 병원 예약하세요'},'가정관리':{color:'#2A8A4A',bg:'#E8F5EC',label:'🏠 가정에서 관리 가능'}};
+  var urg=urgencyMap[d.urgency]||urgencyMap['가정관리'];
+  var poss=(d.possible_conditions&&d.possible_conditions.length)?d.possible_conditions:['증상 조합에 따른 감기·독감·알레르기 등을 의심할 수 있어요'];
+  var possHtml=poss.map(function(c){return '<span class="tag neutral">'+escHtml(c)+'</span>';}).join('');
+  var homeItems=(d.home_care&&d.home_care.length)?d.home_care:['충분한 수분 섭취와 휴식을 취해 주세요','실내 온도·습도를 쾌적하게 유지해 주세요','증상 변화를 관찰하며 기록해 두세요'];
+  var homeHtml=homeItems.map(function(c,i){return '<div style="display:flex;gap:8px;margin-bottom:8px;"><div style="width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;">'+(i+1)+'</div><div style="font-size:13px;font-weight:700;color:var(--ink2);line-height:1.6;">'+escHtml(c)+'</div></div>';}).join('');
+  var erHtml=(d.go_er_if||[]).map(function(c){return '<div style="display:flex;gap:8px;align-items:flex-start;margin-bottom:7px;font-size:13px;font-weight:700;color:var(--ink2);line-height:1.5;"><span style="color:#D44040;flex-shrink:0;">🚨</span>'+escHtml(c)+'</div>';}).join('');
+  var qdHtml=(d.doctor_questions||[]).map(function(c){return '<div style="display:flex;gap:8px;align-items:flex-start;margin-bottom:7px;font-size:13px;font-weight:700;color:var(--ink2);line-height:1.5;"><span style="color:var(--accent-d);flex-shrink:0;">📋</span>'+escHtml(c)+'</div>';}).join('');
+  var disc=d.disclaimer||'이 결과는 AI 참고용 정보이며 실제 의학적 진단을 대체하지 않습니다.';
+  return '<div style="background:'+urg.bg+';border:1.5px solid '+urg.color+';border-radius:18px;padding:20px;margin-bottom:13px;text-align:center;"><div style="font-size:20px;font-weight:800;color:'+urg.color+';">'+urg.label+'</div><div style="font-size:13px;color:var(--ink2);margin-top:8px;font-weight:700;line-height:1.6;">'+escHtml(d.urgency_reason)+'</div></div><div class="r-card"><div class="r-card-head"><div class="r-icon">🔍</div><div><div class="r-title">가능성 있는 상태</div><div class="r-sub">참고용 정보입니다</div></div></div><div class="tags">'+possHtml+'</div></div><div class="r-card"><div class="r-card-head"><div class="r-icon">🏠</div><div><div class="r-title">지금 집에서 할 수 있는 것</div></div></div>'+homeHtml+'</div>'+(erHtml?'<div class="r-card"><div class="r-card-head"><div class="r-icon">🚨</div><div><div class="r-title">이럴 땐 즉시 응급실로!</div></div></div>'+erHtml+'</div>':'')+(qdHtml?'<div class="r-card"><div class="r-card-head"><div class="r-icon">📋</div><div><div class="r-title">병원 갈 때 꼭 말할 것</div></div></div>'+qdHtml+'</div>':'')+'<div style="background:#FEF8E0;border:1px solid rgba(200,150,0,0.2);border-radius:14px;padding:13px 15px;margin-bottom:13px;font-size:12px;font-weight:700;color:#7A5A00;line-height:1.6;">⚠️ '+escHtml(disc)+'</div>';
+}
+
+function renderResult(d){
+  d=d||{};
+  document.getElementById('step1').style.display='none';
+  document.getElementById('step2').style.display='none';
+  var urgencyMap={'즉시응급':'🚨 즉시 응급실 방문','오늘병원':'🏥 오늘 병원','내일병원':'📅 내일 병원','가정관리':'🏠 가정 관리'};
+  var html=buildResultHtml(d)+'<div class="share-row"><button class="btn-share" onclick="copyRes()">📋 결과 복사</button><button class="btn-share primary" onclick="location.reload()">🔄 다시 체크</button></div>';
+  var wrap=document.getElementById('result-wrap'); wrap.innerHTML=html; wrap.style.display='block';
+  window._copyText='🩺 AI 건강 체크 | '+(d.symptoms||'')+' | 나이 '+(d.age||'')+' 열 '+(d.fever||'')+' 기간 '+(d.dur||'')+' | '+(urgencyMap[d.urgency]||'')+' | '+(d.urgency_reason||'');
+  setTimeout(function(){wrap.scrollIntoView({behavior:'smooth',block:'start'});},100);
+}
+function copyRes(){KD.copyShot({filename:'kidikidi-symptom.png'});}
+
+KD.mountHistory({
+  mountTarget: document.querySelector('.app'),
+  label: function(r){ var o=r.output||{}; return (o.symptoms||'증상 체크')+' · '+(o.urgency||''); },
+  renderRecord: function(rec, c){ c.innerHTML=buildResultHtml(rec.output||{}); }
+});
+</script>
+</body>
+</html>

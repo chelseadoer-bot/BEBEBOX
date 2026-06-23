@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>낙서 심리 분석 — KIDIKIDI</title>
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" rel="stylesheet">
+<style>
+:root{
+  --bg:#F0F7FF;--bg2:#E8F4FD;--bg3:#DBEAFE;
+  --card:#FFFFFF;--ink:#1E293B;--ink2:#475569;--ink3:#64748B;--ink4:#94A3B8;
+  --border:#DBEAFE;
+  --brand:#4A90E2;--brand-l:#EFF6FF;--brand-d:#2563EB;
+  --accent:#38BDF8;--accent-l:#E0F7FF;--accent-d:#0284C7;
+  --shadow:rgba(30,58,95,0.06);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Pretendard',-apple-system,sans-serif;background:var(--bg);min-height:100vh;color:var(--ink);display:flex;flex-direction:column;align-items:center;}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 70% 8%,rgba(74,144,226,0.07) 0%,transparent 55%),radial-gradient(ellipse at 8% 92%,rgba(56,189,248,0.05) 0%,transparent 55%);pointer-events:none;z-index:0;}
+.app{width:100%;max-width:480px;min-height:100vh;position:relative;z-index:1;padding-bottom:60px;}
+.header{padding:40px 24px 28px;text-align:center;position:relative;}
+.header-badge{display:inline-flex;align-items:center;gap:5px;background:var(--brand-l);color:var(--brand-d);font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:5px 12px;border-radius:100px;margin-bottom:14px;}
+.app-emoji{font-size:44px;display:block;margin-bottom:14px;}
+.header h1{font-size:24px;font-weight:700;line-height:1.45;color:var(--ink);margin-bottom:8px;letter-spacing:-0.03em;}
+.header h1 .acc{color:var(--accent);}
+.header p{font-size:13px;color:var(--ink3);line-height:1.7;}
+.section{padding:0 20px 18px;}
+.sec-label{font-size:13px;font-weight:700;color:var(--ink);letter-spacing:-0.02em;margin-bottom:10px;display:flex;align-items:center;gap:7px;}.sec-label::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--brand);flex-shrink:0;}
+.ifield{width:100%;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 14px;font-family:'Pretendard',sans-serif;font-size:14px;font-weight:700;color:var(--ink);outline:none;transition:all 0.2s;}
+.ifield::placeholder{color:var(--ink4);font-weight:400;}
+.ifield:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-l);}
+.input-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+.igroup label{display:block;font-size:11px;font-weight:800;color:var(--ink3);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:6px;}
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:14px;}
+.chip{padding:7px 13px;border-radius:20px;border:1px solid var(--border);background:var(--card);color:var(--ink2);font-size:12px;font-weight:800;cursor:pointer;transition:all 0.15s;font-family:'Pretendard',sans-serif;}
+.chip:hover{border-color:var(--ink3);}
+.chip.sel{border-color:var(--accent);background:var(--accent-l);color:var(--accent-d);}
+.upload-box{border:2px dashed var(--border);border-radius:18px;padding:36px 20px;text-align:center;background:var(--card);cursor:pointer;transition:all 0.2s;}
+.upload-box:hover,.upload-box.drag-over{border-color:var(--accent);background:var(--accent-l);}
+.upload-icon{font-size:40px;display:block;margin-bottom:10px;}
+.upload-title{font-size:15px;font-weight:800;color:var(--ink);margin-bottom:5px;}
+.upload-sub{font-size:12px;color:var(--ink3);line-height:1.5;}
+.preview-frame{background:var(--card);border:1px solid var(--border);border-radius:18px;overflow:hidden;box-shadow:0 4px 20px var(--shadow);margin-bottom:14px;}
+.preview-top{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--bg2);}
+.preview-label{font-size:11px;font-weight:800;color:var(--ink3);letter-spacing:0.08em;}
+.btn-change{font-size:11px;font-weight:800;color:var(--accent-d);background:var(--accent-l);border:none;border-radius:20px;padding:4px 12px;cursor:pointer;font-family:'Pretendard',sans-serif;}
+.btn-primary{width:calc(100% - 40px);margin:0 20px 20px;padding:18px;border:none;border-radius:12px;background:var(--brand);color:#fff;font-family:'Pretendard',sans-serif;font-size:17px;font-weight:700;cursor:pointer;transition:all 0.2s;box-shadow:0 5px 20px rgba(74,144,226,0.3);display:none;position:relative;overflow:hidden;}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(74,144,226,0.4);}
+.btn-primary:disabled{opacity:0.45;cursor:default;transform:none;box-shadow:none;}
+.loading-wrap{display:none;padding:0 20px 20px;}
+.loading-card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:36px 22px;text-align:center;box-shadow:0 4px 20px var(--shadow);}
+.loading-emoji{font-size:52px;display:block;margin-bottom:16px;animation:loadSpin 2s ease-in-out infinite;}
+@keyframes loadSpin{0%,100%{transform:scale(1)rotate(-5deg);}50%{transform:scale(1.08)rotate(5deg);}}
+.loading-title{font-size:17px;color:var(--ink);margin-bottom:6px;}
+.loading-sub{font-size:13px;color:var(--ink3);line-height:1.6;margin-bottom:20px;}
+.step-list{display:flex;flex-direction:column;gap:8px;}
+.step-item{display:flex;align-items:center;gap:10px;padding:9px 13px;border-radius:11px;background:var(--bg2);font-size:12px;color:var(--ink4);font-weight:700;transition:all 0.4s;}
+.step-item.on{background:var(--accent-l);color:var(--accent-d);}
+.step-item.done{opacity:0.4;}
+.step-dot{width:7px;height:7px;border-radius:50%;background:var(--border);flex-shrink:0;transition:all 0.4s;}
+.step-item.on .step-dot{background:var(--accent);animation:dotBlink 0.7s infinite;}
+@keyframes dotBlink{0%,100%{opacity:1;}50%{opacity:0;}}
+.result-wrap{display:none;padding:0 20px 32px;}
+.r-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:13px;box-shadow:0 1px 3px var(--shadow);}
+.r-card-head{display:flex;align-items:center;gap:10px;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--border);}
+.r-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;background:var(--accent-l);}
+.r-title{font-size:13px;font-weight:800;color:var(--ink2);}
+.r-sub{font-size:11px;color:var(--ink3);font-weight:700;margin-top:1px;}
+.r-body{font-size:13px;font-weight:700;color:var(--ink2);line-height:1.8;}
+.r-hero{background:linear-gradient(135deg,var(--accent-l) 0%,#fff 100%);border:1px solid rgba(0,0,0,0.06);border-radius:18px;padding:24px 20px;margin-bottom:13px;text-align:center;position:relative;overflow:hidden;}
+.r-hero::after{content:attr(data-emoji);position:absolute;font-size:80px;opacity:0.07;right:-10px;bottom:-10px;}
+.r-hero-title{font-size:22px;font-weight:700;color:var(--ink);margin-bottom:5px;line-height:1.3;}
+.r-hero-sub{font-size:13px;color:var(--ink3);}
+.tags{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:12px;}
+.tag{padding:5px 12px;border-radius:20px;font-size:12px;font-weight:800;background:var(--accent-l);color:var(--accent-d);}
+.score-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.score-label{font-size:12px;font-weight:800;color:var(--ink2);width:60px;flex-shrink:0;}
+.score-track{flex:1;height:8px;background:var(--bg3);border-radius:10px;overflow:hidden;}
+.score-fill{height:100%;background:var(--accent);border-radius:10px;transition:width 1.1s cubic-bezier(0.4,0,0.2,1);}
+.score-pct{font-size:12px;font-weight:800;color:var(--accent);width:34px;text-align:right;}
+.quote-box{background:var(--bg2);border-left:3px solid var(--accent);border-radius:0 12px 12px 0;padding:14px 16px;}
+.quote-box p{font-size:14px;color:var(--ink2);line-height:1.85;font-style:italic;}
+.gift-card{background:#1E3A5F;border-radius:18px;padding:22px 20px;margin-bottom:13px;position:relative;overflow:hidden;}
+.gift-card::before{content:attr(data-emoji);position:absolute;font-size:80px;opacity:0.08;right:-8px;bottom:-8px;}
+.gift-label{font-size:10px;font-weight:800;letter-spacing:0.14em;color:rgba(255,255,255,0.35);text-transform:uppercase;margin-bottom:9px;}
+.gift-msg{font-size:15px;line-height:1.85;color:rgba(255,255,255,0.9);}
+.share-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px;}
+.btn-share{padding:14px;border-radius:14px;font-family:'Pretendard',sans-serif;font-size:13px;font-weight:800;cursor:pointer;transition:all 0.18s;border:1px solid var(--border);background:var(--card);color:var(--ink2);text-align:center;}
+.btn-share.primary{background:var(--brand);color:#fff;border:none;box-shadow:0 4px 14px rgba(74,144,226,0.22);}
+.err-box{display:none;margin:0 20px 18px;background:#FEF0EF;border:1px solid rgba(220,60,60,0.2);border-radius:14px;padding:16px;text-align:center;font-size:13px;font-weight:700;color:#C03020;line-height:1.6;}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:10px 22px;border-radius:30px;font-size:13px;font-weight:700;opacity:0;transition:all 0.3s;pointer-events:none;z-index:999;white-space:nowrap;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="header">
+  <div class="header-badge">낙서 심리 분석</div>
+  <span class="app-emoji">🖍️</span>
+  <h1>아이가 그린 선 하나에<br><span class="acc">세상이 담겨 있어요</span></h1>
+  <p>낙서처럼 보이는 그림 속에<br>아이의 발달·감정·심리가 숨어 있습니다</p>
+</div>
+
+<div class="section" id="upload-section">
+  <label for="file-input">
+    <div class="upload-box" id="upload-box">
+      <span class="upload-icon">🎨</span>
+      <div class="upload-title">그림을 여기에 올려주세요</div>
+      <div class="upload-sub">아이가 그린 그림, 낙서, 색칠한 것 모두 OK · JPG · PNG · WEBP</div>
+    </div>
+  </label>
+  <input type="file" id="file-input" accept="image/*" style="display:none;">
+</div>
+
+<div id="preview-section" style="display:none;" class="section">
+  <div class="preview-frame">
+    <div class="preview-top">
+      <span class="preview-label">🖼 업로드된 그림</span>
+      <button class="btn-change" onclick="resetUpload()">다른 그림 선택</button>
+    </div>
+    <img id="preview-img" style="width:100%;max-height:240px;object-fit:contain;display:block;padding:10px;background:var(--bg);" alt="">
+  </div>
+</div>
+
+<div id="input-section" style="display:none;" class="section">
+  <div class="input-row">
+    <div class="igroup"><label>아이 이름</label><input class="ifield" id="c-name" placeholder="예: 서준이" maxlength="10"></div>
+    <div class="igroup"><label>나이</label><input class="ifield" id="c-age" placeholder="예: 4살" maxlength="6"></div>
+  </div>
+  <div class="sec-label">그림 그릴 때 아이 상태</div>
+  <div class="chips" id="mood-chips">
+    <span class="chip" onclick="selMood(this)">신나게 그렸어요</span>
+    <span class="chip" onclick="selMood(this)">집중해서 조용히</span>
+    <span class="chip" onclick="selMood(this)">화난 것 같았어요</span>
+    <span class="chip" onclick="selMood(this)">심심해서 낙서</span>
+    <span class="chip" onclick="selMood(this)">칭얼대다 그렸어요</span>
+    <span class="chip" onclick="selMood(this)">모르겠어요</span>
+  </div>
+</div>
+<button class="btn-primary" id="btn-analyze" onclick="analyze()">🔍 그림 속 이야기 읽어보기</button>
+
+<div class="loading-wrap" id="loading-wrap">
+  <div class="loading-card">
+    <span class="loading-emoji">🎨</span>
+    <div class="loading-title">그림을 들여다보는 중이에요</div>
+    <div class="loading-sub">선·색·공간 배치에 담긴 아이의 이야기를 읽고 있어요</div>
+    <div class="step-list">
+      <div class="step-item" id="s1"><div class="step-dot"></div>그림 속 요소 파악 중...</div>
+      <div class="step-item" id="s2"><div class="step-dot"></div>발달 단계 대조 분석 중...</div>
+      <div class="step-item" id="s3"><div class="step-dot"></div>감정·심리 신호 해석 중...</div>
+      <div class="step-item" id="s4"><div class="step-dot"></div>미술관 감상평 작성 중...</div>
+      <div class="step-item" id="s5"><div class="step-dot"></div>엄마에게 드릴 메시지 준비 중...</div>
+    </div>
+  </div>
+</div>
+<div class="err-box" id="err-box"></div>
+<div class="result-wrap" id="result-wrap"></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="/kidikidi-app.js"></script>
+<script>
+function showToast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},2500);}
+function animSteps(ids,interval){
+  ids.forEach(function(id){var el=document.getElementById(id);if(el)el.className='step-item';});
+  var i=0;var timer=setInterval(function(){
+    if(i>0){var p=document.getElementById(ids[i-1]);if(p)p.classList.add('done');}
+    if(i<ids.length){var c=document.getElementById(ids[i]);if(c)c.classList.add('on');i++;}else clearInterval(timer);
+  },interval||1000);return timer;
+}
+var imgDataUrl=null,imgMime=null,mood=null;
+var fileInput=document.getElementById('file-input');
+fileInput.addEventListener('change',function(e){var f=e.target.files[0];if(f)handleFile(f);});
+var ub=document.getElementById('upload-box');
+ub.addEventListener('dragover',function(e){e.preventDefault();ub.classList.add('drag-over');});
+ub.addEventListener('dragleave',function(){ub.classList.remove('drag-over');});
+ub.addEventListener('drop',function(e){e.preventDefault();ub.classList.remove('drag-over');var f=e.dataTransfer.files[0];if(f)handleFile(f);});
+function handleFile(f){
+  if(!f.type.startsWith('image/')){showToast('이미지 파일만 가능해요');return;}
+  imgMime=f.type;var r=new FileReader();
+  r.onload=function(ev){
+    imgDataUrl=ev.target.result;
+    document.getElementById('preview-img').src=imgDataUrl;
+    document.getElementById('upload-section').style.display='none';
+    document.getElementById('preview-section').style.display='block';
+    document.getElementById('input-section').style.display='block';
+    document.getElementById('btn-analyze').style.display='block';
+    document.getElementById('result-wrap').style.display='none';
+    document.getElementById('err-box').style.display='none';
+  };
+  r.readAsDataURL(f);
+}
+function resetUpload(){location.reload();}
+function selMood(el){document.querySelectorAll('#mood-chips .chip').forEach(function(c){c.classList.remove('sel');});el.classList.add('sel');mood=el.textContent.trim();}
+function escH(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+async function analyze(){
+  if(!imgDataUrl)return;
+  var name=document.getElementById('c-name').value.trim()||'우리 아이';
+  var age=document.getElementById('c-age').value.trim()||'나이 미입력';
+  var moodStr=mood||'모름';
+  document.getElementById('btn-analyze').disabled=true;
+  document.getElementById('loading-wrap').style.display='block';
+  document.getElementById('result-wrap').style.display='none';
+  document.getElementById('err-box').style.display='none';
+  var t=animSteps(['s1','s2','s3','s4','s5'],1000);
+  try{
+    var res=await KD.run({image:imgDataUrl,mime:imgMime,name:name,age:age,mood:moodStr});
+    clearInterval(t);
+    document.getElementById('loading-wrap').style.display='none';
+    renderResult(res.output,false);
+    document.getElementById('btn-analyze').disabled=false;
+  }catch(e){
+    clearInterval(t);
+    document.getElementById('loading-wrap').style.display='none';
+    document.getElementById('err-box').textContent=(e&&e.message)?e.message:'분석 중 오류가 발생했어요. 다시 시도해주세요.';
+    document.getElementById('err-box').style.display='block';
+    document.getElementById('btn-analyze').disabled=false;
+  }
+}
+
+function buildResultHtml(d){
+  var name=d.child_name||'우리 아이';
+  var imgSrc=d.image_url||'';
+  var devHtml=(d.dev_stages||[]).map(function(s){return '<div class="score-row"><span class="score-label">'+escH(s.label)+'</span><div class="score-track"><div class="score-fill" data-w="'+s.score+'" style="width:'+s.score+'%"></div></div><span class="score-pct">'+s.score+'%</span></div>';}).join('');
+  var emoHtml=(d.emotion_tags||[]).map(function(t){return '<span class="tag">'+escH(t)+'</span>';}).join('');
+  var tipHtml=(Array.isArray(d.tip_for_mom)?d.tip_for_mom:[d.tip_for_mom]).map(function(t,i){return '<div style="display:flex;gap:8px;margin-bottom:8px;font-size:13px;font-weight:700;line-height:1.6;color:var(--ink2)"><span style="color:var(--accent);flex-shrink:0;">'+(i+1)+'.</span>'+escH(t)+'</div>';}).join('');
+  return '<div class="r-hero" data-emoji="🎨"><div style="background:var(--bg);border-radius:12px;overflow:hidden;margin-bottom:12px;"><img src="'+imgSrc+'" style="width:100%;max-height:160px;object-fit:contain;display:block;padding:8px;"></div><div class="r-hero-title">'+escH(d.artwork_title)+'</div><div class="r-hero-sub">'+escH(d.artwork_subtitle)+'</div></div>'
+    +'<div class="r-card"><div class="r-card-head"><div class="r-icon">📈</div><div><div class="r-title">발달 단계 분석</div><div class="r-sub">이 나이 기준 그림 발달 수준</div></div></div>'+devHtml+'<div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);"><div class="r-body">'+escH(d.dev_comment)+'</div></div></div>'
+    +'<div class="r-card"><div class="r-card-head"><div class="r-icon">💛</div><div><div class="r-title">감정 신호 읽기</div><div class="r-sub">선·색·구도에 숨은 감정</div></div></div><div class="tags">'+emoHtml+'</div><div class="r-body">'+escH(d.emotion_analysis)+'</div></div>'
+    +'<div class="r-card"><div class="r-card-head"><div class="r-icon">🧠</div><div><div class="r-title">내면 세계</div><div class="r-sub">그림에서 보이는 심리적 특징</div></div></div><div class="r-body">'+escH(d.psychology_insight)+'</div></div>'
+    +'<div class="r-card"><div class="r-card-head"><div class="r-icon">🖼️</div><div><div class="r-title">도슨트 감상평</div><div class="r-sub">작품으로서의 이 그림</div></div></div><div class="quote-box"><p>'+escH(d.docent_review)+'</p></div></div>'
+    +'<div class="r-card"><div class="r-card-head"><div class="r-icon">💡</div><div><div class="r-title">엄마에게 드리는 육아 팁</div></div></div>'+tipHtml+'</div>'
+    +'<div class="gift-card" data-emoji="🎨"><div class="gift-label">✦ '+escH(name)+'의 그림을 보고 엄마에게</div><div class="gift-msg">'+escH(d.message_to_mom)+'</div></div>';
+}
+
+function renderResult(d,isHistory){
+  document.getElementById('upload-section').style.display='none';
+  document.getElementById('preview-section').style.display='none';
+  document.getElementById('input-section').style.display='none';
+  document.getElementById('btn-analyze').style.display='none';
+  var html=buildResultHtml(d)+'<div class="share-row"><button class="btn-share" onclick="copyRes()">📋 결과 복사</button><button class="btn-share primary" onclick="location.reload()">🖍️ 다른 그림</button></div>';
+  var wrap=document.getElementById('result-wrap');wrap.innerHTML=html;wrap.style.display='block';
+  window._copyText='🎨 '+(d.artwork_title||'')+'  '+(d.dev_comment||'')+'  '+(d.emotion_analysis||'')+'  💌 '+(d.message_to_mom||'');
+  setTimeout(function(){wrap.scrollIntoView({behavior:'smooth',block:'start'});},150);
+}
+function copyRes(){KD.copyShot({filename:'kidikidi-drawing.png'});}
+
+KD.mountHistory({
+  mountTarget: document.querySelector('.app'),
+  label: function(r){ var o=r.output||{}; return (o.artwork_title||'분석')+' · '+(o.child_name||''); },
+  renderRecord: function(rec, c){ c.innerHTML=buildResultHtml(rec.output||{}); }
+});
+</script>
+</body>
+</html>
