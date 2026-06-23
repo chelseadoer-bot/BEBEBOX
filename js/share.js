@@ -297,6 +297,25 @@
     if (owned[id]) return { guest_name: by[id] || "가족", message: "" };
     return null;
   }
+  // 받은 선물을 선반에 시각화(준 사람 이름 포함)
+  function shelfHtml(gifts) {
+    if (!gifts.length) return '<div class="shelf-empty">아직 받은 선물이 없어요</div>';
+    var per = 4, rows = [];
+    for (var i = 0; i < gifts.length; i += per) rows.push(gifts.slice(i, i + per));
+    return '<div class="gift-shelf-wrap">' + rows.map(function (row) {
+      return '<div class="shelf"><div class="shelf-objs">' + row.map(function (g) {
+        var obj = g.image ? '<span class="shelf-obj"><img src="' + esc(g.image) + '" alt=""/></span>' : '<span class="shelf-obj">' + esc(g.emoji || "🎁") + '</span>';
+        var giver = g.giver ? '<span class="shelf-giver">' + esc(g.giver) + '</span>' : '<span class="shelf-giver muted">선물</span>';
+        return '<span class="shelf-item">' + giver + obj + '</span>';
+      }).join("") + '</div><div class="shelf-board"></div></div>';
+    }).join("") + '</div>';
+  }
+  function receivedGifts() {
+    return PIECES.filter(function (p) { return guestbookFor(p.id); }).map(function (p) {
+      var gb = guestbookFor(p.id);
+      return { emoji: p.emoji || "🎁", name: p.base, giver: (gb && gb.guest_name) || "가족" };
+    });
+  }
   // 보드/카드에 쓸 9조각: 선물 퍼즐 + 옷장 필요 항목
   function buildPieces() {
     var out = [], seen = {};
@@ -334,7 +353,10 @@
       '<span class="bb-planshop-ic">🎁</span>' +
       '<span class="bb-planshop-tx"><b>추천 선물 한번에 보기</b><span>키디키디 베이비 기획전에서 골라보세요</span></span>' +
       '<span class="bb-planshop-go">›</span></a>';
-    if (!PIECES.length) return planshop + '<p class="s-photo-empty">아직 등록된 선물이 없어요</p>';
+    // 받은 선물 선반(준 사람 이름)
+    var rec = receivedGifts();
+    var shelf = rec.length ? '<div class="shelf-block"><div class="shelf-h">🎁 받은 선물 선반</div>' + shelfHtml(rec) + '</div>' : "";
+    if (!PIECES.length) return planshop + shelf + '<p class="s-photo-empty">아직 등록된 선물이 없어요</p>';
     // 진행 요약(퍼즐 보드 없이 간단히)
     var done = PIECES.filter(function (p) { return guestbookFor(p.id); }).length;
     var progress = '<p class="bb-progress">🎁 ' + done + " / " + PIECES.length + " 개의 선물이 채워졌어요</p>";
@@ -354,7 +376,7 @@
         '<div class="bb-card-desc">' + esc(p.desc) + "</div>" +
         '<button type="button" class="bb-card-cta" data-piece="' + esc(p.id) + '">' + esc(CUR_BABY) + "에게 선물하기 🎁</button></div>";
     }).join("") + "</div>";
-    return planshop + progress + cards;
+    return planshop + shelf + progress + cards;
   }
   function bindRegistry() {
     var ps = document.getElementById("bb-planshop");
