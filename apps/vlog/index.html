@@ -1,0 +1,1354 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+  <meta name="theme-color" content="#F0F7FF" />
+  <title>브이로그 제작소</title>
+  <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" rel="stylesheet">
+  <style>
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --bg: #F0F7FF;
+  --surface: #ffffff;
+  --text: #1E293B;
+  --text-secondary: #475569;
+  --text-muted: #94A3B8;
+  --accent: #4A90E2;
+  --accent-soft: #EFF6FF;
+  --accent-text: #2563EB;
+  --primary: #1E3A5F;
+  --primary-hover: #152A45;
+  --border: #DBEAFE;
+  --brand: #4A90E2;
+  --brand-l: #EFF6FF;
+  --brand-d: #2563EB;
+  --ink: #1E293B;
+  --ink2: #475569;
+  --ink3: #64748B;
+  --border-slot: rgba(74, 144, 226, 0.08);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --font: "Pretendard", -apple-system, BlinkMacSystemFont, sans-serif;
+  --header-h: 44px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-pill: 100px;
+}
+
+html,
+body {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-family: var(--font);
+  background: #E8F4FD;
+  color: var(--text);
+  font-weight: 400;
+  font-size: 14px;
+  letter-spacing: -0.01em;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#app {
+  height: 100%;
+  max-width: 420px;
+  margin: 0 auto;
+  background: var(--surface);
+  position: relative;
+  overflow: hidden;
+}
+
+#editor-view {
+  background: var(--bg);
+}
+
+.view {
+  display: none;
+  flex-direction: column;
+  height: 100%;
+}
+
+.view.active {
+  display: flex;
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: var(--header-h);
+  padding: 0 48px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  position: relative;
+  flex-shrink: 0;
+  z-index: 10;
+}
+
+.header-date {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
+}
+
+.app-header .icon-btn {
+  position: absolute;
+  right: 10px;
+}
+
+.app-header .info-btn {
+  right: auto;
+  left: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  font-style: italic;
+  font-family: Georgia, "Times New Roman", serif;
+  color: var(--text-secondary);
+}
+
+.app-header .back-btn {
+  right: auto;
+  left: 10px;
+}
+
+.icon-btn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s;
+}
+
+.icon-btn.light {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.icon-btn:active {
+  background: rgba(0, 0, 0, 0.05);
+  color: var(--text);
+}
+
+.slots-editor {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding-bottom: 56px;
+  transition: padding-bottom 0.22s;
+}
+
+.slots-editor.footer-visible {
+  padding-bottom: 68px;
+}
+
+.slot {
+  flex: 1;
+  position: relative;
+  min-height: 0;
+  border-bottom: 1px solid var(--border-slot);
+  overflow: hidden;
+  background: var(--bg);
+}
+
+.slot:last-child {
+  border-bottom: none;
+}
+
+.slot-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: var(--bg);
+}
+
+.slot-bg img,
+.slot-bg video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.slot.has-media .slot-bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.12) 0%,
+    rgba(0, 0, 0, 0.08) 40%,
+    rgba(0, 0, 0, 0.35) 100%
+  );
+  pointer-events: none;
+}
+
+.slot-content {
+  position: relative;
+  z-index: 1;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 24px 12px;
+  pointer-events: none;
+}
+
+.slot-label-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.slot-label {
+  font-size: 1.625rem;
+  font-weight: 500;
+  color: var(--text);
+  letter-spacing: 0.12em;
+  line-height: 1;
+  opacity: 0.88;
+  transition: color 0.2s, opacity 0.2s;
+}
+
+.slot.has-media .slot-label {
+  color: #fff;
+  opacity: 1;
+  font-weight: 400;
+  letter-spacing: 0.14em;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.25);
+}
+
+.slot-time {
+  display: none;
+  font-size: 0.6875rem;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.82);
+  letter-spacing: 0.06em;
+  font-variant-numeric: tabular-nums;
+}
+
+.slot.has-media .slot-time {
+  display: block;
+}
+
+.slot-actions {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+  max-width: 280px;
+  pointer-events: auto;
+}
+
+.btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 9px 12px;
+  border-radius: var(--radius-pill);
+  font-size: 0.75rem;
+  font-weight: 500;
+  font-family: inherit;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: transform 0.12s, background 0.15s, border-color 0.15s;
+}
+
+.btn-svg {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+  opacity: 0.75;
+}
+
+.btn:active {
+  transform: scale(0.98);
+}
+
+.btn-capture {
+  background: var(--accent);
+  color: #fff;
+  border-color: transparent;
+}
+
+.btn-upload {
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--text-secondary);
+  border-color: rgba(0, 0, 0, 0.08);
+  backdrop-filter: blur(8px);
+}
+
+.slot.has-media .btn-upload {
+  background: rgba(255, 255, 255, 0.18);
+  color: rgba(255, 255, 255, 0.95);
+  border-color: rgba(255, 255, 255, 0.28);
+}
+
+.slot .remove-slot {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 3;
+  width: 26px;
+  height: 26px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.35);
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.7rem;
+  cursor: pointer;
+  pointer-events: auto;
+  display: none;
+  backdrop-filter: blur(4px);
+}
+
+.slot.has-media .remove-slot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.editor-footer {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: calc(14px + var(--safe-bottom));
+  z-index: 20;
+  display: flex;
+  gap: 8px;
+  opacity: 0;
+  transform: translateY(8px);
+  pointer-events: none;
+  transition: opacity 0.22s, transform 0.22s;
+}
+
+.editor-footer.visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.editor-footer .btn-save,
+.editor-footer .btn-retry {
+  flex: 1;
+  padding: 13px 16px;
+  border-radius: var(--radius-md);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  font-family: inherit;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  border: none;
+  transition: background 0.15s, transform 0.12s;
+}
+
+.editor-footer .btn-save {
+  background: var(--primary);
+  color: #fff;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.12);
+}
+
+.editor-footer .btn-save:active {
+  background: var(--primary-hover);
+}
+
+.editor-footer .btn-retry {
+  background: var(--surface);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+}
+
+.editor-footer .btn-retry:active {
+  background: var(--bg);
+}
+
+.editor-footer .btn-save:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.info-modal {
+  border: none;
+  padding: 0;
+  margin: auto;
+  max-width: calc(100% - 40px);
+  width: 340px;
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.14);
+}
+
+.info-modal::backdrop {
+  background: rgba(0, 0, 0, 0.35);
+}
+
+.info-modal[open] {
+  display: block;
+}
+
+.info-modal-inner {
+  padding: 22px 20px 18px;
+}
+
+.info-modal-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 10px;
+}
+
+.info-modal-lead {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--accent-text);
+  background: var(--accent-soft);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  line-height: 1.55;
+  margin-bottom: 14px;
+}
+
+.info-modal-steps {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.info-modal-steps li {
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+  line-height: 1.55;
+  padding-left: 1.4em;
+  position: relative;
+}
+
+.info-modal-steps li::before {
+  content: "✦";
+  position: absolute;
+  left: 0;
+  color: var(--accent);
+  font-size: 0.75rem;
+}
+
+.info-modal-close {
+  width: 100%;
+  padding: 11px;
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--primary);
+  color: #fff;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.save-toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(80px + var(--safe-bottom));
+  transform: translateX(-50%) translateY(12px);
+  background: rgba(45, 45, 45, 0.92);
+  color: #fff;
+  font-size: 0.75rem;
+  padding: 9px 16px;
+  border-radius: var(--radius-pill);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s, transform 0.2s;
+  z-index: 60;
+  white-space: nowrap;
+}
+
+.save-toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.make-loading {
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: rgba(240, 247, 255, 0.94);
+  backdrop-filter: blur(2px);
+}
+
+.make-loading.show {
+  display: flex;
+}
+
+.make-loading .spin {
+  font-size: 44px;
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+.make-loading p {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.make-loading .sub {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--text-secondary);
+}
+
+@keyframes pulse {
+  50% { transform: scale(1.08); }
+}
+
+.result-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px 24px;
+  min-height: 0;
+  overflow: auto;
+  background: var(--bg);
+}
+
+.result-media {
+  width: 100%;
+  max-width: 300px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 8px 24px rgba(0, 0, 0, 0.06);
+  background: #111;
+}
+
+.result-media img,
+.result-media video {
+  width: 100%;
+  display: block;
+}
+
+.preview-footer {
+  padding: 14px 20px calc(14px + var(--safe-bottom));
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.btn-download {
+  width: 100%;
+  padding: 12px 16px;
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--primary);
+  color: #fff;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  font-family: inherit;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.btn-download.secondary {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+}
+
+.btn-download:active {
+  background: var(--primary-hover);
+}
+
+.btn-download.secondary:active {
+  background: var(--bg);
+}
+
+.camera-modal {
+  border: none;
+  padding: 0;
+  margin: 0;
+  max-width: 100%;
+  max-height: 100%;
+  width: 100%;
+  height: 100%;
+  background: #111;
+}
+
+.camera-modal::backdrop {
+  background: #000;
+}
+
+.camera-modal[open] {
+  display: flex;
+  flex-direction: column;
+}
+
+.camera-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: var(--header-h);
+  color: rgba(255, 255, 255, 0.9);
+  position: relative;
+  flex-shrink: 0;
+}
+
+.camera-header .icon-btn {
+  position: absolute;
+  right: 10px;
+}
+
+#camera-slot-title {
+  font-weight: 500;
+  font-size: 0.8125rem;
+  letter-spacing: 0.1em;
+}
+
+.camera-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.camera-viewport {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#camera-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.frame-guide {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -55%);
+  width: 86%;
+  aspect-ratio: 16 / 9;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: 10px;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.4);
+  pointer-events: none;
+}
+
+.frame-hint {
+  position: absolute;
+  left: 50%;
+  bottom: -32px;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  background: rgba(0, 0, 0, 0.5);
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.6875rem;
+  font-weight: 400;
+  padding: 5px 12px;
+  border-radius: var(--radius-pill);
+  letter-spacing: -0.01em;
+}
+
+.camera-mode {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px;
+  flex-shrink: 0;
+}
+
+.mode-tab {
+  padding: 6px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: rgba(255, 255, 255, 0.55);
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.mode-tab.active {
+  background: rgba(255, 255, 255, 0.95);
+  color: #222;
+  border-color: transparent;
+}
+
+.camera-controls {
+  display: flex;
+  justify-content: center;
+  padding: 18px 16px calc(24px + var(--safe-bottom));
+  flex-shrink: 0;
+}
+
+.shutter {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.15);
+  cursor: pointer;
+  position: relative;
+  backdrop-filter: blur(4px);
+}
+
+.shutter::after {
+  content: "";
+  position: absolute;
+  inset: 16px;
+  border-radius: 50%;
+  background: #fff;
+}
+
+.shutter.recording {
+  border-color: #e85d5d;
+}
+
+.shutter.recording::after {
+  inset: 20px;
+  border-radius: 4px;
+  background: #e85d5d;
+}
+
+.kd-hist-btn {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: calc(12px + var(--safe-bottom));
+  width: auto;
+  margin: 0;
+  z-index: 18;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+@media (min-width: 421px) {
+  body {
+    padding: 16px 0;
+  }
+
+  #app {
+    height: calc(100% - 32px);
+    border-radius: 20px;
+    box-shadow: 0 4px 32px rgba(0, 0, 0, 0.08);
+  }
+}
+</style>
+</head>
+<body>
+  <div id="app">
+    <section id="editor-view" class="view active">
+      <header class="app-header">
+        <button type="button" class="icon-btn info-btn" id="btn-info" aria-label="사용 방법">i</button>
+        <time class="header-date" id="header-date-editor"></time>
+        <button type="button" class="icon-btn" id="btn-reset" aria-label="초기화">↺</button>
+      </header>
+
+      <div class="slots-editor">
+        <article class="slot" data-slot="eat">
+          <div class="slot-bg" id="preview-eat"></div>
+          <div class="slot-content">
+            <div class="slot-label-wrap">
+              <span class="slot-label">먹</span>
+              <span class="slot-time" id="time-edit-eat"></span>
+            </div>
+            <div class="slot-actions">
+              <button type="button" class="btn btn-capture" data-action="capture" data-slot="eat">
+                <svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                촬영
+              </button>
+              <button type="button" class="btn btn-upload" data-action="upload" data-slot="eat">
+                <svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                업로드
+              </button>
+            </div>
+          </div>
+        </article>
+
+        <article class="slot" data-slot="play">
+          <div class="slot-bg" id="preview-play"></div>
+          <div class="slot-content">
+            <div class="slot-label-wrap">
+              <span class="slot-label">놀</span>
+              <span class="slot-time" id="time-edit-play"></span>
+            </div>
+            <div class="slot-actions">
+              <button type="button" class="btn btn-capture" data-action="capture" data-slot="play">
+                <svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                촬영
+              </button>
+              <button type="button" class="btn btn-upload" data-action="upload" data-slot="play">
+                <svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                업로드
+              </button>
+            </div>
+          </div>
+        </article>
+
+        <article class="slot" data-slot="sleep">
+          <div class="slot-bg" id="preview-sleep"></div>
+          <div class="slot-content">
+            <div class="slot-label-wrap">
+              <span class="slot-label">잠</span>
+              <span class="slot-time" id="time-edit-sleep"></span>
+            </div>
+            <div class="slot-actions">
+              <button type="button" class="btn btn-capture" data-action="capture" data-slot="sleep">
+                <svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                촬영
+              </button>
+              <button type="button" class="btn btn-upload" data-action="upload" data-slot="sleep">
+                <svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                업로드
+              </button>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <div class="editor-footer" id="editor-footer">
+        <button type="button" class="btn-save" id="btn-make-vlog">브이로그 만들기</button>
+        <button type="button" class="btn-retry" id="btn-retry">다시하기</button>
+      </div>
+
+      <div class="make-loading" id="make-loading">
+        <span class="spin">🎬</span>
+        <p>브이로그 합성 중…</p>
+        <p class="sub">서버에서 영상을 합치고 있어요</p>
+      </div>
+    </section>
+
+    <section id="preview-view" class="view">
+      <header class="app-header">
+        <button type="button" class="icon-btn back-btn" id="btn-back" aria-label="뒤로">←</button>
+        <time class="header-date" id="header-date-preview"></time>
+        <button type="button" class="icon-btn" id="btn-close-preview" aria-label="닫기">✕</button>
+      </header>
+
+      <div class="result-wrap">
+        <div class="result-media" id="result-media"></div>
+      </div>
+
+      <footer class="preview-footer">
+        <button type="button" class="btn-download" id="btn-copy-shot">📋 결과 복사</button>
+        <button type="button" class="btn-download secondary" id="btn-share">🔗 공유 링크 복사</button>
+        <button type="button" class="btn-download secondary" id="btn-download-result">저장하기</button>
+        <button type="button" class="btn-download secondary" id="btn-retry-preview">다시 만들기</button>
+      </footer>
+    </section>
+
+    <dialog id="camera-modal" class="camera-modal">
+      <header class="camera-header">
+        <span id="camera-slot-title">먹</span>
+        <button type="button" class="icon-btn light" id="btn-close-camera" aria-label="닫기">✕</button>
+      </header>
+      <div class="camera-body">
+        <div class="camera-viewport">
+          <video id="camera-video" autoplay playsinline muted></video>
+          <div class="frame-guide">
+            <p class="frame-hint">이 안에 맞춰주세요</p>
+          </div>
+        </div>
+        <div class="camera-mode">
+          <button type="button" class="mode-tab active" data-mode="photo">사진</button>
+          <button type="button" class="mode-tab" data-mode="video">영상</button>
+        </div>
+        <div class="camera-controls">
+          <button type="button" class="shutter" id="btn-shutter" aria-label="촬영"></button>
+        </div>
+      </div>
+    </dialog>
+
+    <input type="file" id="file-input" accept="image/*,video/*" hidden />
+
+    <dialog id="info-modal" class="info-modal">
+      <div class="info-modal-inner">
+        <h2 class="info-modal-title">먹놀잠 브이로그 만들기</h2>
+        <p class="info-modal-lead">하루의 먹고·놀고·잠잔 모습을 하나의 영상으로 남겨, 우리 아이만의 브이로그를 만들어 보세요.</p>
+        <ul class="info-modal-steps">
+          <li><strong>먹</strong> · <strong>놀</strong> · <strong>잠</strong> 세 칸에 각각 사진이나 짧은 영상을 넣어요.</li>
+          <li>촬영 버튼으로 바로 찍거나, 갤러리에서 업로드할 수 있어요.</li>
+          <li>세 칸이 모두 차면 <strong>브이로그 만들기</strong>로 서버에서 한 편의 영상으로 합쳐요.</li>
+          <li>완성된 영상은 링크로 공유하거나 저장할 수 있어요.</li>
+        </ul>
+        <button type="button" class="info-modal-close" id="btn-info-close">알겠어요</button>
+      </div>
+    </dialog>
+
+    <div class="save-toast" id="save-toast" role="status"></div>
+  </div>
+
+<script src="/kidikidi-app.js"></script>
+<script>
+const SLOTS = ["eat", "play", "sleep"];
+const SLOT_LABELS = { eat: "먹", play: "놀", sleep: "잠" };
+const MIME_BY_SLOT = { eat: "먹", play: "놀", sleep: "잠" };
+const BIG_FILE = 25 * 1024 * 1024;
+
+const media = { eat: null, play: null, sleep: null };
+
+let activeSlot = null;
+let cameraStream = null;
+let cameraMode = "photo";
+let mediaRecorder = null;
+let recordedChunks = [];
+let isRecording = false;
+let isMaking = false;
+let lastOutput = null;
+
+const $ = (sel) => document.querySelector(sel);
+const $$ = (sel) => document.querySelectorAll(sel);
+
+const editorView = $("#editor-view");
+const previewView = $("#preview-view");
+const cameraModal = $("#camera-modal");
+const fileInput = $("#file-input");
+const editorFooter = $("#editor-footer");
+const btnMakeVlog = $("#btn-make-vlog");
+const btnRetry = $("#btn-retry");
+const infoModal = $("#info-modal");
+const saveToast = $("#save-toast");
+const makeLoading = $("#make-loading");
+
+function formatTimestamp(date) {
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  const h = String(date.getHours()).padStart(2, "0");
+  const min = String(date.getMinutes()).padStart(2, "0");
+  return `${m}.${d}  ${h}:${min}`;
+}
+
+function formatHeaderDate(date = new Date()) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  const days = ["일", "월", "화", "수", "목", "금", "토"];
+  return `${y}.${m}.${d}  ${days[date.getDay()]}`;
+}
+
+function initHeaderDates() {
+  const text = formatHeaderDate();
+  const editor = $("#header-date-editor");
+  const preview = $("#header-date-preview");
+  if (editor) editor.textContent = text;
+  if (preview) preview.textContent = text;
+}
+
+function filledCount() {
+  return SLOTS.filter((s) => media[s]).length;
+}
+
+function updateMakeButton() {
+  const ready = filledCount() >= 3;
+  editorFooter.classList.toggle("visible", ready);
+  document.querySelector(".slots-editor")?.classList.toggle("footer-visible", ready);
+  if (btnMakeVlog) btnMakeVlog.disabled = !ready || isMaking;
+  syncHistButton();
+}
+
+function syncHistButton() {
+  const histBtn = document.querySelector(".kd-hist-btn");
+  if (!histBtn) return;
+  const onEditor = editorView.classList.contains("active");
+  histBtn.style.display = onEditor && filledCount() < 3 && !isMaking ? "flex" : "none";
+}
+
+function showToast(msg) {
+  if (!saveToast) return;
+  saveToast.textContent = msg;
+  saveToast.classList.add("show");
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(() => saveToast.classList.remove("show"), 2400);
+}
+
+function revokeUrl(url) {
+  if (url && url.startsWith("blob:")) URL.revokeObjectURL(url);
+}
+
+function setSlotMedia(slot, type, blob) {
+  const prev = media[slot];
+  if (prev) revokeUrl(prev.url);
+  const url = URL.createObjectURL(blob);
+  media[slot] = { type, url, blob, timestamp: new Date() };
+  renderSlotPreview(slot);
+  updateMakeButton();
+}
+
+function clearSlot(slot) {
+  const prev = media[slot];
+  if (prev) revokeUrl(prev.url);
+  media[slot] = null;
+  renderSlotPreview(slot);
+  updateMakeButton();
+}
+
+function renderSlotPreview(slot) {
+  const bg = $(`#preview-${slot}`);
+  const slotEl = document.querySelector(`.slot[data-slot="${slot}"]`);
+  const timeEl = $(`#time-edit-${slot}`);
+  const data = media[slot];
+
+  bg.innerHTML = "";
+  slotEl.classList.toggle("has-media", !!data);
+  timeEl.textContent = data ? formatTimestamp(data.timestamp) : "";
+
+  const oldRemove = slotEl.querySelector(".remove-slot");
+  if (oldRemove) oldRemove.remove();
+  if (!data) return;
+
+  let node;
+  if (data.type === "video") {
+    node = document.createElement("video");
+    node.muted = true;
+    node.playsInline = true;
+    node.loop = true;
+    node.autoplay = true;
+  } else {
+    node = document.createElement("img");
+  }
+  node.src = data.url;
+  bg.appendChild(node);
+
+  const removeBtn = document.createElement("button");
+  removeBtn.type = "button";
+  removeBtn.className = "remove-slot";
+  removeBtn.setAttribute("aria-label", "삭제");
+  removeBtn.textContent = "✕";
+  removeBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    clearSlot(slot);
+  });
+  slotEl.appendChild(removeBtn);
+}
+
+function showView(name) {
+  editorView.classList.toggle("active", name === "editor");
+  previewView.classList.toggle("active", name === "preview");
+  syncHistButton();
+}
+
+function blobToDataURL(blob) {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(r.result);
+    r.onerror = reject;
+    r.readAsDataURL(blob);
+  });
+}
+
+async function makeVlog() {
+  if (filledCount() < 3 || isMaking) return;
+  isMaking = true;
+  btnMakeVlog.disabled = true;
+  makeLoading.classList.add("show");
+  syncHistButton();
+
+  try {
+    const slots = [];
+    let total = 0;
+    for (const s of SLOTS) {
+      const d = media[s];
+      const dataURL = await blobToDataURL(d.blob);
+      total += dataURL.length;
+      const mime = (d.blob && d.blob.type) || (d.type === "video" ? "video/mp4" : "image/jpeg");
+      slots.push({ slot: MIME_BY_SLOT[s], data: dataURL, mime });
+    }
+    if (total > BIG_FILE * 1.4) {
+      showToast("용량이 커요. 합성에 시간이 걸릴 수 있어요…");
+    }
+    const res = await KD.run({ slots });
+    lastOutput = res.output;
+    showResult(res.output);
+  } catch (e) {
+    showToast((e && e.message) || "합성에 실패했어요. 다시 시도해 주세요.");
+  } finally {
+    isMaking = false;
+    btnMakeVlog.disabled = filledCount() < 3;
+    makeLoading.classList.remove("show");
+    syncHistButton();
+  }
+}
+
+function renderResultMedia(container, output) {
+  const url = (output && output.result_url) || "";
+  container.innerHTML = "";
+  if (!url) return;
+  if (output.result_type === "video") {
+    const v = document.createElement("video");
+    v.src = url;
+    v.controls = true;
+    v.playsInline = true;
+    v.loop = true;
+    v.autoplay = true;
+    v.muted = true;
+    container.appendChild(v);
+  } else {
+    const img = document.createElement("img");
+    img.src = url;
+    container.appendChild(img);
+  }
+}
+
+function showResult(output) {
+  renderResultMedia($("#result-media"), output);
+  showView("preview");
+}
+
+async function copyResultShot() {
+  try {
+    const media = $("#result-media");
+    const vid = media ? media.querySelector("video") : null;
+    if (vid && vid.videoWidth) {
+      const c = document.createElement("canvas");
+      c.width = vid.videoWidth;
+      c.height = vid.videoHeight;
+      c.getContext("2d").drawImage(vid, 0, 0, c.width, c.height);
+      const blob = await new Promise((r) => c.toBlob(r, "image/png"));
+      try {
+        if (!window.ClipboardItem) throw new Error("no clipboard image");
+        await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
+        showToast("이미지로 복사했어요! 📋");
+      } catch (e) {
+        const a = document.createElement("a");
+        a.href = c.toDataURL("image/png");
+        a.download = "kidikidi-vlog.png";
+        a.click();
+        showToast("이미지로 저장했어요! 💾");
+      }
+      return;
+    }
+    await KD.copyShot({ target: ".result-wrap", filename: "kidikidi-vlog.png", toast: showToast });
+  } catch (err) {
+    showToast("이미지 복사에 실패했어요 😢");
+  }
+}
+
+function absoluteShareUrl(output) {
+  const u = (output && (output.share_url || output.result_url)) || "";
+  if (!u) return "";
+  return u.startsWith("http") ? u : location.origin + u;
+}
+
+async function copyShare(output) {
+  const url = absoluteShareUrl(output);
+  if (!url) return;
+  try {
+    await navigator.clipboard.writeText(url);
+    showToast("공유 링크를 복사했어요 🔗");
+  } catch (e) {
+    const t = document.createElement("textarea");
+    t.value = url;
+    document.body.appendChild(t);
+    t.select();
+    try { document.execCommand("copy"); showToast("공유 링크를 복사했어요 🔗"); }
+    catch (err) { showToast(url); }
+    t.remove();
+  }
+}
+
+function downloadResult(output) {
+  const url = (output && output.result_url) || "";
+  if (!url) return;
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "먹놀잠_" + Date.now() + (output.result_type === "video" ? ".mp4" : ".jpg");
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
+
+function retryAll() {
+  if (filledCount() > 0 && !confirm("처음부터 다시 만들까요?")) return;
+  SLOTS.forEach(clearSlot);
+  showToast("다시 시작해요 ✨");
+}
+
+async function startCamera() {
+  stopCamera();
+  try {
+    cameraStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: "environment" },
+      audio: cameraMode === "video",
+    });
+    $("#camera-video").srcObject = cameraStream;
+  } catch {
+    alert("카메라를 사용할 수 없습니다. 브라우저 권한을 확인해 주세요.");
+    cameraModal.close();
+  }
+}
+
+function stopCamera() {
+  if (cameraStream) {
+    cameraStream.getTracks().forEach((t) => t.stop());
+    cameraStream = null;
+  }
+  if (mediaRecorder && mediaRecorder.state !== "inactive") mediaRecorder.stop();
+  isRecording = false;
+  $("#btn-shutter").classList.remove("recording");
+}
+
+function openCamera(slot) {
+  activeSlot = slot;
+  $("#camera-slot-title").textContent = SLOT_LABELS[slot];
+  cameraModal.showModal();
+  startCamera();
+}
+
+function capturePhoto() {
+  const video = $("#camera-video");
+  const c = document.createElement("canvas");
+  c.width = video.videoWidth;
+  c.height = video.videoHeight;
+  c.getContext("2d").drawImage(video, 0, 0);
+  c.toBlob((blob) => {
+    if (blob) {
+      setSlotMedia(activeSlot, "image", blob);
+      cameraModal.close();
+    }
+  }, "image/jpeg", 0.92);
+}
+
+function toggleVideoRecord() {
+  const shutter = $("#btn-shutter");
+  if (!isRecording) {
+    recordedChunks = [];
+    const mime = MediaRecorder.isTypeSupported("video/webm") ? "video/webm" : "video/mp4";
+    mediaRecorder = new MediaRecorder(cameraStream, { mimeType: mime });
+    mediaRecorder.ondataavailable = (e) => { if (e.data.size) recordedChunks.push(e.data); };
+    mediaRecorder.onstop = () => {
+      const blob = new Blob(recordedChunks, { type: mime });
+      setSlotMedia(activeSlot, "video", blob);
+      cameraModal.close();
+    };
+    mediaRecorder.start();
+    isRecording = true;
+    shutter.classList.add("recording");
+  } else {
+    mediaRecorder.stop();
+    isRecording = false;
+    shutter.classList.remove("recording");
+  }
+}
+
+$$("[data-action]").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    const action = btn.dataset.action;
+    const slot = btn.dataset.slot;
+    if (action === "capture") openCamera(slot);
+    else if (action === "upload") {
+      activeSlot = slot;
+      fileInput.click();
+    }
+  });
+});
+
+fileInput.addEventListener("change", () => {
+  const file = fileInput.files?.[0];
+  fileInput.value = "";
+  if (!file || !activeSlot) return;
+  if (file.size > BIG_FILE) showToast("⚠️ 큰 파일이에요. 합성이 느릴 수 있어요.");
+  const type = file.type.startsWith("video/") ? "video" : "image";
+  setSlotMedia(activeSlot, type, file);
+});
+
+$$(".mode-tab").forEach((tab) => {
+  tab.addEventListener("click", () => {
+    $$(".mode-tab").forEach((t) => t.classList.remove("active"));
+    tab.classList.add("active");
+    cameraMode = tab.dataset.mode;
+    if (cameraModal.open) startCamera();
+  });
+});
+
+$("#btn-shutter").addEventListener("click", () => {
+  if (cameraMode === "photo") capturePhoto();
+  else toggleVideoRecord();
+});
+
+$("#btn-close-camera").addEventListener("click", () => cameraModal.close());
+cameraModal.addEventListener("close", stopCamera);
+
+btnMakeVlog.addEventListener("click", makeVlog);
+btnRetry.addEventListener("click", retryAll);
+$("#btn-info").addEventListener("click", () => infoModal.showModal());
+$("#btn-info-close").addEventListener("click", () => infoModal.close());
+infoModal.addEventListener("click", (e) => { if (e.target === infoModal) infoModal.close(); });
+
+$("#btn-back").addEventListener("click", () => showView("editor"));
+$("#btn-close-preview").addEventListener("click", () => showView("editor"));
+$("#btn-copy-shot").addEventListener("click", copyResultShot);
+$("#btn-share").addEventListener("click", () => copyShare(lastOutput));
+$("#btn-download-result").addEventListener("click", () => downloadResult(lastOutput));
+$("#btn-retry-preview").addEventListener("click", () => { showView("editor"); retryAll(); });
+
+$("#btn-reset").addEventListener("click", () => {
+  if (filledCount() > 0 && !confirm("작업을 초기화할까요?")) return;
+  SLOTS.forEach(clearSlot);
+});
+
+KD.mountHistory({
+  mountTarget: document.querySelector("#app"),
+  label: function (r) {
+    const o = r.output || {};
+    return o.result_type === "video" ? "브이로그 영상" : "먹놀잠 이미지";
+  },
+  renderRecord: function (rec, c) {
+    const o = rec.output || {};
+    const box = document.createElement("div");
+    box.className = "result-media";
+    box.style.maxWidth = "260px";
+    box.style.margin = "0 auto 12px";
+    renderResultMedia(box, o);
+    c.appendChild(box);
+    const share = document.createElement("button");
+    share.className = "kd-back";
+    share.type = "button";
+    share.textContent = "🔗 공유 링크 복사";
+    share.onclick = function () { copyShare(o); };
+    c.appendChild(share);
+  },
+});
+
+initHeaderDates();
+updateMakeButton();
+syncHistButton();
+</script>
+</body>
+</html>

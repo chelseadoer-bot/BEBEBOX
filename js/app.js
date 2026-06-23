@@ -1833,14 +1833,14 @@ function openIgView(){switchMainTab("game");}
  * (D:\AI_GROUND_WITH_BEBEBOX 의 앱들은 배포하거나 이 저장소에 넣어 URL로 연결)
  */
 const AI_APPS={
-  naming:"",        // 글로벌 작명소
-  doodle:"",        // 낙서 심리 분석
-  health:"",        // 아이 건강 체크
-  vlog:"",          // 브이로그 제작소
-  chores:"",        // 집안일 당번
-  temperament:"",   // 성향·기질 분석
-  studio:"",        // AI 컨셉스튜디오
-  pastlife:"",      // 전생 인연(추천)
+  naming:"/apps/naming/",        // 글로벌 작명소
+  doodle:"/apps/doodle/",        // 낙서 심리 분석
+  health:"/apps/health/",        // 아이 건강 체크
+  vlog:"/apps/vlog/",            // 브이로그 제작소
+  chores:"/apps/chores/",        // 집안일 당번
+  temperament:"/apps/temperament/", // 성향·기질 분석
+  studio:"/apps/studio/",        // AI 컨셉스튜디오
+  pastlife:"/apps/pastlife/",    // 전생 인연(추천)
 };
 function openAiApp(slug,label){
   const url=AI_APPS[slug];
