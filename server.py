@@ -333,6 +333,8 @@ class H(SimpleHTTPRequestHandler):
                 return json_response(self, 200, {"members": db.list_members(self._query("q"))})
             if path == "/api/admin/member":
                 return json_response(self, 200, db.member_detail(norm_family(self._query("family"))))
+            if path == "/api/admin/coupons":
+                return json_response(self, 200, {"coupons": db.coupon_queue()})
             return json_response(self, 404, {"error": "not_found"})
         if path == "/api/auth/me":
             session, _ = current_session(self)
@@ -396,6 +398,20 @@ class H(SimpleHTTPRequestHandler):
                 user_id=(body.get("user_id") or None),
             )
             return json_response(self, 200, {"ok": True})
+        if path == "/api/admin/coupon/fulfill":
+            if (self._query("key") or "") != ADMIN_KEY:
+                return json_response(self, 401, {"error": "unauthorized"})
+            try:
+                body = read_json_body(self)
+            except json.JSONDecodeError:
+                return json_response(self, 400, {"error": "invalid_json"})
+            ok = db.set_coupon_fulfilled(
+                norm_family(body.get("family")),
+                (body.get("coupon_id") or "").strip(),
+                bool(body.get("fulfilled", True)),
+                (body.get("note") or "").strip(),
+            )
+            return json_response(self, 200 if ok else 400, {"ok": ok})
         # AI 그라운드 미니앱 실행: POST /apps/<slug>/api/run
         m = re.match(r"^/apps/([^/]+)/api/(.*)$", path)
         if m:

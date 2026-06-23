@@ -6,46 +6,64 @@
 <title>베베박스 · 운영자 대시보드</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css"/>
 <style>
-:root{--accent:#ff6b3d;--bg:#f6f4f0;--card:#fff;--text:#2b2622;--sub:#7a7068;--muted:#a8a098;--border:#e8e2d9}
+:root{--accent:#ff6b3d;--bg:#f6f4f0;--card:#fff;--text:#2b2622;--sub:#7a7068;--muted:#a8a098;--border:#e8e2d9;--ok:#34a853;--warn:#e8556e}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:"Pretendard",system-ui,sans-serif;background:var(--bg);color:var(--text);letter-spacing:-.01em}
-.wrap{max-width:1100px;margin:0 auto;padding:24px 18px 60px}
+.wrap{max-width:1180px;margin:0 auto;padding:24px 18px 60px}
 h1{font-size:22px;font-weight:800}
 .sub{color:var(--sub);font-size:13px;margin-top:4px}
 .gate{max-width:360px;margin:80px auto;background:var(--card);border:1px solid var(--border);border-radius:18px;padding:28px;text-align:center}
 .gate input{width:100%;padding:12px 14px;border:1px solid var(--border);border-radius:12px;font-size:15px;font-family:inherit;margin:14px 0}
 .btn{border:none;border-radius:12px;background:var(--accent);color:#fff;font-size:14px;font-weight:800;padding:12px 18px;cursor:pointer;font-family:inherit}
 .btn.ghost{background:#efe9e1;color:var(--text)}
+.btn.sm{padding:7px 12px;font-size:12px;border-radius:9px}
+.btn.ok{background:var(--ok)}
+.btn.done{background:#eef3ee;color:#7a9a80}
 .hidden{display:none}
 .topbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:18px 0 14px}
 .search{flex:1;min-width:200px;padding:11px 14px;border:1px solid var(--border);border-radius:12px;font-size:14px;font-family:inherit;background:#fff}
-.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:18px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:18px}
 .kpi{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px}
-.kpi b{display:block;font-size:22px;font-weight:800;color:var(--accent)}
+.kpi b{display:block;font-size:24px;font-weight:800;color:var(--accent)}
 .kpi span{font-size:12px;color:var(--sub)}
+.kpi.hot{background:#fff4ef;border-color:#ffd9c9}
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:16px}
+.card-h{padding:14px 16px;font-weight:800;font-size:15px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px}
+.card-h .muted{font-size:12px;font-weight:600;color:var(--muted)}
 .layout{display:grid;grid-template-columns:1fr;gap:16px}
-@media(min-width:860px){.layout{grid-template-columns:1.1fr 1fr}}
-.card{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden}
-.card-h{padding:14px 16px;font-weight:800;font-size:14px;border-bottom:1px solid var(--border)}
+@media(min-width:920px){.layout{grid-template-columns:1.15fr 1fr}}
 table{width:100%;border-collapse:collapse;font-size:13px}
-th,td{text-align:left;padding:11px 14px;border-bottom:1px solid #f1ece4}
-th{color:var(--sub);font-weight:700;font-size:12px;background:#faf7f3}
-tbody tr{cursor:pointer}
-tbody tr:hover{background:#fff8f3}
+th,td{text-align:left;padding:11px 14px;border-bottom:1px solid #f1ece4;vertical-align:middle}
+th{color:var(--sub);font-weight:700;font-size:12px;background:#faf7f3;white-space:nowrap}
 .num{text-align:right;font-variant-numeric:tabular-nums}
+.click tbody tr{cursor:pointer}
+.click tbody tr:hover{background:#fff8f3}
 .detail-empty{padding:40px 16px;text-align:center;color:var(--muted);font-size:13px}
 .sec{padding:14px 16px;border-bottom:1px solid #f1ece4}
+.sec:last-child{border-bottom:none}
 .sec-title{font-size:12px;font-weight:800;color:var(--sub);margin-bottom:10px}
+.kv{display:flex;flex-wrap:wrap;gap:8px}
+.kv .b{background:#f7f3ee;border-radius:10px;padding:8px 12px;font-size:13px}
+.kv .b b{font-weight:800}
 .gift-row,.giver-row{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px dashed #efe7dc;font-size:13px}
 .gift-row:last-child,.giver-row:last-child{border-bottom:none}
-.tag{font-size:11px;font-weight:800;padding:2px 8px;border-radius:999px}
+.tag{font-size:11px;font-weight:800;padding:2px 8px;border-radius:999px;white-space:nowrap}
 .tag.recv{background:#eafaef;color:#34a853}
 .tag.need{background:#fff2ec;color:#ff6b3d}
+.tag.kid{background:#eef4ff;color:#3b6fe0}
+.tag.nokid{background:#fdeef1;color:var(--warn)}
+.tag.pending{background:#fff4e5;color:#c47a18}
+.tag.done{background:#eef3ee;color:#5a8a66}
 .giver-name{font-weight:800}
 .giver-meta{color:var(--sub);font-size:12px}
 .msg{color:var(--sub);font-size:12px;font-style:italic}
 .tl{font-size:12px;color:var(--sub);padding:6px 0;border-bottom:1px dashed #efe7dc}
 .pill{display:inline-block;font-size:11px;font-weight:700;color:#7a5240;background:#fff2ec;border-radius:999px;padding:1px 7px;margin-right:4px}
+.kidid{font-weight:800}
+.kidid.miss{color:var(--warn);font-weight:700}
+.code{font-family:ui-monospace,Menlo,monospace;font-size:12px;background:#f3efe9;border-radius:6px;padding:1px 6px}
+.empty{padding:26px 16px;text-align:center;color:var(--muted);font-size:13px}
+.legend{font-size:11px;color:var(--muted);padding:0 16px 12px}
 </style>
 </head>
 <body>
@@ -58,22 +76,45 @@ tbody tr:hover{background:#fff8f3}
 
 <div id="app" class="wrap hidden">
 <h1>베베박스 운영자 대시보드</h1>
-<p class="sub">회원(가족) 단위로 누구에게 줘야 하는지·누가 조각을 얼마나 썼는지 확인하세요</p>
+<p class="sub">알을 다 모아 <b>쿠폰을 교환한 회원에게 키디키디 쿠폰을 발급</b>하고, 발급 완료를 체크하세요</p>
 <div class="kpis" id="kpis"></div>
+
+<!-- ① 가장 중요한: 쿠폰 지급 대기열 -->
+<div class="card">
+<div class="card-h">
+<span>🎟️ 쿠폰 지급 대기열 <span class="muted">— 알 교환 완료 → 키디키디 쿠폰을 발급해 주세요</span></span>
+<label class="muted" style="cursor:pointer"><input type="checkbox" id="show-done"/> 발급완료도 보기</label>
+</div>
+<div style="overflow:auto;max-height:50vh">
+<table>
+<thead><tr>
+<th>아기 / 가족코드</th><th>키디키디 아이디</th><th>쿠폰</th><th class="num">보유 알</th><th>교환일</th><th>처리</th>
+</tr></thead>
+<tbody id="coupons"></tbody>
+</table>
+</div>
+<p class="legend">※ "키디 아이디 없음"이면 회원이 아직 키디키디 아이디를 연결하지 않은 상태예요(쿠폰 발급 전 확인 필요).</p>
+</div>
+
 <div class="topbar">
-<input class="search" id="search" placeholder="가족코드 또는 아기 이름으로 검색"/>
+<input class="search" id="search" placeholder="가족코드 · 아기 이름 · 키디 아이디로 검색"/>
 <button class="btn ghost" id="refresh">새로고침</button>
 </div>
+
 <div class="layout">
+<!-- ② 회원 목록 -->
 <div class="card">
-<div class="card-h">회원(가족) 목록</div>
-<div style="overflow:auto;max-height:70vh">
+<div class="card-h"><span>회원(가족) 목록 <span class="muted">— 보유 알 많은 순</span></span></div>
+<div style="overflow:auto;max-height:70vh" class="click">
 <table>
-<thead><tr><th>아기 / 코드</th><th class="num">기록</th><th class="num">공개</th><th class="num">조회</th><th class="num">클릭</th><th class="num">완료</th></tr></thead>
+<thead><tr>
+<th>아기 / 가족코드</th><th>키디 아이디</th><th class="num">보유 알 🥚</th><th class="num">교환 쿠폰</th><th class="num">공개 위시</th>
+</tr></thead>
 <tbody id="members"></tbody>
 </table>
 </div>
 </div>
+<!-- ③ 회원 상세 -->
 <div class="card">
 <div class="card-h" id="detail-title">회원 상세</div>
 <div id="detail"><div class="detail-empty">왼쪽에서 회원을 선택하세요</div></div>
@@ -84,59 +125,142 @@ tbody tr:hover{background:#fff8f3}
 <script>
 var KEY = localStorage.getItem("bbx_admin_key") || "";
 function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
+function won(n){return (Number(n)||0).toLocaleString("ko-KR")+"원";}
+function al(n){return (Number(n)||0).toLocaleString("ko-KR");}
+function ymd(ms){if(!ms)return "-";var t=new Date(Number(ms));if(isNaN(t))return "-";return (t.getMonth()+1)+"/"+t.getDate()+" "+("0"+t.getHours()).slice(-2)+":"+("0"+t.getMinutes()).slice(-2);}
 async function api(path){
   var r = await fetch(path + (path.indexOf("?")>=0?"&":"?") + "key=" + encodeURIComponent(KEY));
   if(r.status===401){throw new Error("unauthorized");}
   return r.json();
 }
+async function apiPost(path,body){
+  var r = await fetch(path + (path.indexOf("?")>=0?"&":"?") + "key=" + encodeURIComponent(KEY),
+    {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body||{})});
+  return r.json();
+}
 function showApp(){document.getElementById("gate").classList.add("hidden");document.getElementById("app").classList.remove("hidden");}
+function kpi(n,l,hot){return '<div class="kpi'+(hot?" hot":"")+'"><b>'+(n||0)+'</b><span>'+l+'</span></div>';}
+
 async function loadAll(){
   try{
     var s = await api("/api/admin/stats");
     var by = s.by_type||{};
     document.getElementById("kpis").innerHTML =
-      kpi(s.families,"가족(회원)")+kpi(s.events,"총 이벤트")+
-      kpi(by.share_view||0,"공유 조회")+kpi(by.gift_click||0,"선물 클릭")+
-      kpi(by.gift_done||0,"선물 완료")+kpi(by.record||0,"기록");
+      kpi(s.families,"가족(회원)")+
+      kpi(s.coupons_pending,"🎟️ 지급 대기 쿠폰",true)+
+      kpi(s.coupons_done,"발급 완료")+
+      kpi(by.record||0,"누적 기록")+
+      kpi(by.gift_done||0,"지인 선물 완료");
+    await loadCoupons();
     await loadMembers("");
     showApp();
   }catch(e){ alert("키가 올바르지 않습니다."); }
 }
-function kpi(n,l){return '<div class="kpi"><b>'+(n||0)+'</b><span>'+l+'</span></div>';}
+
+/* ① 쿠폰 지급 대기열 */
+async function loadCoupons(){
+  var j = await api("/api/admin/coupons");
+  var showDone = document.getElementById("show-done").checked;
+  var list = (j.coupons||[]).filter(function(c){return showDone || !c.fulfilled;});
+  var tb = document.getElementById("coupons");
+  if(!list.length){tb.innerHTML='<tr><td colspan="6"><div class="empty">'+(showDone?"교환된 쿠폰이 없어요":"지급할 쿠폰이 없어요 🎉")+'</div></td></tr>';return;}
+  tb.innerHTML = list.map(function(c){
+    var kid = c.kidikidi_id
+      ? '<span class="kidid">'+esc(c.kidikidi_id)+'</span>'
+      : '<span class="tag nokid">키디 아이디 없음</span>';
+    var action = c.fulfilled
+      ? '<button class="btn sm done" data-undo data-fam="'+esc(c.family_id)+'" data-cid="'+esc(c.coupon_id)+'">✓ 발급됨 ('+ymd(c.fulfilled_at)+')</button>'
+      : '<button class="btn sm ok" data-do data-fam="'+esc(c.family_id)+'" data-cid="'+esc(c.coupon_id)+'"'+(c.missing_kidikidi?' title="키디 아이디가 없어요"':'')+'>지급 완료 체크</button>';
+    return '<tr>'+
+      '<td><b>'+esc(c.baby)+'</b><br/><span style="color:#a8a098;font-size:11px">'+esc(c.family_id)+'</span></td>'+
+      '<td>'+kid+'</td>'+
+      '<td>'+won(c.amount)+' <span class="code">'+esc(c.code)+'</span></td>'+
+      '<td class="num">'+al(c.points)+'</td>'+
+      '<td>'+ymd(c.created_at)+'</td>'+
+      '<td>'+action+'</td></tr>';
+  }).join("");
+  tb.querySelectorAll("[data-do]").forEach(function(b){b.onclick=function(){fulfill(b.dataset.fam,b.dataset.cid,true);};});
+  tb.querySelectorAll("[data-undo]").forEach(function(b){b.onclick=function(){if(confirm("발급 완료를 취소할까요?"))fulfill(b.dataset.fam,b.dataset.cid,false);};});
+}
+async function fulfill(fam,cid,val){
+  await apiPost("/api/admin/coupon/fulfill",{family:fam,coupon_id:cid,fulfilled:val});
+  await loadCoupons();
+  var s = await api("/api/admin/stats");
+  document.querySelector("#kpis").children[1].querySelector("b").textContent = s.coupons_pending||0;
+  document.querySelector("#kpis").children[2].querySelector("b").textContent = s.coupons_done||0;
+}
+document.getElementById("show-done").addEventListener("change",loadCoupons);
+
+/* ② 회원 목록 */
 async function loadMembers(q){
   var j = await api("/api/admin/members?q="+encodeURIComponent(q||""));
   var tb = document.getElementById("members");
-  if(!j.members.length){tb.innerHTML='<tr><td colspan="6" style="color:#a8a098">회원이 없어요</td></tr>';return;}
+  if(!j.members.length){tb.innerHTML='<tr><td colspan="5"><div class="empty">회원이 없어요</div></td></tr>';return;}
   tb.innerHTML = j.members.map(function(m){
+    var kid = m.kidikidi_id ? '<span class="kidid">'+esc(m.kidikidi_id)+'</span>' : '<span class="kidid miss">없음</span>';
     return '<tr data-fam="'+esc(m.family_id)+'"><td><b>'+esc(m.baby)+'</b><br/><span style="color:#a8a098;font-size:11px">'+esc(m.family_id)+'</span></td>'+
-      '<td class="num">'+m.records+'</td><td class="num">'+m.published+'</td><td class="num">'+m.views+'</td><td class="num">'+m.gift_clicks+'</td><td class="num">'+m.gifts_done+'</td></tr>';
+      '<td>'+kid+'</td>'+
+      '<td class="num"><b>'+al(m.points)+'</b></td>'+
+      '<td class="num">'+(m.coupons||0)+'</td>'+
+      '<td class="num">'+m.published+'</td></tr>';
   }).join("");
   tb.querySelectorAll("tr[data-fam]").forEach(function(tr){tr.onclick=function(){loadDetail(tr.dataset.fam);};});
 }
+
+/* ③ 회원 상세 */
 async function loadDetail(fam){
   document.getElementById("detail-title").textContent = "회원 상세 · " + fam;
   var d = await api("/api/admin/member?family="+encodeURIComponent(fam));
   var f = d.funnel||{};
+  var kid = d.kidikidi_id ? '<span class="kidid">'+esc(d.kidikidi_id)+'</span>' : '<span class="tag nokid">키디 아이디 없음</span>';
+
+  var coupons = (d.coupons||[]).map(function(c){
+    var st = c.fulfilled ? '<span class="tag done">✓ 발급됨</span>' : '<span class="tag pending">발급 대기</span>';
+    var btn = c.fulfilled
+      ? '<button class="btn sm done" data-undo data-fam="'+esc(d.family_id)+'" data-cid="'+esc(c.coupon_id)+'">취소</button>'
+      : '<button class="btn sm ok" data-do data-fam="'+esc(d.family_id)+'" data-cid="'+esc(c.coupon_id)+'">지급 완료</button>';
+    return '<div class="gift-row"><span>'+won(c.amount)+' <span class="code">'+esc(c.code)+'</span> '+st+'</span>'+btn+'</div>';
+  }).join("") || '<div class="msg">교환한 쿠폰이 없어요</div>';
+
   var give = (d.to_give||[]).map(function(g){
     return '<div class="gift-row"><span>'+esc(g.name)+(g.puzzle?' <span class="pill">🧩'+g.puzzle+'</span>':'')+'</span>'+
       (g.received?'<span class="tag recv">받음'+(g.giver?' · '+esc(g.giver):'')+'</span>':'<span class="tag need">받아야</span>')+'</div>';
   }).join("") || '<div class="msg">공개된 위시가 없어요</div>';
+
   var givers = (d.givers||[]).map(function(g){
     return '<div class="giver-row"><div><div class="giver-name">'+esc(g.name)+(g.relationship?' <span class="pill">'+esc(g.relationship)+'</span>':'')+'</div>'+
       '<div class="giver-meta">'+esc((g.items||[]).join(", "))+'</div>'+
       ((g.messages||[]).length?'<div class="msg">“'+esc(g.messages[0])+'”</div>':'')+'</div>'+
-      '<div class="num"><b>'+g.pieces+'</b><br/><span style="font-size:11px;color:#a8a098">조각</span></div></div>';
+      '<div class="num"><b>'+g.pieces+'</b><br/><span style="font-size:11px;color:#a8a098">선물</span></div></div>';
   }).join("") || '<div class="msg">아직 선물한 지인이 없어요</div>';
+
   var tl = (d.recent||[]).slice(0,12).map(function(e){
-    var t=new Date(e.created_at); var hh=("0"+t.getHours()).slice(-2)+":"+("0"+t.getMinutes()).slice(-2);
-    return '<div class="tl">'+t.getMonth()+1+'/'+t.getDate()+' '+hh+' · '+esc(e.actor||"")+(e.name?'('+esc(e.name)+')':'')+' · '+esc(e.type)+'</div>';
+    return '<div class="tl">'+ymd(e.created_at)+' · '+esc(e.actor||"")+(e.name?'('+esc(e.name)+')':'')+' · '+esc(e.type)+'</div>';
   }).join("");
+
   document.getElementById("detail").innerHTML =
-    '<div class="sec"><div class="sec-title">전환</div><div style="font-size:13px">👀 '+f.views+' → 🛍 '+f.gift_clicks+' → 🎁 '+f.gifts_done+' · ❤️ '+f.hearts+' · 💬 '+f.comments+' · 🎮 '+(f.miniapps||0)+' 미니앱</div></div>'+
-    '<div class="sec"><div class="sec-title">누구에게 줘야 / 받았는지</div>'+give+'</div>'+
-    '<div class="sec"><div class="sec-title">누가 얼마나 조각을 썼는지</div>'+givers+'</div>'+
+    '<div class="sec"><div class="sec-title">회원 정보</div><div class="kv">'+
+      '<div class="b">키디 아이디 '+kid+'</div>'+
+      '<div class="b">보유 알 <b>'+al(d.points)+'</b> 🥚</div>'+
+      '<div class="b">교환 쿠폰 <b>'+(d.coupons||[]).length+'</b>장</div>'+
+    '</div></div>'+
+    '<div class="sec"><div class="sec-title">🎟️ 교환한 쿠폰 (발급 처리)</div>'+coupons+'</div>'+
+    '<div class="sec"><div class="sec-title">받아야 / 받은 선물</div>'+give+'</div>'+
+    '<div class="sec"><div class="sec-title">누가 선물했는지(지인)</div>'+givers+'</div>'+
+    '<div class="sec"><div class="sec-title">지인 유입 전환</div><div style="font-size:13px;line-height:1.7">'+
+      '👀 공유페이지 조회 <b>'+(f.views||0)+'</b> → 🛍 선물 버튼 클릭 <b>'+(f.gift_clicks||0)+'</b> → 🎁 선물 완료 <b>'+(f.gifts_done||0)+'</b><br/>'+
+      '❤️ 하트 '+(f.hearts||0)+' · 💬 댓글 '+(f.comments||0)+' · 🎮 미니앱 '+(f.miniapps||0)+'</div></div>'+
     '<div class="sec"><div class="sec-title">최근 활동</div>'+(tl||'<div class="msg">없음</div>')+'</div>';
+
+  document.querySelectorAll("#detail [data-do]").forEach(function(b){b.onclick=function(){fulfillFromDetail(fam,b.dataset.cid,true);};});
+  document.querySelectorAll("#detail [data-undo]").forEach(function(b){b.onclick=function(){if(confirm("발급 완료를 취소할까요?"))fulfillFromDetail(fam,b.dataset.cid,false);};});
 }
+async function fulfillFromDetail(fam,cid,val){
+  await apiPost("/api/admin/coupon/fulfill",{family:fam,coupon_id:cid,fulfilled:val});
+  await loadCoupons();
+  await loadDetail(fam);
+}
+
 document.getElementById("gate-btn").onclick=function(){
   KEY=document.getElementById("key-input").value.trim();
   localStorage.setItem("bbx_admin_key",KEY);
