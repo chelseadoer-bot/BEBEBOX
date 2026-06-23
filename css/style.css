@@ -661,6 +661,15 @@ body.is-guest .guest-only{display:block!important}
 .gp-bar{height:9px;border-radius:999px;background:#ffd9c6;overflow:hidden}
 .gp-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,#ff8a5c,#ff6b3d);transition:width .4s ease}
 .gp-sub{font-size:11.5px;color:#b07a5e;margin-top:6px}
+/* 포인트(알) 안내 카드 */
+.point-guide{background:#fff;border:1px solid var(--color-border-light);border-radius:16px;padding:16px;margin:0 0 16px}
+.point-guide-title{font-size:14px;font-weight:800;margin-bottom:12px}
+.point-guide-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:9px}
+.point-guide-list li{display:flex;align-items:center;justify-content:space-between;font-size:13px;color:#5a5248}
+.point-guide-list li b{font-weight:800;color:#2e9e5b}
+.point-guide-list li.spend b{color:#e8556e}
+.point-guide-foot{margin-top:13px;padding-top:12px;border-top:1px dashed var(--color-border-light);font-size:12.5px;color:#8a8278;line-height:1.5;text-align:center}
+.point-guide-foot b{color:#ff6b3d;font-weight:800}
 /* 받은 선물 선반 */
 .shelf-section{padding:6px 2px 14px;border-bottom:1px solid var(--color-border-light);margin-bottom:14px}
 .shelf-title{font-size:15px;font-weight:800;margin-bottom:12px}

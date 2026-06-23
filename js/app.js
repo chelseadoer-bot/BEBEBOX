@@ -147,7 +147,7 @@ function reorderItemProducts(itemId,from,to){
 }
 function fmtPrice(n){return n.toLocaleString("ko-KR")+"원";}
 function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
-let state={photos:[],friends:[],inbox:[],profile:{...DEFAULT_PROFILE},wishlist:{},owned:{},hidden:{},itemProducts:{},funding:{},fundingGauge:{},gaugePuzzles:{},collectQuests:{},contributors:{},journeyGifts:{},journeyMemories:{},parentQuestPhotos:{},points:0,coupons:[],posts:[],giftPuzzles:[],published:{},giftedBy:{},journeyJustCleared:null,viewingPostId:null,currentStage:0,currentAgeTab:"all",pendingGift:null,viewingPhotoId:null,pendingFunding:null,pendingContribute:null,pendingJourneyNode:null,pendingRaidNode:null,pendingJourneyEditNode:null};
+let state={photos:[],friends:[],inbox:[],profile:{...DEFAULT_PROFILE},wishlist:{},owned:{},hidden:{},itemProducts:{},funding:{},fundingGauge:{},gaugePuzzles:{},collectQuests:{},contributors:{},journeyGifts:{},journeyMemories:{},parentQuestPhotos:{},points:0,coupons:[],posts:[],giftPuzzles:[],published:{},giftedBy:{},likeAwarded:0,journeyJustCleared:null,viewingPostId:null,currentStage:0,currentAgeTab:"all",pendingGift:null,viewingPhotoId:null,pendingFunding:null,pendingContribute:null,pendingJourneyNode:null,pendingRaidNode:null,pendingJourneyEditNode:null};
 function isGuest(){return new URLSearchParams(location.search).has("guest");}
 function babyName(){return state.profile.babyName||state.profile.name.replace(/의 일기$/,"")||"다엘이";}
 function hasItem(id){return!!state.owned[id];}
@@ -529,17 +529,18 @@ function renderPointsUI(){
   const pts=getPoints();
   $$(".js-point-balance").forEach(el=>{el.textContent=formatPoints(pts);});
   const ok=canExchangeCoupon();
+  const won=POINT_RULES.couponAmount.toLocaleString("ko-KR");
   const ex=$("#btn-claim-coupon");
   if(ex){
     ex.disabled=!ok;
     ex.classList.toggle("is-ready",ok);
-    ex.textContent=ok?"🎟️ 1,000알 → 쿠폰 교환하기":`🎟️ 쿠폰까지 ${formatPoints(POINT_RULES.couponCost-pts)}알`;
+    ex.textContent=ok?`🎟️ ${POINT_RULES.couponCost}알 → ${won}원 상품권 받기`:`🎟️ 상품권까지 ${formatPoints(POINT_RULES.couponCost-pts)}알`;
   }
   const sx=$("#btn-settings-exchange");
   if(sx){
     sx.disabled=!ok;
     sx.classList.toggle("is-ready",ok);
-    sx.textContent=ok?"🎟️ 1,000알 → 쿠폰 교환":`쿠폰까지 ${formatPoints(POINT_RULES.couponCost-pts)}알`;
+    sx.textContent=ok?`🎟️ ${POINT_RULES.couponCost}알 → ${won}원 상품권`:`상품권까지 ${formatPoints(POINT_RULES.couponCost-pts)}알`;
   }
 }
 function onPointsChanged(){renderPointsUI();}
@@ -564,6 +565,7 @@ function renderSettingsTab(){
   const now=new Date(),mTotal=state.posts.length;
   const mMonth=state.posts.filter(p=>{const d=new Date(p.createdAt);return d.getFullYear()===now.getFullYear()&&d.getMonth()===now.getMonth();}).length;
   const mHeart=state.posts.reduce((s,p)=>s+(p.gauge||0),0);
+  reconcileLikePoints();
   const st=$("#my-stat-total");if(st)st.textContent=mTotal;
   const sm=$("#my-stat-month");if(sm)sm.textContent=mMonth;
   const sh=$("#my-stat-heart");if(sh)sh.textContent=mHeart;
@@ -610,6 +612,19 @@ function onPuzzlePiecesChanged(gained,source,total,bonus){
 }
 window.onPuzzlePiecesChanged=onPuzzlePiecesChanged;
 window.switchMainTab=switchMainTab;
+// 좋아요(하트) 누적이 일정 단위마다 알을 적립한다. (이미 적립한 만큼은 건너뜀)
+function reconcileLikePoints(){
+  if(typeof addPoints!=="function")return;
+  const total=(state.posts||[]).reduce((s,p)=>s+(p.gauge||0),0);
+  const unit=POINT_RULES.likeUnit||200,reward=POINT_RULES.likeReward||10;
+  const due=Math.floor(total/unit),claimed=state.likeAwarded||0;
+  if(due>claimed){
+    addPoints((due-claimed)*reward,"likes");
+    state.likeAwarded=due;
+    if(typeof save==="function")save();
+    if(typeof showToast==="function")showToast(`좋아요 ${due*unit}개 달성 · +${(due-claimed)*reward}알 ❤️`);
+  }
+}
 function renderProfile(){
   $("#profile-name").textContent=state.profile.name;
   $("#profile-status").textContent=state.profile.status||`${state.profile.currentAge}개월`;
@@ -1271,7 +1286,15 @@ function closeWishActionSheet(){$("#wish-action-sheet")?.classList.add("hidden")
 function doWishAction(id,act){
   if(act==="received"){
     const who=(prompt("누가 선물해 줬나요? (예: 체리이모)")||"").trim();
-    if(who){state.owned[id]=true;state.giftedBy[id]=who;state.published[id]=true;showToast(`${who}님 선물로 기록했어요 🎁`);}
+    if(who){
+      const already=!!state.owned[id];
+      state.owned[id]=true;state.giftedBy[id]=who;state.published[id]=true;
+      if(!already&&typeof addPoints==="function"){
+        addPoints(POINT_RULES.giftReceived,"gift_received");
+        if(typeof track==="function")track("gift_received",{item_id:id,giver:who});
+        showToast(`${who}님 선물로 기록 · +${POINT_RULES.giftReceived}알 🎁`);
+      }else{showToast(`${who}님 선물로 기록했어요 🎁`);}
+    }
   }else if(act==="pub"){
     if(state.published[id])delete state.published[id];else state.published[id]=true;
   }else if(act==="products"){
