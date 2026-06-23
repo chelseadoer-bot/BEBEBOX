@@ -132,7 +132,7 @@ async function loadDetail(fam){
     return '<div class="tl">'+t.getMonth()+1+'/'+t.getDate()+' '+hh+' · '+esc(e.actor||"")+(e.name?'('+esc(e.name)+')':'')+' · '+esc(e.type)+'</div>';
   }).join("");
   document.getElementById("detail").innerHTML =
-    '<div class="sec"><div class="sec-title">전환</div><div style="font-size:13px">👀 '+f.views+' → 🛍 '+f.gift_clicks+' → 🎁 '+f.gifts_done+' · ❤️ '+f.hearts+' · 💬 '+f.comments+'</div></div>'+
+    '<div class="sec"><div class="sec-title">전환</div><div style="font-size:13px">👀 '+f.views+' → 🛍 '+f.gift_clicks+' → 🎁 '+f.gifts_done+' · ❤️ '+f.hearts+' · 💬 '+f.comments+' · 🎮 '+(f.miniapps||0)+' 미니앱</div></div>'+
     '<div class="sec"><div class="sec-title">누구에게 줘야 / 받았는지</div>'+give+'</div>'+
     '<div class="sec"><div class="sec-title">누가 얼마나 조각을 썼는지</div>'+givers+'</div>'+
     '<div class="sec"><div class="sec-title">최근 활동</div>'+(tl||'<div class="msg">없음</div>')+'</div>';

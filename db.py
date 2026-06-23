@@ -403,6 +403,7 @@ def journey_summary(family_id):
         "comments": counts.get("comment", 0),
         "records": counts.get("record", 0),
         "shares": counts.get("share", 0),
+        "miniapps": counts.get("miniapp_generate", 0),
     }
     return {
         "family_id": fam,

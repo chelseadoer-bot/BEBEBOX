@@ -47,8 +47,22 @@
     } catch (e) {}
   })();
 
+  // ── 부모(베베박스) 앱으로 트리거 이벤트 전달 ────────
+  // 산출물 생성요청(request)·생성완료(generated)·결과공유(shared) 를 부모에 알린다.
+  // 부모는 이를 받아 고객 프로필의 포인트(알)를 적립/차감하고 고객 DB에 적치한다.
+  KD._emit = function (event, extra) {
+    try {
+      if (window.parent && window.parent !== window) {
+        var msg = { type: 'kidikidi-miniapp', event: event, uid: KD.uid() };
+        if (extra) for (var k in extra) msg[k] = extra[k];
+        window.parent.postMessage(msg, '*');
+      }
+    } catch (e) {}
+  };
+
   // ── API ────────────────────────────────────────────
   KD.run = async function (inputs) {
+    KD._emit('request');
     var resp = await fetch('api/run', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -58,6 +72,7 @@
     if (!resp.ok || json.ok === false) {
       throw new Error((json && json.error) || ('API ' + resp.status));
     }
+    KD._emit('generated', { from_cache: !!json.from_cache, record_id: json.record_id });
     return json; // {ok, uid, record_id, output, media, from_cache}
   };
   KD.records = async function () {
@@ -303,6 +318,7 @@
         a.click();
         toast('이미지로 저장했어요! 💾');
       }
+      KD._emit('shared');
     } catch (err) {
       restore.forEach(function (r) { r[0].style.visibility = r[1]; });
       toast('이미지 복사에 실패했어요 😢');

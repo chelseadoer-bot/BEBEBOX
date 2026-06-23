@@ -27,6 +27,8 @@ import uuid
 import base64
 import threading
 
+import db as maindb   # 베베박스 본체(고객 정보) DB — 미니앱 활동을 통합 적치
+
 _HERE = os.path.dirname(os.path.abspath(__file__))
 APPS_DIR = os.path.join(_HERE, "apps")
 _DATA_ROOT = os.environ.get("BEBEBOX_DATA_DIR") or os.path.join(_HERE, "data")
@@ -200,6 +202,18 @@ def handle(method, slug, sub, query, body):
             if strip and isinstance(inputs, dict):
                 stored = {k: v for k, v in inputs.items() if k not in strip}
             record_id = db.save_record(uid, am.APP_ID, stored, output, media, ihash)
+        # 미니앱 산출물 생성을 고객 정보 DB(events)에 동일 uid(=가족코드)로 적치 →
+        # 미니앱 DB ↔ 기존 고객 정보 연결성 구축. (게스트 uid 는 제외)
+        if uid and not str(uid).startswith("guest_"):
+            try:
+                maindb.insert_event(
+                    uid, "miniapp_generate", actor="parent",
+                    name=getattr(am, "TITLE", slug), item_id=am.APP_ID,
+                    meta={"slug": slug, "record_id": record_id},
+                    user_id=uid,
+                )
+            except Exception:
+                pass
         return 200, {"ok": True, "uid": uid, "record_id": record_id,
                      "output": _scope_media(output, slug),
                      "media": _scope_media(media, slug), "from_cache": False}
