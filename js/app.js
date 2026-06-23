@@ -1827,6 +1827,30 @@ function initGameTab(){
   },4000);
 }
 function openIgView(){switchMainTab("game");}
+/* ─── AI 그라운드 앱 연결 ───────────────────────────────────────────
+ * 각 앱의 주소(배포 URL 또는 같은 서버의 경로)를 채우면 타일이 그 앱으로 이동한다.
+ * 예) naming:"https://naming.myapp.com"  또는  "/apps/naming/"
+ * (D:\AI_GROUND_WITH_BEBEBOX 의 앱들은 배포하거나 이 저장소에 넣어 URL로 연결)
+ */
+const AI_APPS={
+  naming:"",        // 글로벌 작명소
+  doodle:"",        // 낙서 심리 분석
+  health:"",        // 아이 건강 체크
+  vlog:"",          // 브이로그 제작소
+  chores:"",        // 집안일 당번
+  temperament:"",   // 성향·기질 분석
+  studio:"",        // AI 컨셉스튜디오
+  pastlife:"",      // 전생 인연(추천)
+};
+function openAiApp(slug,label){
+  const url=AI_APPS[slug];
+  if(typeof track==="function")track("ai_app",{app:slug});
+  if(url){
+    window.open(url,"_blank","noopener");
+  }else{
+    showToast(`${label||"앱"} 연결 준비 중 — 앱 주소를 넣어주세요`);
+  }
+}
 function getShareUrl(){
   // 지인용 공유 페이지(/share/:가족코드) 로 연결한다.
   let code=(typeof ensureInviteCode==="function"&&ensureInviteCode(true))||(typeof getInviteCode==="function"&&getInviteCode())||"BEBEBOX";
@@ -2031,13 +2055,9 @@ function bindEvents(){
     if(node?.fundKey)openContributeModal("gauge",node.fundKey);
   };
   $("#btn-back-wishlist").onclick=()=>switchMainTab("home");
-  $$(".ig-grid-item").forEach(btn=>btn.onclick=()=>{
-    if(btn.dataset.igGame==="tap"){if(typeof openMinigameModal==="function")openMinigameModal();return;}
-    showToast(`${btn.dataset.ig} 준비 중이에요`);
-  });
-  $("#btn-ig-all").onclick=()=>showToast("전체 서비스 준비 중이에요");
-  $("#btn-ig-studio").onclick=()=>showToast("AI 컨셉스튜디오로 이동할게요");
-  $("#btn-ig-recommend").onclick=()=>showToast("추천 콘텐츠를 불러올게요");
+  $$(".ig-grid-item").forEach(btn=>btn.onclick=()=>openAiApp(btn.dataset.app,btn.dataset.ig));
+  $("#btn-ig-studio")?.addEventListener("click",()=>openAiApp("studio","AI 컨셉스튜디오"));
+  $("#btn-ig-recommend")?.addEventListener("click",()=>openAiApp("pastlife","전생 인연"));
   $("#stage-prev").onclick=()=>{if(state.currentStage>0){state.currentStage--;renderStageNav();renderWishlistGrid();}};
   $("#stage-next").onclick=()=>{if(state.currentStage<STAGES.length-1){state.currentStage++;renderStageNav();renderWishlistGrid();}};
   let tx=0;
