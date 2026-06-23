@@ -1845,11 +1845,14 @@ const AI_APPS={
 function openAiApp(slug,label){
   const url=AI_APPS[slug];
   if(typeof track==="function")track("ai_app",{app:slug});
-  if(url){
-    window.open(url,"_blank","noopener");
-  }else{
-    showToast(`${label||"앱"} 연결 준비 중 — 앱 주소를 넣어주세요`);
-  }
+  if(!url){showToast(`${label||"앱"} 준비 중이에요`);return;}
+  $("#app-frame-title").textContent=label||"";
+  $("#app-frame").src=url;            // 앱 안에서 iframe 으로 띄움
+  showOverlay("#app-frame-view");
+}
+function closeAppFrame(){
+  const f=$("#app-frame");if(f)f.src="about:blank";
+  switchMainTab("game");
 }
 function getShareUrl(){
   // 지인용 공유 페이지(/share/:가족코드) 로 연결한다.
@@ -2058,6 +2061,7 @@ function bindEvents(){
   $$(".ig-grid-item").forEach(btn=>btn.onclick=()=>openAiApp(btn.dataset.app,btn.dataset.ig));
   $("#btn-ig-studio")?.addEventListener("click",()=>openAiApp("studio","AI 컨셉스튜디오"));
   $("#btn-ig-recommend")?.addEventListener("click",()=>openAiApp("pastlife","전생 인연"));
+  $("#btn-app-frame-back")?.addEventListener("click",closeAppFrame);
   $("#stage-prev").onclick=()=>{if(state.currentStage>0){state.currentStage--;renderStageNav();renderWishlistGrid();}};
   $("#stage-next").onclick=()=>{if(state.currentStage<STAGES.length-1){state.currentStage++;renderStageNav();renderWishlistGrid();}};
   let tx=0;
