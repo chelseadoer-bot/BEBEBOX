@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
 <title>베베박스</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css"/>
-<link rel="stylesheet" href="css/style.css?v=34"/>
+<link rel="stylesheet" href="css/style.css?v=35"/>
 <link rel="stylesheet" href="css/onboarding.css?v=5"/>
 <link rel="stylesheet" href="css/theme.css?v=4"/>
 </head>
@@ -759,6 +759,17 @@
 </header>
 <iframe id="app-frame" class="app-frame" title="앱" src="about:blank" allow="camera;microphone;clipboard-write;fullscreen" referrerpolicy="no-referrer"></iframe>
 </div>
+<div class="modal hidden" id="miniapp-gate-modal">
+<div class="modal-backdrop" id="miniapp-gate-backdrop"></div>
+<div class="modal-content miniapp-gate-content">
+<div class="miniapp-gate-emoji">🥚</div>
+<h3>결과를 보려면 <span id="miniapp-gate-cost">0</span>알이 필요해요</h3>
+<p class="miniapp-gate-desc">지금 보유한 알 <strong id="miniapp-gate-balance">0</strong>개</p>
+<p class="miniapp-gate-short hidden" id="miniapp-gate-short">아이를 기록하거나 결과를 공유하고 알을 더 모아보세요!</p>
+<button type="button" class="journey-gift-btn" id="btn-miniapp-gate-confirm">🥚 결과 보기</button>
+<button type="button" class="game-retry-btn" id="btn-miniapp-gate-cancel">다음에 할게요</button>
+</div>
+</div>
 <nav class="bottom-tab-bar hidden" id="bottom-tab-bar" aria-label="하단 메뉴">
 <button type="button" class="tab-bar-item active" data-tab="home"><span class="tab-bar-icon">📷</span><span>기록</span></button>
 <button type="button" class="tab-bar-item" data-tab="game"><span class="tab-bar-icon">🎮</span><span>게임</span></button>
@@ -777,6 +788,6 @@
 <script src="js/family-data.js?v=2"></script>
 <script src="js/kakao-auth.js?v=1"></script>
 <script src="js/onboarding.js?v=7"></script>
-<script src="js/app.js?v=58"></script>
+<script src="js/app.js?v=59"></script>
 </body>
 </html>
