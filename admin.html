@@ -64,6 +64,8 @@ th{color:var(--sub);font-weight:700;font-size:12px;background:#faf7f3;white-spac
 .code{font-family:ui-monospace,Menlo,monospace;font-size:12px;background:#f3efe9;border-radius:6px;padding:1px 6px}
 .empty{padding:26px 16px;text-align:center;color:var(--muted);font-size:13px}
 .legend{font-size:11px;color:var(--muted);padding:0 16px 12px}
+.bn-preview{width:96px;height:96px;border-radius:14px;border:1px dashed var(--border);background:#faf7f3;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--muted);text-align:center;overflow:hidden}
+.bn-preview img{width:100%;height:100%;object-fit:cover}
 </style>
 </head>
 <body>
@@ -94,6 +96,27 @@ th{color:var(--sub);font-weight:700;font-size:12px;background:#faf7f3;white-spac
 </table>
 </div>
 <p class="legend">※ "키디 아이디 없음"이면 회원이 아직 키디키디 아이디를 연결하지 않은 상태예요(쿠폰 발급 전 확인 필요).</p>
+</div>
+
+<!-- 게임 탭 상단 배너 교체 -->
+<div class="card">
+<div class="card-h"><span>🖼️ 게임 탭 상단 배너</span><span class="muted">사진(왼쪽) + 텍스트를 교체하세요</span></div>
+<div style="padding:16px">
+<label style="display:flex;align-items:center;gap:8px;margin-bottom:14px;font-size:13px;cursor:pointer"><input type="checkbox" id="bn-enabled"/> 이 배너 사용(켜기) — 끄면 기본 배너가 보여요</label>
+<div style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start">
+<div style="flex:0 0 auto;text-align:center">
+<div id="bn-preview" class="bn-preview">사진<br/>없음</div>
+<input type="file" id="bn-file" accept="image/*" style="display:none"/>
+<button class="btn ghost sm" id="bn-upload" style="margin-top:8px">사진 올리기</button>
+</div>
+<div style="flex:1;min-width:220px;display:flex;flex-direction:column;gap:8px">
+<input class="search" id="bn-title" placeholder="제목 텍스트 (예: 베베박스 6월 특가 오픈)" maxlength="40"/>
+<input class="search" id="bn-subtitle" placeholder="설명 텍스트 (작게 들어가는 한 줄)" maxlength="60"/>
+<input class="search" id="bn-link" placeholder="클릭 시 이동할 링크 URL (선택)"/>
+<div style="display:flex;gap:8px"><button class="btn" id="bn-save" style="flex:1">배너 저장</button><span id="bn-status" class="muted" style="align-self:center"></span></div>
+</div>
+</div>
+</div>
 </div>
 
 <div class="topbar">
@@ -152,6 +175,7 @@ async function loadAll(){
       kpi(by.record||0,"누적 기록")+
       kpi(by.gift_done||0,"지인 선물 완료");
     await loadCoupons();
+    await loadBanner();
     await loadMembers("");
     showApp();
   }catch(e){ alert("키가 올바르지 않습니다."); }
@@ -261,6 +285,47 @@ async function fulfillFromDetail(fam,cid,val){
   await loadDetail(fam);
 }
 
+/* 게임 탭 상단 배너 편집 */
+var BN_IMG = "";
+function bnPreview(){
+  var p=document.getElementById("bn-preview");
+  p.innerHTML = BN_IMG ? '<img src="'+esc(BN_IMG)+'" alt=""/>' : "사진<br/>없음";
+}
+async function loadBanner(){
+  var b={};
+  try{ b = await (await fetch("/api/banner")).json(); }catch(e){}
+  document.getElementById("bn-enabled").checked = !!b.enabled;
+  document.getElementById("bn-title").value = b.title||"";
+  document.getElementById("bn-subtitle").value = b.subtitle||"";
+  document.getElementById("bn-link").value = b.link||"";
+  BN_IMG = b.image||"";
+  bnPreview();
+}
+document.getElementById("bn-upload").onclick=function(){document.getElementById("bn-file").click();};
+document.getElementById("bn-file").onchange=async function(e){
+  var f=e.target.files[0]; if(!f) return;
+  document.getElementById("bn-status").textContent="업로드 중...";
+  try{
+    var fd=new FormData(); fd.append("file",f); fd.append("family_id","_BANNER");
+    var r=await fetch("/api/photos/upload",{method:"POST",body:fd});
+    var j=await r.json();
+    if(j&&j.src){ BN_IMG=j.src; bnPreview(); document.getElementById("bn-status").textContent="사진 준비됨 (저장을 눌러 적용)"; }
+    else document.getElementById("bn-status").textContent="업로드 실패";
+  }catch(err){ document.getElementById("bn-status").textContent="업로드 실패"; }
+  e.target.value="";
+};
+document.getElementById("bn-save").onclick=async function(){
+  var body={
+    enabled:document.getElementById("bn-enabled").checked,
+    title:document.getElementById("bn-title").value.trim(),
+    subtitle:document.getElementById("bn-subtitle").value.trim(),
+    image:BN_IMG,
+    link:document.getElementById("bn-link").value.trim()
+  };
+  document.getElementById("bn-status").textContent="저장 중...";
+  await apiPost("/api/admin/banner",body);
+  document.getElementById("bn-status").textContent="저장됐어요 ✓ (앱 게임 탭에 반영)";
+};
 document.getElementById("gate-btn").onclick=function(){
   KEY=document.getElementById("key-input").value.trim();
   localStorage.setItem("bbx_admin_key",KEY);

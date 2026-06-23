@@ -322,6 +322,8 @@ class H(SimpleHTTPRequestHandler):
         if path == "/api/journey":
             family = norm_family(self._query("family"))
             return json_response(self, 200, db.journey_summary(family))
+        if path == "/api/banner":
+            return json_response(self, 200, db.get_config("game_banner", {}) or {})
         if path == "/admin":
             return self._serve_html("admin.html")
         if path.startswith("/api/admin/"):
@@ -412,6 +414,21 @@ class H(SimpleHTTPRequestHandler):
                 (body.get("note") or "").strip(),
             )
             return json_response(self, 200 if ok else 400, {"ok": ok})
+        if path == "/api/admin/banner":
+            if (self._query("key") or "") != ADMIN_KEY:
+                return json_response(self, 401, {"error": "unauthorized"})
+            try:
+                body = read_json_body(self)
+            except json.JSONDecodeError:
+                return json_response(self, 400, {"error": "invalid_json"})
+            db.set_config("game_banner", {
+                "enabled": bool(body.get("enabled", True)),
+                "title": (body.get("title") or "").strip(),
+                "subtitle": (body.get("subtitle") or "").strip(),
+                "image": (body.get("image") or "").strip(),
+                "link": (body.get("link") or "").strip(),
+            })
+            return json_response(self, 200, {"ok": True})
         # AI 그라운드 미니앱 실행: POST /apps/<slug>/api/run
         m = re.match(r"^/apps/([^/]+)/api/(.*)$", path)
         if m:

@@ -1837,14 +1837,30 @@ function submitFunding(){
 }
 function initGameTab(){
   if(initGameTab._timer)return;
+  applyGameBanner();
   let slide=0;
   initGameTab._timer=setInterval(()=>{
+    if(initGameTab._timer==="custom")return;
     if(!$("#game-tab-view")?.classList.contains("active"))return;
     slide=(slide+1)%3;
     $$(".ig-banner-slide").forEach(s=>s.classList.toggle("active",+s.dataset.slide===slide));
     const badge=$("#ig-banner-badge");
     if(badge)badge.textContent=`${slide+1} | 3`;
   },4000);
+}
+// 운영자가 설정한 상단 배너(사진 왼쪽 + 텍스트)로 교체한다.
+async function applyGameBanner(){
+  let cfg=null;
+  try{const r=await fetch("/api/banner");cfg=await r.json();}catch(_){}
+  const banner=$("#ig-banner");
+  if(!banner||!cfg||!cfg.enabled||!(cfg.title||cfg.image))return;
+  if(initGameTab._timer&&initGameTab._timer!=="custom")clearInterval(initGameTab._timer);
+  initGameTab._timer="custom";
+  const img=cfg.image?`<div class="ig-cbanner-img"><img src="${esc(cfg.image)}" alt=""/></div>`:"";
+  const tx=`<div class="ig-cbanner-tx"><strong>${esc(cfg.title||"")}</strong>${cfg.subtitle?`<span>${esc(cfg.subtitle)}</span>`:""}</div>`;
+  banner.classList.add("custom");
+  banner.innerHTML=img+tx;
+  if(cfg.link){banner.style.cursor="pointer";banner.onclick=()=>window.open(cfg.link,"_blank","noopener");}
 }
 function openIgView(){switchMainTab("game");}
 /* ─── AI 그라운드 앱 연결 ───────────────────────────────────────────
