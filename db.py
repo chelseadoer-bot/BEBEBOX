@@ -47,6 +47,7 @@ CREATE TABLE IF NOT EXISTS sessions (
 CREATE TABLE IF NOT EXISTS events (
     id         INTEGER PRIMARY KEY AUTOINCREMENT,
     family_id  TEXT NOT NULL,
+    user_id    TEXT,            -- 회원/행위자 식별자 (부모=가족코드/카카오, 지인=g:이름)
     actor      TEXT,            -- parent | guest
     name       TEXT,            -- 행위자 이름(지인 등)
     type       TEXT NOT NULL,   -- signup/record/share/gift_click/gift_done/heart/comment/coupon ...
@@ -71,6 +72,14 @@ def _conn():
 def init_db():
     with _conn() as conn:
         conn.executescript(SCHEMA)
+        # 기존 DB 마이그레이션: events.user_id 컬럼이 없으면 추가
+        cols = [r["name"] for r in conn.execute("PRAGMA table_info(events)").fetchall()]
+        if "user_id" not in cols:
+            try:
+                conn.execute("ALTER TABLE events ADD COLUMN user_id TEXT")
+            except sqlite3.OperationalError:
+                pass
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_events_user ON events (user_id)")
 
 
 def now_ms():
@@ -240,16 +249,129 @@ def import_legacy_photos_json(json_path):
 
 
 # ---------------------------------------------------- 고객 여정(이벤트)
-def insert_event(family_id, type_, actor=None, name=None, item_id=None, meta=None):
+def insert_event(family_id, type_, actor=None, name=None, item_id=None, meta=None, user_id=None):
     fam = (family_id or "BEBEBOX").strip().upper()
+    if not user_id:
+        user_id = ("g:" + name) if (actor == "guest" and name) else fam
     with _conn() as conn:
         conn.execute(
-            """INSERT INTO events (family_id, actor, name, type, item_id, meta, created_at)
-               VALUES (?, ?, ?, ?, ?, ?, ?)""",
-            (fam, actor, name, type_, item_id,
+            """INSERT INTO events (family_id, user_id, actor, name, type, item_id, meta, created_at)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+            (fam, user_id, actor, name, type_, item_id,
              json.dumps(meta or {}, ensure_ascii=False), now_ms()),
         )
     return True
+
+
+# --------------------------------------------- 운영자: 회원(가족) 검색/상세
+def _all_family_rows():
+    with _conn() as conn:
+        return conn.execute(
+            "SELECT family_id, data, updated_at FROM family_data ORDER BY updated_at DESC"
+        ).fetchall()
+
+
+def _item_name_map(data):
+    """위시/선물퍼즐 id → 표시 이름."""
+    m = {}
+    for arr in (data.get("wishlist") or {}).values():
+        for it in (arr or []):
+            if it and it.get("id"):
+                m[it["id"]] = (it.get("emoji", "") + " " + (it.get("name") or "")).strip()
+    for g in (data.get("giftPuzzles") or []):
+        if g.get("id"):
+            m[g["id"]] = g.get("productName") or "선물"
+    return m
+
+
+def list_members(q=None):
+    """회원(가족) 요약 목록 + 검색(가족코드/아기이름)."""
+    q = (q or "").strip().lower()
+    out = []
+    for row in _all_family_rows():
+        try:
+            data = json.loads(row["data"] or "{}")
+        except json.JSONDecodeError:
+            data = {}
+        fam = row["family_id"]
+        profile = data.get("profile") or {}
+        baby = profile.get("babyName") or (profile.get("name") or "").replace("의 일기", "") or "우리 아기"
+        if q and q not in fam.lower() and q not in baby.lower():
+            continue
+        published = sum(1 for v in (data.get("published") or {}).values() if v)
+        received = sum(1 for v in (data.get("owned") or {}).values() if v)
+        j = journey_summary(fam)["funnel"]
+        out.append({
+            "family_id": fam, "user_id": fam, "baby": baby,
+            "records": len(data.get("posts") or []),
+            "published": published, "received": received,
+            "views": j["views"], "gift_clicks": j["gift_clicks"], "gifts_done": j["gifts_done"],
+            "guests": len(journey_summary(fam)["guests"]),
+            "updated_at": row["updated_at"],
+        })
+    return out
+
+
+def member_detail(family_id):
+    """회원 상세: 받아야/받은 선물, 누가 얼마나 조각을 썼는지, 타임라인."""
+    fam = (family_id or "BEBEBOX").strip().upper()
+    r = get_family_data(fam)
+    data = (r or {}).get("data") or {}
+    profile = data.get("profile") or {}
+    baby = profile.get("babyName") or (profile.get("name") or "").replace("의 일기", "") or "우리 아기"
+    names = _item_name_map(data)
+    published = data.get("published") or {}
+    owned = data.get("owned") or {}
+    giftedBy = data.get("giftedBy") or {}
+
+    # 공개된 위시(=받아야 할/받은 선물)
+    to_give = []
+    for iid in published:
+        if not published[iid]:
+            continue
+        to_give.append({
+            "item_id": iid, "name": names.get(iid, iid),
+            "received": bool(owned.get(iid)), "giver": giftedBy.get(iid) or None,
+        })
+    # 선물 퍼즐도 포함
+    for g in (data.get("giftPuzzles") or []):
+        to_give.append({
+            "item_id": g.get("id"), "name": g.get("productName") or "선물",
+            "received": (len(g.get("pieces") or []) >= (g.get("total") or 9)),
+            "giver": None, "puzzle": "%d/%d" % (len(g.get("pieces") or []), g.get("total") or 9),
+        })
+
+    # 누가 얼마나 조각을 썼는지: 방명록 + 부모 기록 + 이벤트 집계
+    givers = {}
+    def _g(name):
+        return givers.setdefault(name, {"name": name, "pieces": 0, "items": [], "messages": [], "relationship": None})
+    for gb in (data.get("guestbook") or []):
+        g = _g(gb.get("guest_name") or "익명")
+        g["pieces"] += 1
+        nm = names.get(gb.get("item_id"), gb.get("item_id"))
+        if nm:
+            g["items"].append(nm)
+        if gb.get("relationship"):
+            g["relationship"] = gb["relationship"]
+        if gb.get("message"):
+            g["messages"].append(gb["message"])
+    for iid, who in giftedBy.items():
+        if not who:
+            continue
+        g = _g(who)
+        if names.get(iid) and names.get(iid) not in g["items"]:
+            g["pieces"] += 1
+            g["items"].append(names.get(iid))
+
+    js = journey_summary(fam)
+    return {
+        "family_id": fam, "user_id": fam, "baby": baby,
+        "funnel": js["funnel"],
+        "to_give": to_give,
+        "givers": sorted(givers.values(), key=lambda x: -x["pieces"]),
+        "guests": js["guests"],
+        "recent": js["recent"],
+    }
 
 
 def journey_summary(family_id):

@@ -64,6 +64,7 @@ def load_dotenv(path):
 
 load_dotenv(os.path.join(ROOT, ".env"))
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
+ADMIN_KEY = os.environ.get("BEBEBOX_ADMIN_KEY", "bebebox")
 
 
 def ensure_dirs():
@@ -320,8 +321,18 @@ class H(SimpleHTTPRequestHandler):
         if path == "/api/journey":
             family = norm_family(self._query("family"))
             return json_response(self, 200, db.journey_summary(family))
-        if path == "/api/admin/stats":
-            return json_response(self, 200, db.global_stats())
+        if path == "/admin":
+            return self._serve_html("admin.html")
+        if path.startswith("/api/admin/"):
+            if (self._query("key") or "") != ADMIN_KEY:
+                return json_response(self, 401, {"error": "unauthorized"})
+            if path == "/api/admin/stats":
+                return json_response(self, 200, db.global_stats())
+            if path == "/api/admin/members":
+                return json_response(self, 200, {"members": db.list_members(self._query("q"))})
+            if path == "/api/admin/member":
+                return json_response(self, 200, db.member_detail(norm_family(self._query("family"))))
+            return json_response(self, 404, {"error": "not_found"})
         if path == "/api/auth/me":
             session, _ = current_session(self)
             user = ka.public_user(session)
@@ -360,6 +371,7 @@ class H(SimpleHTTPRequestHandler):
                 name=(body.get("name") or None),
                 item_id=(body.get("item_id") or None),
                 meta=body.get("meta") if isinstance(body.get("meta"), dict) else None,
+                user_id=(body.get("user_id") or None),
             )
             return json_response(self, 200, {"ok": True})
         if path != "/api/photos/upload":
