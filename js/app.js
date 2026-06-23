@@ -1861,6 +1861,50 @@ function closeAppFrame(){
   const f=$("#app-frame");if(f)f.src="about:blank";
   switchMainTab("game");
 }
+
+/* ─── AI 컨셉스튜디오: 컨셉별 샘플 미리보기 ─────────────────────── */
+const STUDIO_CONCEPTS={
+  flower:{label:"봄꽃 컨셉",title:"봄꽃 스튜디오 컨셉 아기 사진 만들기",desc:"화사한 봄꽃 가득한 스튜디오에서 우리 아이만의 화보를 만들어보세요",img:"public/photos/ai-02.jpg"},
+  hanbok:{label:"한복 컨셉",title:"한복 새해 컨셉 아기 사진 만들기",desc:"설빔 모자와 한복, 한옥 배경의 새해 베이비 화보를 만들어보세요",img:"public/photos/ai-04.jpg"},
+  beach:{label:"바닷가 컨셉",title:"바닷가 컨셉 아기 사진 만들기",desc:"시원한 여름 바닷가를 배경으로 사랑스러운 베이비 화보를 만들어보세요",img:"public/photos/ai-03.jpg"},
+};
+let _currentConcept=null;
+function openConcept(id){
+  const c=STUDIO_CONCEPTS[id];if(!c)return;
+  _currentConcept=id;
+  if(typeof track==="function")track("ai_concept",{concept:id});
+  $("#concept-title").textContent=c.title;
+  $("#concept-desc").textContent=c.desc;
+  $("#concept-sample-img").src=c.img;
+  const chk=$("#concept-consent"),cta=$("#btn-concept-make");
+  chk.checked=false;cta.disabled=true;cta.classList.remove("on");
+  $(".concept-scroll").scrollTop=0;
+  showOverlay("#concept-view");
+}
+function closeConcept(){switchMainTab("game");}
+
+/* ─── 게임 탭: 전체보기 리스트 + 더보기 앵커 ────────────────────── */
+const ALL_CONTENT=[
+  {app:"naming",label:"글로벌 작명소",desc:"아이에게 어울리는 예쁜 글로벌 이름을 추천해요",icon:"🌐",bg:"#fff3e0"},
+  {app:"doodle",label:"낙서 심리 분석",desc:"아이 그림으로 마음상태와 감정을 알아봐요",icon:"✏️",bg:"#f3e8ff"},
+  {app:"health",label:"아이 건강 체크",desc:"증상을 입력하면 AI가 건강 상태를 살펴봐요",icon:"➕",bg:"#ffe8e8"},
+  {app:"vlog",label:"브이로그 제작소",desc:"먹·놀·잠 영상을 하나의 브이로그로 만들어요",icon:"🎬",bg:"#e8f8ef"},
+  {app:"chores",label:"집안일 당번",desc:"재미있는 게임으로 오늘의 집안일 당번을 정해요",icon:"📋",bg:"#e8f0ff"},
+  {app:"temperament",label:"성향·기질 분석",desc:"우리 아이의 타고난 기질을 검사해요",icon:"🎭",bg:"#e8eeff"},
+  {app:"studio",label:"AI 컨셉스튜디오",desc:"특별한 장소 없이도 예쁜 컨셉 사진을 완성해요",icon:"📸",bg:"#fde8f0"},
+  {app:"pastlife",label:"아이와 나의 전생",desc:"AI가 풀어주는 우리 아이 인연 이야기",icon:"🔮",bg:"#efeaff"},
+];
+function renderAllContent(){
+  const wrap=$("#ig-all-list");if(!wrap)return;
+  wrap.innerHTML=ALL_CONTENT.map(c=>
+    `<button class="ig-list-item" type="button" data-app="${c.app}" data-ig="${c.label}">`
+    +`<span class="ig-list-ico" style="background:${c.bg}">${c.icon}</span>`
+    +`<span class="ig-list-body"><span class="ig-list-title">${c.label}</span><span class="ig-list-desc">${c.desc}</span></span>`
+    +`<span class="ig-chevron">›</span></button>`
+  ).join("");
+  wrap.querySelectorAll(".ig-list-item").forEach(btn=>
+    btn.onclick=()=>openAiApp(btn.dataset.app,btn.dataset.ig));
+}
 function getShareUrl(){
   // 지인용 공유 페이지(/share/:가족코드) 로 연결한다.
   let code=(typeof ensureInviteCode==="function"&&ensureInviteCode(true))||(typeof getInviteCode==="function"&&getInviteCode())||"BEBEBOX";
@@ -2068,6 +2112,22 @@ function bindEvents(){
   $$(".ig-grid-item").forEach(btn=>btn.onclick=()=>openAiApp(btn.dataset.app,btn.dataset.ig));
   $("#btn-ig-studio")?.addEventListener("click",()=>openAiApp("studio","AI 컨셉스튜디오"));
   $("#btn-ig-recommend")?.addEventListener("click",()=>openAiApp("pastlife","전생 인연"));
+  $$(".ig-concept-card").forEach(btn=>btn.onclick=()=>openConcept(btn.dataset.concept));
+  $("#btn-concept-back")?.addEventListener("click",closeConcept);
+  $("#concept-consent")?.addEventListener("change",e=>{
+    const cta=$("#btn-concept-make");cta.disabled=!e.target.checked;cta.classList.toggle("on",e.target.checked);
+  });
+  $("#btn-concept-make")?.addEventListener("click",()=>{
+    if($("#btn-concept-make").disabled)return;
+    const c=STUDIO_CONCEPTS[_currentConcept];
+    openAiApp("studio",(c&&c.label)||"AI 컨셉스튜디오");
+  });
+  $("#concept-terms")?.addEventListener("click",e=>{e.preventDefault();showToast("약관 전문은 준비 중이에요");});
+  $("#btn-concept-share")?.addEventListener("click",()=>copyShareLink());
+  $("#btn-ig-more-all")?.addEventListener("click",()=>{
+    $("#ig-all-section")?.scrollIntoView({behavior:"smooth",block:"start"});
+  });
+  renderAllContent();
   $("#btn-app-frame-back")?.addEventListener("click",closeAppFrame);
   $("#stage-prev").onclick=()=>{if(state.currentStage>0){state.currentStage--;renderStageNav();renderWishlistGrid();}};
   $("#stage-next").onclick=()=>{if(state.currentStage<STAGES.length-1){state.currentStage++;renderStageNav();renderWishlistGrid();}};
