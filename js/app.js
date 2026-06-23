@@ -486,6 +486,7 @@ function switchMainTab(tab,{animate=false}={}){
   if(tab==="settings")renderSettingsTab();
   if(tab==="game"){initGameTab();renderPointsUI();}
   $("#btn-add-feed-photo")?.classList.toggle("hidden",tab!=="home");
+  $("#btn-gift-fab")?.classList.toggle("hidden",tab!=="home");
 }
 function showOverlay(id){
   $$(".view").forEach(v=>v.classList.remove("active"));
@@ -2194,6 +2195,7 @@ function bindEvents(){
   $("#btn-journey-gift-shortcut")?.addEventListener("click",openWishlist);
   $("#btn-journey-puzzle-shortcut")?.addEventListener("click",()=>{openWishlist();setTimeout(()=>$("#btn-new-gift-puzzle")?.scrollIntoView({behavior:"smooth",block:"center"}),200);});
   $("#btn-add-feed-photo").onclick=openComposer;
+  $("#btn-gift-fab")?.addEventListener("click",openWishlist);
   // 글쓰기(인스타식) 모달
   $("#btn-composer-cancel")?.addEventListener("click",closeComposer);
   $("#composer-backdrop")?.addEventListener("click",closeComposer);

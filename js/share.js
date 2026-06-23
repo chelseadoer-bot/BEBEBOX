@@ -58,24 +58,6 @@
     return srcs;
   }
 
-  // 선물 퍼즐(컴팩트)
-  function renderPuzzles(registry) {
-    if (!registry.length) return "";
-    return '<div class="s-puzzles">' + registry.map(function (g) {
-      var filled = (g.pieces || []).length, total = g.total || 9;
-      var pct = Math.round(filled / total * 100);
-      var thumb = g.image
-        ? '<div class="s-pz-thumb" style="background-image:url(\'' + esc(g.image) + '\')"></div>'
-        : '<div class="s-pz-thumb">🎁</div>';
-      return '<div class="s-pz-card">' + thumb +
-        '<div class="s-pz-body"><div class="s-pz-name">' + esc(g.productName) + "</div>" +
-        '<div class="s-pz-sub">' + esc([g.brand, fmtPrice(g.price)].filter(Boolean).join(" · ")) + "</div>" +
-        '<div class="s-pz-bar"><div class="s-pz-bar-fill" style="width:' + pct + '%"></div></div>' +
-        '<div class="s-pz-meta">🧩 ' + filled + " / " + total + " 조각</div></div>" +
-        '<button type="button" class="s-pz-go" data-gift="' + esc(g.id) + '">선물</button>' +
-        "</div>";
-    }).join("") + "</div>";
-  }
 
   // 옷장(위시리스트) — 시기별 필요/보유
   function renderWishlist(data) {
