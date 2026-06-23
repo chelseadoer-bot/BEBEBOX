@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
 <title>베베박스</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css"/>
-<link rel="stylesheet" href="css/style.css?v=33"/>
+<link rel="stylesheet" href="css/style.css?v=34"/>
 <link rel="stylesheet" href="css/onboarding.css?v=5"/>
 <link rel="stylesheet" href="css/theme.css?v=4"/>
 </head>
@@ -271,13 +271,14 @@
 <button class="ig-grid-item" type="button" data-app="chores" data-ig="집안일 당번"><span class="ig-icon" style="background:#e8f0ff">📋</span><span>집안일 당번</span><span class="ig-chevron">›</span></button>
 <button class="ig-grid-item" type="button" data-app="temperament" data-ig="성향·기질 분석"><span class="ig-icon" style="background:#e8eeff">🎭</span><span>성향·기질 분석</span><span class="ig-chevron">›</span></button>
 </div>
+<button class="ig-more" type="button" id="btn-ig-more-all">더보기 ↓</button>
 </section>
 <section class="ig-section">
 <h2 class="ig-section-title">AI 컨셉스튜디오</h2>
 <div class="ig-concepts">
-<div class="ig-concept-card"><img src="public/photos/ai-02.jpg" alt="봄꽃 컨셉"/><span>봄꽃 컨셉</span></div>
-<div class="ig-concept-card"><img src="public/photos/ai-04.jpg" alt="한복 컨셉"/><span>한복 컨셉</span></div>
-<div class="ig-concept-card"><img src="public/photos/ai-03.jpg" alt="바닷가 컨셉"/><span>바닷가 컨셉</span></div>
+<button class="ig-concept-card" type="button" data-concept="flower"><img src="public/photos/ai-02.jpg" alt="봄꽃 컨셉"/><span>봄꽃 컨셉</span></button>
+<button class="ig-concept-card" type="button" data-concept="hanbok"><img src="public/photos/ai-04.jpg" alt="한복 컨셉"/><span>한복 컨셉</span></button>
+<button class="ig-concept-card" type="button" data-concept="beach"><img src="public/photos/ai-03.jpg" alt="바닷가 컨셉"/><span>바닷가 컨셉</span></button>
 </div>
 <button class="ig-cta-black" type="button" id="btn-ig-studio" data-app="studio">더 만들러가기</button>
 </section>
@@ -287,6 +288,10 @@
 <p>아이와 나, 전생에 어떤 인연이었을까?</p>
 <span>AI가 풀어주는 우리 아이 인연 이야기</span>
 </button>
+</section>
+<section class="ig-section" id="ig-all-section">
+<h2 class="ig-section-title">전체보기</h2>
+<div class="ig-list" id="ig-all-list"></div>
 </section>
 </div>
 </div>
@@ -731,6 +736,22 @@
 <button type="button" class="wish-action-cancel" id="wish-action-cancel">닫기</button>
 </div>
 </div>
+<div id="concept-view" class="view concept-view">
+<header class="concept-top">
+<button type="button" class="concept-back" id="btn-concept-back">‹</button>
+<span class="concept-top-title">AI 스타일 <em>Beta</em></span>
+<button type="button" class="concept-share" id="btn-concept-share">공유</button>
+</header>
+<div class="concept-scroll">
+<h2 class="concept-title" id="concept-title"></h2>
+<p class="concept-desc" id="concept-desc"></p>
+<div class="concept-sample"><img id="concept-sample-img" src="" alt="컨셉 샘플"/></div>
+</div>
+<div class="concept-foot">
+<label class="concept-consent"><input type="checkbox" id="concept-consent"/><span><strong>[필수]</strong> 개인정보 수집·이용 및 AI 이미지 서비스 이용에 동의합니다. <a href="#" id="concept-terms">약관 전문 보기</a></span></label>
+<button type="button" class="concept-cta" id="btn-concept-make" disabled>바로 만들기</button>
+</div>
+</div>
 <div id="app-frame-view" class="view app-frame-view">
 <header class="app-frame-top">
 <button type="button" class="icon-btn dark" id="btn-app-frame-back">←</button>
@@ -756,6 +777,6 @@
 <script src="js/family-data.js?v=2"></script>
 <script src="js/kakao-auth.js?v=1"></script>
 <script src="js/onboarding.js?v=7"></script>
-<script src="js/app.js?v=56"></script>
+<script src="js/app.js?v=57"></script>
 </body>
 </html>
