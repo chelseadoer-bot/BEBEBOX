@@ -59,6 +59,12 @@ def _load(slug):
         sys.path.insert(0, backend)
         try:
             config = importlib.import_module("config")
+            # 실행 중인 서버(예: Render)의 환경변수 키를 각 앱 config 에 확실히 주입한다.
+            # (앱별 .env 누락/이름 차이 대비, GOOGLE_API_KEY 별칭도 허용)
+            _key = (os.environ.get("GEMINI_API_KEY")
+                    or os.environ.get("GOOGLE_API_KEY")
+                    or getattr(config, "GEMINI_API_KEY", "") or "")
+            config.GEMINI_API_KEY = _key
             # 데이터/스토리지를 /data/ai/<slug> 로 돌려 영구 보존 + 저장소 오염 방지
             base = os.path.join(_DATA_ROOT, "ai", slug)
             config.DATA_DIR = base

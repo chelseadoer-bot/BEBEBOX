@@ -353,17 +353,10 @@
       '<span class="bb-planshop-tx"><b>추천 선물 한번에 보기</b><span>키디키디 베이비 기획전에서 골라보세요</span></span>' +
       '<span class="bb-planshop-go">›</span></a>';
     if (!PIECES.length) return planshop + '<p class="s-photo-empty">아직 등록된 선물이 없어요</p>';
-    // 3x3 보드
-    var board = '<div class="bb-board">' + Array.from({ length: 9 }).map(function (_, i) {
-      var p = PIECES[i];
-      if (!p) return '<div class="bb-tile empty"><span class="bb-lock">🔒</span></div>';
-      var gb = guestbookFor(p.id);
-      if (gb) return '<div class="bb-tile filled"><span class="bb-foot">👣</span><span class="bb-bubble">' + esc(gb.guest_name) + '</span></div>';
-      return '<div class="bb-tile locked"><span class="bb-emoji">' + esc(p.emoji) + '</span></div>';
-    }).join("") + "</div>";
+    // 진행 요약(퍼즐 보드 없이 간단히)
     var done = PIECES.filter(function (p) { return guestbookFor(p.id); }).length;
-    var progress = '<p class="bb-progress">🧩 ' + done + " / " + PIECES.length + " 조각이 채워졌어요</p>";
-    // 카드
+    var progress = '<p class="bb-progress">🎁 ' + done + " / " + PIECES.length + " 개의 선물이 채워졌어요</p>";
+    // 카드(리스트)
     var cards = '<div class="bb-cards">' + PIECES.map(function (p) {
       var gb = guestbookFor(p.id);
       if (gb) {
@@ -377,9 +370,9 @@
         '<div class="bb-card-emoji">' + esc(p.emoji) + "</div>" +
         '<div class="bb-card-title">' + esc(p.title) + "</div>" +
         '<div class="bb-card-desc">' + esc(p.desc) + "</div>" +
-        '<button type="button" class="bb-card-cta" data-piece="' + esc(p.id) + '">' + esc(CUR_BABY) + "에게 이 조각 선물하기 🎁</button></div>";
+        '<button type="button" class="bb-card-cta" data-piece="' + esc(p.id) + '">' + esc(CUR_BABY) + "에게 선물하기 🎁</button></div>";
     }).join("") + "</div>";
-    return planshop + board + progress + cards;
+    return planshop + progress + cards;
   }
   function bindRegistry() {
     var ps = document.getElementById("bb-planshop");

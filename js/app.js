@@ -683,7 +683,24 @@ function filterPostsByAge(){
   if(!ageStepById(state.currentAgeTab)){state.currentAgeTab="all";return all;}
   return all.filter(p=>ageChipId(p.ageMonth)===state.currentAgeTab);
 }
+function renderGiftProgress(){
+  const el=$("#gift-progress");
+  if(!el)return;
+  const pub=state.published||{},owned=state.owned||{};
+  let total=0,done=0;
+  Object.keys(pub).forEach(id=>{if(pub[id]){total++;if(owned[id])done++;}});
+  (state.giftPuzzles||[]).forEach(g=>{total++;if((g.pieces||[]).length>=(g.total||9))done++;});
+  if(!total){el.classList.add("hidden");el.innerHTML="";return;}
+  el.classList.remove("hidden");
+  const pct=Math.round(done/total*100);
+  const msg=done>=total?"🎉 선물이 모두 채워졌어요!":`친구들이 ${done}개를 선물해줬어요`;
+  el.innerHTML=
+    `<div class="gp-top"><span class="gp-title">🎁 선물 달성률</span><span class="gp-count">${done}/${total} · ${pct}%</span></div>`+
+    `<div class="gp-bar"><div class="gp-fill" style="width:${pct}%"></div></div>`+
+    `<div class="gp-sub">${msg} · 탭하면 위시 관리 ›</div>`;
+}
 function renderFeed(){
+  renderGiftProgress();
   const feed=$("#photo-feed");
   if(!feed)return;
   const list=filterPostsByAge();
@@ -2171,6 +2188,7 @@ function bindEvents(){
   if(typeof bindGiftPuzzleEvents==="function")bindGiftPuzzleEvents();
   $("#btn-share")?.classList.remove("active");
   $("#btn-gift").onclick=openWishlist;
+  $("#gift-progress")?.addEventListener("click",openWishlist);
   $("#btn-back-guide")?.addEventListener("click",()=>switchMainTab("home"));
   // 성장 저니 상단: 선물하기/선물 퍼즐 바로가기
   $("#btn-journey-gift-shortcut")?.addEventListener("click",openWishlist);
