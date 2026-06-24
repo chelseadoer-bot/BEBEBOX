@@ -576,13 +576,15 @@ class H(SimpleHTTPRequestHandler):
             access = token_data.get("access_token")
             if not access:
                 _log_kakao("no access_token in response: %r" % token_data)
-                return redirect_response(self, "/?kakao_error=token")
+                d = urllib.parse.quote(json.dumps(token_data, ensure_ascii=False)[:400])
+                return redirect_response(self, "/?kakao_error=token&kakao_detail=" + d)
             user = ka.parse_user(ka.fetch_user(access))
             token, _ = db.create_session(user)
             return redirect_response(self, "/?kakao_login=1", [session_cookie(token)])
         except Exception as e:
             _log_kakao("callback error: %s" % e)
-            return redirect_response(self, "/?kakao_error=server")
+            d = urllib.parse.quote(str(e)[:400])
+            return redirect_response(self, "/?kakao_error=server&kakao_detail=" + d)
 
     def _kidikidi_search(self):
         p = urllib.parse.parse_qs(urllib.parse.urlparse(self.path).query)
