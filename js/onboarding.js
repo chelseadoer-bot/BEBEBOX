@@ -323,8 +323,13 @@ function initOnboarding(){
   }
   const params=new URLSearchParams(location.search);
   if(params.get("kakao_error")){
-    if(typeof showToast==="function")showToast("카카오 로그인에 실패했어요. docs/KAKAO_SETUP.md 를 확인해 주세요");
-    params.delete("kakao_error");
+    const code=params.get("kakao_error");
+    const detail=params.get("kakao_detail")||"";
+    const msg="카카오 로그인 실패 ["+code+"]"+(detail?"\n\n"+decodeURIComponent(detail):"");
+    // 원인을 바로 볼 수 있게 알림으로 표시(개발/설정 점검용)
+    try{alert(msg);}catch(_){}
+    if(typeof showToast==="function")showToast("카카오 로그인 실패: "+code);
+    params.delete("kakao_error");params.delete("kakao_detail");
     history.replaceState(null,"",location.pathname+(params.toString()?"?"+params:""));
   }
   if(isOnboardingPreview()){
