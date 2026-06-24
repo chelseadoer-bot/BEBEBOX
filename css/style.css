@@ -77,6 +77,30 @@ body{display:flex;justify-content:center;min-height:100vh}
 .tab-page-header p{font-size:13px;color:var(--color-text-tertiary);margin-top:4px;font-weight:500}
 .tab-page-header--game{background:linear-gradient(180deg,#fff4ef,#fff)}
 /* 통합 리워드(캔디 🍬) */
+/* 캔디 잔액 카드 (리워드 탭) */
+.candy-card{position:relative;overflow:hidden;margin:16px;padding:20px 18px;border-radius:22px;background:linear-gradient(140deg,#fff3ef 0%,#ffe7dc 50%,#ffeede 100%);border:1px solid #ffd6c4;box-shadow:0 10px 26px rgba(255,120,80,.16)}
+.candy-card::after{content:"🍬";position:absolute;right:-8px;top:-10px;font-size:96px;opacity:.13;transform:rotate(-14deg);pointer-events:none}
+.candy-card-label{font-size:13px;font-weight:700;color:#b97a5c;position:relative;z-index:1}
+.candy-card-amt{display:flex;align-items:baseline;gap:6px;margin-top:5px;position:relative;z-index:1}
+.candy-card-amt .candy-emoji{font-size:26px}
+.candy-card-amt strong{font-size:40px;font-weight:900;letter-spacing:-.03em;color:#ff5a2e;line-height:1}
+.candy-card-amt .candy-unit{font-size:17px;font-weight:800;color:#ff5a2e}
+.candy-progress{margin:16px 0 14px;position:relative;z-index:1}
+.candy-progress-bar{height:10px;border-radius:999px;background:#ffd9c7;overflow:hidden}
+.candy-progress-fill{height:100%;width:0;border-radius:999px;background:linear-gradient(90deg,#ffa777,#ff5a2e);transition:width .45s ease}
+.candy-progress-text{font-size:12px;color:#b97a5c;margin-top:7px;font-weight:700}
+.candy-exchange-btn{position:relative;z-index:1;width:100%;padding:14px;border:none;border-radius:14px;background:linear-gradient(135deg,#ff7a4d,#ff4d22);color:#fff;font-size:14px;font-weight:800;cursor:pointer;box-shadow:0 6px 16px rgba(255,77,34,.32);font-family:var(--font)}
+.candy-exchange-btn:active{transform:scale(.98)}
+.candy-exchange-btn:disabled{background:#ecd9cf;color:#fff;box-shadow:none;cursor:default}
+.candy-exchange-btn.is-ready{animation:puzzle-glow 1.2s ease infinite alternate}
+/* 캔디 칩 (설정) */
+.candy-chip{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:16px;background:linear-gradient(135deg,#fff3ef,#ffe7dc);border:1px solid #ffd6c4}
+.candy-chip-emoji{font-size:24px}
+.candy-chip-amt{font-size:18px;font-weight:800;color:#ff5a2e;white-space:nowrap}
+.candy-chip-amt strong{font-weight:900}
+.candy-chip-btn{margin-left:auto;flex-shrink:0;padding:10px 14px;border:none;border-radius:12px;background:linear-gradient(135deg,#ff7a4d,#ff4d22);color:#fff;font-size:12.5px;font-weight:800;cursor:pointer;font-family:var(--font);box-shadow:0 4px 12px rgba(255,77,34,.28)}
+.candy-chip-btn:disabled{background:#ecd9cf;box-shadow:none}
+.candy-chip-btn.is-ready{animation:puzzle-glow 1.2s ease infinite alternate}
 .point-balance-card{display:flex;align-items:center;gap:12px;margin:16px;padding:16px;border-radius:var(--radius-lg);background:linear-gradient(135deg,#fff4ef,#ffe9df);border:1px solid #ffd9c7;box-shadow:var(--shadow-sm)}
 .point-balance-icon{font-size:30px;line-height:1}
 .point-balance-info{display:flex;flex-direction:column;flex:1;min-width:0}
@@ -154,6 +178,16 @@ body{display:flex;justify-content:center;min-height:100vh}
 .invite-code-value{flex:1;font-size:22px;font-weight:900;letter-spacing:.18em;font-family:ui-monospace,Consolas,monospace;color:var(--color-primary)}
 .invite-code-copy-btn{flex-shrink:0;padding:10px 14px;border:none;border-radius:var(--radius-md);background:var(--color-primary);color:#fff;font-size:13px;font-weight:700;cursor:pointer}
 .coupon-list{display:flex;flex-direction:column;gap:8px}
+.coupon-row{display:flex;align-items:center;gap:11px;padding:12px 14px;border:1px solid #ffe0d0;border-radius:14px;background:linear-gradient(135deg,#fff7f3,#fff1ea)}
+.coupon-row-ic{font-size:22px;flex:0 0 auto}
+.coupon-row-body{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.coupon-row-body b{font-size:14.5px;font-weight:800;color:#e64a19}
+.coupon-row-body small{font-size:11.5px;color:var(--color-text-tertiary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.coupon-badge{flex:0 0 auto;font-size:11px;font-weight:800;padding:3px 9px;border-radius:999px;white-space:nowrap}
+.coupon-badge.done{background:#eafaef;color:#2e9e5b}
+.coupon-badge.wait{background:#fff4e5;color:#c47a18}
+.coupon-more{width:100%;margin-top:2px;padding:10px;border:none;border-radius:12px;background:#f6f1ec;color:#8a7f74;font-size:12.5px;font-weight:800;cursor:pointer;font-family:var(--font)}
+.coupon-more:active{opacity:.8}
 .coupon-card{padding:14px 16px;border:1px dashed #ffb199;border-radius:var(--radius-md);background:var(--color-accent-soft)}
 .coupon-card strong{display:block;font-size:15px;font-weight:800;color:#e64a19;margin-bottom:4px}
 .coupon-card span{font-size:12px;color:var(--color-text-secondary)}
