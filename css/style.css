@@ -76,7 +76,7 @@ body{display:flex;justify-content:center;min-height:100vh}
 .tab-page-header h2{font-size:20px;font-weight:800;letter-spacing:-.03em}
 .tab-page-header p{font-size:13px;color:var(--color-text-tertiary);margin-top:4px;font-weight:500}
 .tab-page-header--game{background:linear-gradient(180deg,#fff4ef,#fff)}
-/* 통합 리워드(알 🥚) */
+/* 통합 리워드(캔디 🍬) */
 .point-balance-card{display:flex;align-items:center;gap:12px;margin:16px;padding:16px;border-radius:var(--radius-lg);background:linear-gradient(135deg,#fff4ef,#ffe9df);border:1px solid #ffd9c7;box-shadow:var(--shadow-sm)}
 .point-balance-icon{font-size:30px;line-height:1}
 .point-balance-info{display:flex;flex-direction:column;flex:1;min-width:0}
@@ -661,7 +661,7 @@ body.is-guest .guest-only{display:block!important}
 .gp-bar{height:9px;border-radius:999px;background:#ffd9c6;overflow:hidden}
 .gp-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,#ff8a5c,#ff6b3d);transition:width .4s ease}
 .gp-sub{font-size:11.5px;color:#b07a5e;margin-top:6px}
-/* 포인트(알) 안내 카드 */
+/* 포인트(캔디) 안내 카드 */
 .point-guide{background:#fff;border:1px solid var(--color-border-light);border-radius:16px;padding:16px;margin:0 0 16px}
 .point-guide-title{font-size:14px;font-weight:800;margin-bottom:12px}
 .point-guide-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:9px}
@@ -839,7 +839,7 @@ body.is-guest .guest-only{display:block!important}
 .gf-done-emoji{font-size:40px}
 .gf-done-text{font-size:14px;font-weight:700;line-height:1.6;margin-top:8px}
 
-/* 설정: 내 알 / 쿠폰 교환 */
+/* 설정: 내 캔디 / 쿠폰 교환 */
 .settings-point-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
 .settings-point-bal{font-size:20px;font-weight:800;color:#c45c2e}
 .settings-exchange-btn{padding:11px 14px;border:none;border-radius:var(--radius-full);background:#e3ddd8;color:#fff;font-size:13px;font-weight:800;cursor:pointer}

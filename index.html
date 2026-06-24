@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
 <title>베베박스</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css"/>
-<link rel="stylesheet" href="css/style.css?v=41"/>
+<link rel="stylesheet" href="css/style.css?v=42"/>
 <link rel="stylesheet" href="css/onboarding.css?v=5"/>
 <link rel="stylesheet" href="css/theme.css?v=4"/>
 </head>
@@ -164,7 +164,7 @@
 <p class="ob-next-head">💡 다음에 할 일</p>
 <ol class="ob-next-list">
 <li><strong>기록 탭</strong>에서 첫 글과 사진을 올려요</li>
-<li><strong>기록·공유</strong>로 알을 모아 설정에서 쿠폰으로 바꿔요</li>
+<li><strong>기록·공유</strong>로 캔디를 모아 설정에서 쿠폰으로 바꿔요</li>
 <li><strong>키디키디</strong>에서 선물받은 쿠폰을 확인해요</li>
 </ol>
 </div>
@@ -209,27 +209,27 @@
 <div id="puzzle-tab-view" class="view tab-view">
 <header class="tab-page-header">
 <h2>리워드</h2>
-<p>기록하고 공유해서 알을 모으고, 쿠폰으로 바꿔요</p>
+<p>기록하고 공유해서 캔디를 모으고, 쿠폰으로 바꿔요</p>
 </header>
 <div class="point-balance-card">
-<span class="point-balance-icon">🥚</span>
+<span class="point-balance-icon">🍬</span>
 <div class="point-balance-info">
-<span class="point-balance-label">내 알</span>
-<strong class="point-balance-value"><span class="js-point-balance">0</span> 알</strong>
+<span class="point-balance-label">내 캔디</span>
+<strong class="point-balance-value"><span class="js-point-balance">0</span> 캔디</strong>
 </div>
-<button type="button" class="point-exchange-btn" id="btn-claim-coupon">🎟️ 100알 → 3,000원 상품권 받기</button>
+<button type="button" class="point-exchange-btn" id="btn-claim-coupon">🎟️ 100캔디 → 3,000원 상품권 받기</button>
 </div>
 <div class="point-guide">
-<p class="point-guide-title">🥚 알 모으기 · 쓰기 안내</p>
+<p class="point-guide-title">🍬 캔디 모으기 · 쓰기 안내</p>
 <ul class="point-guide-list">
-<li><span>📷 아이 기록하기</span><b>+20알</b></li>
-<li><span>🔗 공유하기</span><b>+30알</b></li>
-<li><span>🎁 선물 받으면(준 사람 기록)</span><b>+50알</b></li>
-<li><span>❤️ 좋아요 200개마다</span><b>+10알</b></li>
-<li><span>🧩 오늘의 미션 완성</span><b>+100알</b></li>
-<li class="spend"><span>🤖 AI 결과 보기</span><b>-10~30알</b></li>
+<li><span>📷 아이 기록하기</span><b>+20캔디</b></li>
+<li><span>🔗 공유하기</span><b>+30캔디</b></li>
+<li><span>🎁 선물 받으면(준 사람 기록)</span><b>+50캔디</b></li>
+<li><span>❤️ 좋아요 200개마다</span><b>+10캔디</b></li>
+<li><span>🧩 오늘의 미션 완성</span><b>+100캔디</b></li>
+<li class="spend"><span>🤖 AI 결과 보기</span><b>-10~30캔디</b></li>
 </ul>
-<p class="point-guide-foot">모은 알은 <b>100알 → 키디키디 3,000원 상품권</b>으로 바꿔요</p>
+<p class="point-guide-foot">모은 캔디는 <b>100캔디 → 키디키디 3,000원 상품권</b>으로 바꿔요</p>
 </div>
 <div class="mission-puzzle-wrap">
 <p class="mission-board-title">오늘의 미션 달성판</p>
@@ -238,18 +238,18 @@
 <p class="mission-progress-text" id="mission-progress-text">🧩 현재 9조각 중 0조각 완성!</p>
 <div class="puzzle-progress-track"><div class="puzzle-progress-fill" id="mission-progress-bar"></div></div>
 </div>
-<p class="mission-bonus-hint" id="mission-bonus-hint">9칸을 다 채우면 보너스 +100알! 🎉</p>
+<p class="mission-bonus-hint" id="mission-bonus-hint">9칸을 다 채우면 보너스 +100캔디! 🎉</p>
 </div>
 <div class="mission-actions">
 <p class="mission-actions-title">오늘의 미션</p>
-<button type="button" class="mission-action-btn" id="btn-mission-photo">📷 기록하고 +20알</button>
-<button type="button" class="mission-action-btn" id="btn-mission-share">🔗 사진첩 공유하고 +30알</button>
+<button type="button" class="mission-action-btn" id="btn-mission-photo">📷 기록하고 +20캔디</button>
+<button type="button" class="mission-action-btn" id="btn-mission-share">🔗 사진첩 공유하고 +30캔디</button>
 <button type="button" class="mission-action-btn" id="btn-mission-game">🎮 게임하고 결과 확인하기</button>
 </div>
 </div>
 <div id="game-tab-view" class="view tab-view">
 <div class="ig-scroll">
-<div class="ig-point-chip">🥚 <strong class="js-point-balance">0</strong> 알 · 결과 보기엔 20알이 필요해요</div>
+<div class="ig-point-chip">🍬 <strong class="js-point-balance">0</strong> 캔디 · 결과 보기엔 20캔디가 필요해요</div>
 <div class="ig-banner" id="ig-banner">
 <div class="ig-banner-slide active" data-slide="0">
 <div class="ig-banner-text">
@@ -360,12 +360,12 @@
 </div>
 </section>
 <section class="settings-section">
-<h3>🥚 내 알</h3>
+<h3>🍬 내 캔디</h3>
 <div class="settings-point-row">
-<span class="settings-point-bal"><span class="js-point-balance">0</span> 알</span>
-<button type="button" class="settings-exchange-btn" id="btn-settings-exchange">100알 → 3,000원 상품권</button>
+<span class="settings-point-bal"><span class="js-point-balance">0</span> 캔디</span>
+<button type="button" class="settings-exchange-btn" id="btn-settings-exchange">100캔디 → 3,000원 상품권</button>
 </div>
-<p class="settings-hint">기록 +20 · 공유 +30 · 선물 받으면 +50 · 좋아요 200개마다 +10 알을 모아, <b>100알이면 키디키디 3,000원 상품권</b>으로 바꿔요</p>
+<p class="settings-hint">기록 +20 · 공유 +30 · 선물 받으면 +50 · 좋아요 200개마다 +10 캔디를 모아, <b>100캔디가면 키디키디 3,000원 상품권</b>으로 바꿔요</p>
 </section>
 <section class="settings-section">
 <h3>📈 공유 성과</h3>
@@ -441,12 +441,12 @@
 <div id="game-result-screen" class="game-screen hidden">
 <p class="game-result-label">게임 종료!</p>
 <div id="game-result-locked">
-<p class="game-result-hint">🥚 <span id="game-reveal-cost">20</span>알을 쓰고 결과를 확인하세요</p>
-<button type="button" class="journey-gift-btn" id="btn-game-reveal">🥚 <span>20</span>알 쓰고 결과 보기</button>
+<p class="game-result-hint">🍬 <span id="game-reveal-cost">20</span>캔디를 쓰고 결과를 확인하세요</p>
+<button type="button" class="journey-gift-btn" id="btn-game-reveal">🍬 <span>20</span>캔디 쓰고 결과 보기</button>
 </div>
 <div id="game-result-unlocked" class="hidden">
 <p class="game-result-score"><span id="game-final-score">0</span>점</p>
-<button type="button" class="journey-gift-btn" id="btn-game-share-reward">결과 공유하고 +30알 받기 🚀</button>
+<button type="button" class="journey-gift-btn" id="btn-game-share-reward">결과 공유하고 +30캔디 받기 🚀</button>
 </div>
 <button type="button" class="game-retry-btn" id="btn-game-retry">다시 하기</button>
 </div>
@@ -689,7 +689,7 @@
 <div><div class="pstats-name" id="pstats-name"></div><div class="pstats-tier" id="pstats-tier"></div></div>
 </div>
 <div class="pstats-grid">
-<div class="pstats-cell"><span class="pstats-cell-num" id="pstats-points">0</span><span class="pstats-cell-label">🥚 알</span></div>
+<div class="pstats-cell"><span class="pstats-cell-num" id="pstats-points">0</span><span class="pstats-cell-label">🍬 캔디</span></div>
 <div class="pstats-cell"><span class="pstats-cell-num" id="pstats-posts">0</span><span class="pstats-cell-label">📷 기록</span></div>
 <div class="pstats-cell"><span class="pstats-cell-num" id="pstats-emotions">0</span><span class="pstats-cell-label">❤️ 받은 감정</span></div>
 </div>
@@ -774,11 +774,11 @@
 <div class="modal hidden" id="miniapp-gate-modal">
 <div class="modal-backdrop" id="miniapp-gate-backdrop"></div>
 <div class="modal-content miniapp-gate-content">
-<div class="miniapp-gate-emoji">🥚</div>
-<h3>결과를 보려면 <span id="miniapp-gate-cost">0</span>알이 필요해요</h3>
-<p class="miniapp-gate-desc">지금 보유한 알 <strong id="miniapp-gate-balance">0</strong>개</p>
-<p class="miniapp-gate-short hidden" id="miniapp-gate-short">아이를 기록하거나 결과를 공유하고 알을 더 모아보세요!</p>
-<button type="button" class="journey-gift-btn" id="btn-miniapp-gate-confirm">🥚 결과 보기</button>
+<div class="miniapp-gate-emoji">🍬</div>
+<h3>결과를 보려면 <span id="miniapp-gate-cost">0</span>캔디가 필요해요</h3>
+<p class="miniapp-gate-desc">지금 보유한 캔디 <strong id="miniapp-gate-balance">0</strong>개</p>
+<p class="miniapp-gate-short hidden" id="miniapp-gate-short">아이를 기록하거나 결과를 공유하고 캔디를 더 모아보세요!</p>
+<button type="button" class="journey-gift-btn" id="btn-miniapp-gate-confirm">🍬 결과 보기</button>
 <button type="button" class="game-retry-btn" id="btn-miniapp-gate-cancel">다음에 할게요</button>
 </div>
 </div>
@@ -792,15 +792,15 @@
 <script src="js/wishlist-data.js"></script>
 <script src="js/feed-data.js?v=7"></script>
 <script src="js/kidikidi.js?v=4"></script>
-<script src="js/points.js?v=2"></script>
+<script src="js/points.js?v=3"></script>
 <script src="js/gift-puzzle.js?v=2"></script>
 <script src="js/puzzle-mission.js?v=5"></script>
-<script src="js/minigame.js?v=3"></script>
+<script src="js/minigame.js?v=4"></script>
 <script src="js/photo-quest-detect.js?v=1"></script>
 <script src="js/photo-storage.js?v=2"></script>
 <script src="js/family-data.js?v=4"></script>
 <script src="js/kakao-auth.js?v=1"></script>
 <script src="js/onboarding.js?v=7"></script>
-<script src="js/app.js?v=66"></script>
+<script src="js/app.js?v=67"></script>
 </body>
 </html>

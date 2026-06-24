@@ -76,7 +76,7 @@ function endMinigame() {
   const result = document.getElementById("game-result-screen");
   if (screen) screen.classList.add("hidden");
   if (result) result.classList.remove("hidden");
-  // 결과는 잠긴 상태로 시작 — 포인트(알)를 써야 확인 가능
+  // 결과는 잠긴 상태로 시작 — 포인트(캔디)를 써야 확인 가능
   gameResultUnlocked = false;
   document.getElementById("game-result-locked")?.classList.remove("hidden");
   document.getElementById("game-result-unlocked")?.classList.add("hidden");
@@ -84,12 +84,12 @@ function endMinigame() {
   if (cost) cost.textContent = String(POINT_RULES.gameCost);
 }
 
-/** 20알을 쓰고 점수(결과)를 공개한다. 포인트 부족 시 안내. */
+/** 20캔디를 쓰고 점수(결과)를 공개한다. 포인트 부족 시 안내. */
 function revealGameResult() {
   if (gameResultUnlocked) return;
   if (typeof spendPoints !== "function" || !spendPoints(POINT_RULES.gameCost, "game")) {
     if (typeof showToast === "function") {
-      showToast(`${POINT_ICON} 알이 부족해요 · 기록·공유로 모아보세요`);
+      showToast(`${POINT_ICON} 캔디가 부족해요 · 기록·공유로 모아보세요`);
     }
     return;
   }
