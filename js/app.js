@@ -551,6 +551,29 @@ function onPointsChanged(){renderPointsUI();}
 function onPointsEarned(){}
 function onPointsSpent(){}
 window.renderPointsUI=renderPointsUI;
+function appLogout(){
+  const code=(typeof getInviteCode==="function"&&getInviteCode())||"";
+  if(!confirm("로그아웃 할까요?"+(code?`\n\n다시 들어올 때 초대코드 ${String(code).toUpperCase()} 가 필요할 수 있어요.`:"")))return;
+  try{fetch("/api/auth/logout",{method:"POST",credentials:"include"}).catch(()=>{});}catch(_){}
+  try{
+    localStorage.removeItem("photoShare_kakao");
+    localStorage.removeItem("photoShare_auth");
+    localStorage.removeItem("photoShare_onboarded");
+  }catch(_){}
+  showToast("로그아웃 되었어요");
+  setTimeout(()=>location.reload(),400);
+}
+function appDeleteAccount(){
+  if(!confirm("정말 탈퇴할까요?\n모든 기록·위시·캔디·쿠폰이 삭제되고 되돌릴 수 없어요."))return;
+  if(!confirm("마지막 확인이에요. 탈퇴하면 복구할 수 없어요. 계속할까요?"))return;
+  const fam=encodeURIComponent(typeof getFamilyId==="function"?getFamilyId():"");
+  showToast("탈퇴 처리 중...");
+  fetch("/api/family/delete?family="+fam,{method:"POST"}).catch(()=>{}).finally(()=>{
+    try{fetch("/api/auth/logout",{method:"POST",credentials:"include"}).catch(()=>{});}catch(_){}
+    try{localStorage.clear();}catch(_){}
+    setTimeout(()=>location.reload(),500);
+  });
+}
 function renderSettingsTab(){
   $("#settings-baby-name").value=state.profile.babyName||"";
   $("#settings-baby-age").value=state.profile.currentAge??9;
@@ -2364,9 +2387,9 @@ function bindEvents(){
   $("#btn-settings-wishlist")?.addEventListener("click",openWishlist);
   $("#wish-action-backdrop")?.addEventListener("click",closeWishActionSheet);
   $("#wish-action-cancel")?.addEventListener("click",closeWishActionSheet);
-  $("#btn-kakao-logout")?.addEventListener("click",()=>{
-    if(typeof logoutKakao==="function")logoutKakao();
-  });
+  $("#btn-kakao-logout")?.addEventListener("click",appLogout);
+  $("#btn-app-logout")?.addEventListener("click",appLogout);
+  $("#btn-app-delete")?.addEventListener("click",appDeleteAccount);
   $("#btn-copy-invite-code")?.addEventListener("click",copyInviteCode);
   if(typeof bindMinigameEvents==="function")bindMinigameEvents();
   if(typeof bindGiftPuzzleEvents==="function")bindGiftPuzzleEvents();

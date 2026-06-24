@@ -403,6 +403,17 @@ class H(SimpleHTTPRequestHandler):
                 user_id=(body.get("user_id") or None),
             )
             return json_response(self, 200, {"ok": True})
+        if path == "/api/family/delete":
+            fam = norm_family(self._query("family"))
+            stored = db.delete_family(fam)
+            for s in stored:
+                try:
+                    fp = os.path.join(UPLOAD_DIR, s)
+                    if os.path.isfile(fp):
+                        os.remove(fp)
+                except OSError:
+                    pass
+            return json_response(self, 200, {"ok": True, "family": fam})
         if path == "/api/admin/coupon/fulfill":
             if (self._query("key") or "") != ADMIN_KEY:
                 return json_response(self, 401, {"error": "unauthorized"})

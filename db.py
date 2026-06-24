@@ -539,6 +539,20 @@ def set_config(key, value):
     return True
 
 
+def delete_family(family_id):
+    """회원 탈퇴: 가족 데이터·사진·이벤트·쿠폰발급기록 전부 삭제. 사진 파일명 목록 반환."""
+    fam = (family_id or "").strip().upper()
+    if not fam:
+        return []
+    with _conn() as conn:
+        rows = conn.execute("SELECT stored_file FROM photos WHERE family_id=?", (fam,)).fetchall()
+        conn.execute("DELETE FROM family_data WHERE family_id=?", (fam,))
+        conn.execute("DELETE FROM photos WHERE family_id=?", (fam,))
+        conn.execute("DELETE FROM events WHERE family_id=?", (fam,))
+        conn.execute("DELETE FROM coupon_fulfillment WHERE family_id=?", (fam,))
+    return [r["stored_file"] for r in rows if r["stored_file"]]
+
+
 def family_coupon_status(family_id):
     """한 가족의 쿠폰별 발급(지급) 상태: {coupon_id: {fulfilled, fulfilled_at}}."""
     fam = (family_id or "").strip().upper()
