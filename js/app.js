@@ -1177,6 +1177,16 @@ function toggleLike(){
   else{p.liked=true;p.likes++;}
   save();updateDetailUI();
 }
+function _commentItemHtml(c,isReply){
+  return `<div class="comment-item${isReply?" reply":""}">
+    <img class="comment-item-avatar" src="${c.avatar||state.profile.avatar}" alt=""/>
+    <div class="comment-item-body">
+      <div class="comment-item-author">${esc(c.author)}</div>
+      <div class="comment-item-text">${esc(c.text)}</div>
+      <div class="comment-item-meta"><span class="comment-item-time">${fmtCommentTime(c.at)}</span>${isReply?"":`<button type="button" class="comment-reply-link" data-reply="${c.id}" data-name="${esc(c.author)}">답글</button>`}</div>
+    </div>
+  </div>`;
+}
 function renderComments(){
   const p=getPost(state.viewingPostId);
   const list=$("#comment-list");
@@ -1184,24 +1194,33 @@ function renderComments(){
     list.innerHTML='<p class="comment-empty">첫 댓글을 남겨보세요.</p>';
     return;
   }
-  list.innerHTML=p.comments.map(c=>`<div class="comment-item">
-    <img class="comment-item-avatar" src="${c.avatar||state.profile.avatar}" alt=""/>
-    <div class="comment-item-body">
-      <div class="comment-item-author">${esc(c.author)}</div>
-      <div class="comment-item-text">${esc(c.text)}</div>
-      <div class="comment-item-time">${fmtCommentTime(c.at)}</div>
-    </div>
-  </div>`).join("");
+  list.innerHTML=p.comments.map(c=>
+    `<div class="comment-thread">${_commentItemHtml(c,false)}${(c.replies||[]).map(r=>_commentItemHtml(r,true)).join("")}</div>`
+  ).join("");
+  list.querySelectorAll("[data-reply]").forEach(b=>b.onclick=()=>startReply(b.dataset.reply,b.dataset.name));
   list.scrollTop=list.scrollHeight;
 }
+let _replyTo=null;
+function startReply(cid,name){
+  _replyTo=cid;
+  const bar=$("#comment-reply-bar");
+  if(bar){bar.classList.remove("hidden");const n=$("#comment-reply-name");if(n)n.textContent=name||"";}
+  const ci=$("#comment-input");if(ci){ci.placeholder="답글 쓰기";ci.focus();}
+}
+function cancelReply(){
+  _replyTo=null;
+  $("#comment-reply-bar")?.classList.add("hidden");
+  const ci=$("#comment-input");if(ci)ci.placeholder="댓글 쓰기";
+}
 function openCommentSheet(){
+  cancelReply();
   renderComments();
   $("#comment-input").value="";
   $("#btn-send-comment").classList.remove("active");
   $("#comment-sheet").classList.remove("hidden");
   setTimeout(()=>$("#comment-input").focus(),300);
 }
-function closeCommentSheet(){$("#comment-sheet").classList.add("hidden");}
+function closeCommentSheet(){cancelReply();$("#comment-sheet").classList.add("hidden");}
 function sendComment(){
   const text=$("#comment-input").value.trim();
   if(!text)return;
@@ -1209,7 +1228,13 @@ function sendComment(){
   if(!p)return;
   const me=(typeof getStoredKakaoUser==="function"&&getStoredKakaoUser()?.nickname)||state.profile.name;
   const av=(typeof getStoredKakaoUser==="function"&&getStoredKakaoUser()?.profileImage)||state.profile.avatar;
-  p.comments.push({id:"c"+Date.now(),author:me,text,avatar:av,at:Date.now()});
+  if(_replyTo){
+    const c=p.comments.find(x=>x.id===_replyTo);
+    if(c){if(!Array.isArray(c.replies))c.replies=[];c.replies.push({author:me,text,avatar:av,at:Date.now()});}
+    cancelReply();
+  }else{
+    p.comments.push({id:"c"+Date.now(),author:me,text,avatar:av,at:Date.now(),replies:[]});
+  }
   save();
   $("#comment-input").value="";
   $("#btn-send-comment").classList.remove("active");
@@ -2467,6 +2492,7 @@ function bindEvents(){
   $("#btn-like").onclick=toggleLike;
   $("#btn-open-comments").onclick=openCommentSheet;
   $("#comment-backdrop").onclick=closeCommentSheet;
+  $("#btn-cancel-reply")?.addEventListener("click",cancelReply);
   $("#btn-send-comment").onclick=sendComment;
   const cInput=$("#comment-input");
   cInput.oninput=()=>$("#btn-send-comment").classList.toggle("active",!!cInput.value.trim());

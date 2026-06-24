@@ -159,22 +159,42 @@
     if (p.gauge % 5 === 1) track("heart", { item_id: id });
   }
 
+  var CMT_REPLY = null;
   function openComments(id) {
     CMT_PID = id;
+    cancelReply();
     renderCommentList();
     document.getElementById("cmt-text").value = "";
     document.getElementById("cmt-sheet").classList.remove("hidden");
   }
-  function closeComments() { document.getElementById("cmt-sheet").classList.add("hidden"); CMT_PID = null; }
+  function closeComments() { cancelReply(); document.getElementById("cmt-sheet").classList.add("hidden"); CMT_PID = null; }
+  function startReply(cid, name) {
+    CMT_REPLY = cid;
+    var bar = document.getElementById("cmt-reply-bar");
+    if (bar) { bar.classList.remove("hidden"); var n = document.getElementById("cmt-reply-name"); if (n) n.textContent = name || ""; }
+    document.getElementById("cmt-text").focus();
+  }
+  function cancelReply() {
+    CMT_REPLY = null;
+    var bar = document.getElementById("cmt-reply-bar"); if (bar) bar.classList.add("hidden");
+  }
   function renderCommentList() {
     var p = getPost(CMT_PID);
     var list = document.getElementById("cmt-list");
     var arr = (p && p.comments) || [];
-    list.innerHTML = arr.length
-      ? arr.map(function (c) {
-          return '<div class="cmt-item"><b>' + esc(c.author || "익명") + "</b> " + esc(c.text) + "</div>";
-        }).join("")
-      : '<p class="cmt-empty">첫 댓글을 남겨보세요 🙂</p>';
+    if (!arr.length) { list.innerHTML = '<p class="cmt-empty">첫 댓글을 남겨보세요 🙂</p>'; return; }
+    list.innerHTML = arr.map(function (c) {
+      if (!c.id) c.id = "c" + Date.now() + Math.random().toString(36).slice(2, 6);
+      var replies = (c.replies || []).map(function (r) {
+        return '<div class="cmt-item reply"><b>' + esc(r.author || "익명") + "</b> " + esc(r.text) + "</div>";
+      }).join("");
+      return '<div class="cmt-thread"><div class="cmt-item"><b>' + esc(c.author || "익명") + "</b> " + esc(c.text) +
+        ' <button type="button" class="cmt-reply-link" data-reply="' + c.id + '" data-name="' + esc(c.author || "익명") + '">답글</button></div>' +
+        replies + '</div>';
+    }).join("");
+    list.querySelectorAll("[data-reply]").forEach(function (b) {
+      b.onclick = function () { startReply(b.dataset.reply, b.dataset.name); };
+    });
     list.scrollTop = list.scrollHeight;
   }
   function sendComment() {
@@ -183,7 +203,13 @@
     if (!t) return;
     var name = document.getElementById("cmt-name").value.trim() || "익명";
     if (!Array.isArray(p.comments)) p.comments = [];
-    p.comments.push({ id: "c" + Date.now(), author: name, text: t, at: Date.now() });
+    if (CMT_REPLY) {
+      var c = p.comments.find(function (x) { return x.id === CMT_REPLY; });
+      if (c) { if (!Array.isArray(c.replies)) c.replies = []; c.replies.push({ author: name, text: t, at: Date.now() }); }
+      cancelReply();
+    } else {
+      p.comments.push({ id: "c" + Date.now(), author: name, text: t, at: Date.now(), replies: [] });
+    }
     document.getElementById("cmt-text").value = "";
     renderCommentList();
     persistNow();
@@ -533,6 +559,7 @@
   document.getElementById("gift-sheet-close").onclick = closeGiftSheet;
   document.getElementById("flow-backdrop").onclick = closeFlow;
   document.getElementById("cmt-backdrop").onclick = closeComments;
+  var cmtCancel = document.getElementById("cmt-reply-cancel"); if (cmtCancel) cmtCancel.onclick = cancelReply;
   document.getElementById("cmt-send").onclick = sendComment;
   document.getElementById("cmt-text").addEventListener("keydown", function (e) { if (e.key === "Enter") sendComment(); });
 

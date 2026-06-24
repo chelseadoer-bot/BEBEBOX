@@ -153,6 +153,12 @@ img{display:block;max-width:100%}
 .cmt-item{font-size:14px;padding:8px 2px;border-bottom:1px solid var(--border);line-height:1.5}
 .cmt-item b{font-weight:700;margin-right:5px}
 .cmt-empty{color:var(--muted);font-size:13px;text-align:center;padding:24px 0}
+.cmt-reply-link{background:none;border:none;font-size:11px;font-weight:800;color:#ff8a65;cursor:pointer;margin-left:4px;font-family:inherit}
+.cmt-item.reply{margin-left:18px;border-bottom:none;padding:5px 2px;color:#555}
+.cmt-item.reply::before{content:"↳ ";color:#bbb}
+.cmt-reply-bar{display:flex;align-items:center;justify-content:space-between;padding:8px 4px;font-size:12px;color:#888}
+.cmt-reply-bar b{color:#333}
+.cmt-reply-bar button{background:none;border:none;color:#ff6b3d;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit}
 .cmt-input-row{display:flex;gap:6px;padding-top:10px;border-top:1px solid var(--border)}
 .cmt-name{width:84px;flex-shrink:0;border:1px solid var(--border);border-radius:10px;padding:10px;font-size:13px;font-family:inherit}
 .cmt-text{flex:1;border:1px solid var(--border);border-radius:10px;padding:10px;font-size:14px;font-family:inherit}
