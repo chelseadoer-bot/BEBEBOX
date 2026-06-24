@@ -1,9 +1,9 @@
-/** 베베박스 통합 리워드 — 포인트(알 🥚) 경제
+/** 베베박스 통합 리워드 — 포인트(캔디 🍬) 경제
  *
- * 하나의 재화(알)로 행동→보상→소비→교환 루프를 묶는다.
+ * 하나의 재화(캔디)로 행동→보상→소비→교환 루프를 묶는다.
  *   모으기: 아이 기록 +10, 사진첩 공유 +30, 오늘의 미션(퍼즐 9칸) 완성 보너스 +100
  *   쓰기:   AI 놀이터·게임 결과 보기 -20
- *   교환:   1,000알 → 키디 1,000원 장바구니 쿠폰
+ *   교환:   1,000캔디 → 키디 1,000원 장바구니 쿠폰
  *
  * 포인트(state.points)와 쿠폰(state.coupons)은 가족 코드 단위로 서버에 동기화돼
  * 재배포·재접속에도 보존된다. (family-data.js 의 pack/applyFamilyState 참고)
@@ -16,11 +16,11 @@ const POINT_RULES = {
   likeReward: 10, // 좋아요 단위 보상
   missionBonus: 100, // 오늘의 미션(퍼즐 9칸) 완성 보너스
   gameCost: 20, // AI 놀이터·게임 결과 보기(차감)
-  couponCost: 100, // 쿠폰 1장 교환 비용(알)
+  couponCost: 100, // 쿠폰 1장 교환 비용(캔디)
   couponAmount: 3000, // 교환되는 키디 상품권 금액(원)
 };
-const POINT_ICON = "🥚";
-const POINT_LABEL = "알";
+const POINT_ICON = "🍬";
+const POINT_LABEL = "캔디";
 
 function getPoints() {
   if (typeof state === "undefined") return 0;
@@ -66,7 +66,7 @@ function canExchangeCoupon() {
   return getPoints() >= POINT_RULES.couponCost;
 }
 
-/** 1,000알을 차감하고 1,000원 쿠폰을 발급한다. 포인트 부족 시 null. */
+/** 1,000캔디를 차감하고 1,000원 쿠폰을 발급한다. 포인트 부족 시 null. */
 function exchangeCoupon() {
   if (!canExchangeCoupon()) return null;
   if (!spendPoints(POINT_RULES.couponCost, "coupon")) return null;

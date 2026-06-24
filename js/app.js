@@ -522,7 +522,7 @@ function renderPuzzleTab({animate=false}={}){
   const bar=$("#mission-progress-bar");
   if(bar)bar.style.width=`${Math.round(pieces/PUZZLE_TOTAL*100)}%`;
   const hint=$("#mission-bonus-hint");
-  if(hint)hint.textContent=pieces>=PUZZLE_TOTAL?`오늘 보너스 +${POINT_RULES.missionBonus}알을 받았어요! 🥚`:`9칸을 다 채우면 보너스 +${POINT_RULES.missionBonus}알! 🎉`;
+  if(hint)hint.textContent=pieces>=PUZZLE_TOTAL?`오늘 보너스 +${POINT_RULES.missionBonus}캔디를 받았어요! 🍬`:`9칸을 다 채우면 보너스 +${POINT_RULES.missionBonus}캔디! 🎉`;
   renderPointsUI();
 }
 function renderPointsUI(){
@@ -534,13 +534,13 @@ function renderPointsUI(){
   if(ex){
     ex.disabled=!ok;
     ex.classList.toggle("is-ready",ok);
-    ex.textContent=ok?`🎟️ ${POINT_RULES.couponCost}알 → ${won}원 상품권 받기`:`🎟️ 상품권까지 ${formatPoints(POINT_RULES.couponCost-pts)}알`;
+    ex.textContent=ok?`🎟️ ${POINT_RULES.couponCost}캔디 → ${won}원 상품권 받기`:`🎟️ 상품권까지 ${formatPoints(POINT_RULES.couponCost-pts)}캔디`;
   }
   const sx=$("#btn-settings-exchange");
   if(sx){
     sx.disabled=!ok;
     sx.classList.toggle("is-ready",ok);
-    sx.textContent=ok?`🎟️ ${POINT_RULES.couponCost}알 → ${won}원 상품권`:`상품권까지 ${formatPoints(POINT_RULES.couponCost-pts)}알`;
+    sx.textContent=ok?`🎟️ ${POINT_RULES.couponCost}캔디 → ${won}원 상품권`:`상품권까지 ${formatPoints(POINT_RULES.couponCost-pts)}캔디`;
   }
 }
 function onPointsChanged(){renderPointsUI();}
@@ -594,7 +594,7 @@ function renderSettingsTab(){
   const list=$("#coupon-list");
   if(!list)return;
   if(!coupons.length){
-    list.innerHTML=`<div class="coupon-empty">아직 받은 쿠폰이 없어요.<br/>1,000알을 모으면 1,000원 장바구니 쿠폰으로 바꿀 수 있어요!</div>`;
+    list.innerHTML=`<div class="coupon-empty">아직 받은 쿠폰이 없어요.<br/>1,000캔디를 모으면 1,000원 장바구니 쿠폰으로 바꿀 수 있어요!</div>`;
     return;
   }
   list.innerHTML=coupons.map(c=>{
@@ -607,12 +607,12 @@ function renderSettingsTab(){
 }
 function onPuzzlePiecesChanged(gained,source,total,bonus){
   renderPuzzleTab({animate:gained>0});
-  if(bonus>0)showToast(`오늘 미션 완성! 보너스 +${bonus}알 🎉`);
+  if(bonus>0)showToast(`오늘 미션 완성! 보너스 +${bonus}캔디 🎉`);
   else if(gained>0&&currentMainTab!=="puzzle")showToast(`퍼즐 ${gained}조각! (${total}/${PUZZLE_TOTAL})`);
 }
 window.onPuzzlePiecesChanged=onPuzzlePiecesChanged;
 window.switchMainTab=switchMainTab;
-// 좋아요(하트) 누적이 일정 단위마다 알을 적립한다. (이미 적립한 만큼은 건너뜀)
+// 좋아요(하트) 누적이 일정 단위마다 캔디를 적립한다. (이미 적립한 만큼은 건너뜀)
 function reconcileLikePoints(){
   if(typeof addPoints!=="function")return;
   const total=(state.posts||[]).reduce((s,p)=>s+(p.gauge||0),0);
@@ -622,7 +622,7 @@ function reconcileLikePoints(){
     addPoints((due-claimed)*reward,"likes");
     state.likeAwarded=due;
     if(typeof save==="function")save();
-    if(typeof showToast==="function")showToast(`좋아요 ${due*unit}개 달성 · +${(due-claimed)*reward}알 ❤️`);
+    if(typeof showToast==="function")showToast(`좋아요 ${due*unit}개 달성 · +${(due-claimed)*reward}캔디 ❤️`);
   }
 }
 function renderProfile(){
@@ -901,7 +901,7 @@ async function submitPost(){
   renderFeed();
   addPoints(POINT_RULES.photo,"photo");
   addPuzzlePieces(1,"post");
-  showToast(`글을 올렸어요 · +${POINT_RULES.photo}알 🥚`);
+  showToast(`글을 올렸어요 · +${POINT_RULES.photo}캔디 🍬`);
 }
 async function changeAvatar(file){
   if(!file||!file.type.startsWith("image/")){showToast("이미지 파일을 선택해 주세요");return;}
@@ -1085,7 +1085,7 @@ async function addPhotosFromFiles(files){
     }
   }
   if(ok){
-    save();renderFeed();addPoints(POINT_RULES.photo,"photo");showToast(`${ok}장 저장 · +${POINT_RULES.photo}알 🥚`);addPuzzlePieces(1,"photo");
+    save();renderFeed();addPoints(POINT_RULES.photo,"photo");showToast(`${ok}장 저장 · +${POINT_RULES.photo}캔디 🍬`);addPuzzlePieces(1,"photo");
   }
 }
 async function deletePhoto(id){
@@ -1292,7 +1292,7 @@ function doWishAction(id,act){
       if(!already&&typeof addPoints==="function"){
         addPoints(POINT_RULES.giftReceived,"gift_received");
         if(typeof track==="function")track("gift_received",{item_id:id,giver:who});
-        showToast(`${who}님 선물로 기록 · +${POINT_RULES.giftReceived}알 🎁`);
+        showToast(`${who}님 선물로 기록 · +${POINT_RULES.giftReceived}캔디 🎁`);
       }else{showToast(`${who}님 선물로 기록했어요 🎁`);}
     }
   }else if(act==="pub"){
@@ -1965,11 +1965,11 @@ function closeAppFrame(){
 
 /* ─── 미니앱 트리거 → 고객 프로필(포인트/달성) 변경 ──────────────────
  * 미니앱 iframe(KD._emit)이 보내는 생성요청·생성완료·결과공유 이벤트를 받아
- * 고객 프로필(state.points: 알 경제)을 적립/차감하고, 변경분을 고객 DB에
+ * 고객 프로필(state.points: 캔디 경제)을 적립/차감하고, 변경분을 고객 DB에
  * 동기화한다. 미니앱 산출물 DB(per-app)와 동일한 가족코드(uid)로 묶여
  * 운영자 대시보드의 고객여정에서 함께 조회된다.
  */
-/* 앱별 결과 보기 비용(알). 작명·당번 등 저토큰/무-LLM 앱은 0(무료),
+/* 앱별 결과 보기 비용(캔디). 작명·당번 등 저토큰/무-LLM 앱은 0(무료),
  * 이미지·영상 등 토큰이 많이 드는 앱은 높게. 한 곳에서 조정한다. */
 const MINIAPP_COST={
   naming:0,        // 글로벌 작명소 (저토큰) — 무료
@@ -1982,7 +1982,7 @@ const MINIAPP_COST={
   studio:30,       // AI 컨셉스튜디오 (이미지 생성, 최고토큰)
 };
 const MINIAPP_RULES={
-  shareReward:POINT_RULES.share||30,      // 결과 공유 시 적립(알)
+  shareReward:POINT_RULES.share||30,      // 결과 공유 시 적립(캔디)
 };
 function miniAppCost(slug){
   slug=slug||(_activeMiniApp&&_activeMiniApp.slug);
@@ -2025,7 +2025,7 @@ function handleMiniAppEvent(data){
     if(_lastCharge>0){
       if(typeof addPoints==="function")addPoints(_lastCharge,"miniapp_refund");
       if(typeof track==="function")track("miniapp_refund",{app:app.slug,amount:_lastCharge});
-      if(typeof showToast==="function")showToast(`생성에 실패해 ${_lastCharge}알을 돌려드렸어요`);
+      if(typeof showToast==="function")showToast(`생성에 실패해 ${_lastCharge}캔디를 돌려드렸어요`);
       _lastCharge=0;_syncProfileChange();
     }
     return;
@@ -2043,7 +2043,7 @@ function handleMiniAppEvent(data){
   if(ev==="shared"){
     if(typeof addPoints==="function")addPoints(MINIAPP_RULES.shareReward,"miniapp_share");
     if(typeof track==="function")track("miniapp_share",{app:app.slug});
-    if(typeof showToast==="function")showToast(`결과 공유 · +${MINIAPP_RULES.shareReward}알 🥚`);
+    if(typeof showToast==="function")showToast(`결과 공유 · +${MINIAPP_RULES.shareReward}캔디 🍬`);
     _syncProfileChange();
     return;
   }
@@ -2058,7 +2058,7 @@ function openRevealGate(cost,cb){
   $("#miniapp-gate-balance").textContent=bal.toLocaleString("ko-KR");
   const confirm=$("#btn-miniapp-gate-confirm");
   confirm.disabled=!enough;
-  confirm.textContent=enough?`🥚 ${cost}알 쓰고 결과 보기`:"알이 부족해요";
+  confirm.textContent=enough?`🍬 ${cost}캔디 쓰고 결과 보기`:"캔디가 부족해요";
   $("#miniapp-gate-short").classList.toggle("hidden",enough);
   $("#miniapp-gate-modal").classList.remove("hidden");
 }
@@ -2199,7 +2199,7 @@ async function shareProfileLink(){
     try{
       await navigator.share({title,text,url});
       addPoints(POINT_RULES.share,"share");
-      showToast(`공유하고 +${POINT_RULES.share}알 🥚`);
+      showToast(`공유하고 +${POINT_RULES.share}캔디 🍬`);
       addPuzzlePieces(3,"share");
       return;
     }catch(e){
@@ -2211,7 +2211,7 @@ async function shareProfileLink(){
 function copyShareLinkWithReward(url){
   return copyShareLink(url).then(()=>{
     addPoints(POINT_RULES.share,"share");
-    showToast(`공유 링크 복사 · +${POINT_RULES.share}알 🥚`);
+    showToast(`공유 링크 복사 · +${POINT_RULES.share}캔디 🍬`);
     addPuzzlePieces(3,"share");
     $("#share-modal").classList.add("hidden");
   });
@@ -2223,7 +2223,7 @@ function bindEvents(){
   });
   $("#btn-claim-coupon")?.addEventListener("click",()=>{
     const coupon=exchangeCoupon();
-    if(!coupon){showToast("알이 부족해요 🥚 (1,000알 필요)");return;}
+    if(!coupon){showToast("캔디가 부족해요 🍬 (1,000캔디 필요)");return;}
     renderPuzzleTab();
     renderSettingsTab();
     showToast("1,000원 장바구니 쿠폰으로 교환했어요! 🎟️");
@@ -2252,7 +2252,7 @@ function bindEvents(){
   $("#settings-notify-gift")?.addEventListener("change",saveNotifySettings);
   $("#btn-settings-exchange")?.addEventListener("click",()=>{
     const coupon=exchangeCoupon();
-    if(!coupon){showToast("알이 부족해요 🥚 (1,000알 필요)");return;}
+    if(!coupon){showToast("캔디가 부족해요 🍬 (1,000캔디 필요)");return;}
     track("coupon",{amount:coupon.amount||0});
     renderSettingsTab();
     showToast("1,000원 장바구니 쿠폰으로 교환했어요! 🎟️");

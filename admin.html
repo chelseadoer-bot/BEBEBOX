@@ -78,19 +78,19 @@ th{color:var(--sub);font-weight:700;font-size:12px;background:#faf7f3;white-spac
 
 <div id="app" class="wrap hidden">
 <h1>베베박스 운영자 대시보드</h1>
-<p class="sub">알을 다 모아 <b>쿠폰을 교환한 회원에게 키디키디 쿠폰을 발급</b>하고, 발급 완료를 체크하세요</p>
+<p class="sub">캔디를 다 모아 <b>쿠폰을 교환한 회원에게 키디키디 쿠폰을 발급</b>하고, 발급 완료를 체크하세요</p>
 <div class="kpis" id="kpis"></div>
 
 <!-- ① 가장 중요한: 쿠폰 지급 대기열 -->
 <div class="card">
 <div class="card-h">
-<span>🎟️ 쿠폰 지급 대기열 <span class="muted">— 알 교환 완료 → 키디키디 쿠폰을 발급해 주세요</span></span>
+<span>🎟️ 쿠폰 지급 대기열 <span class="muted">— 캔디 교환 완료 → 키디키디 쿠폰을 발급해 주세요</span></span>
 <label class="muted" style="cursor:pointer"><input type="checkbox" id="show-done"/> 발급완료도 보기</label>
 </div>
 <div style="overflow:auto;max-height:50vh">
 <table>
 <thead><tr>
-<th>아기 / 가족코드</th><th>키디키디 아이디</th><th>쿠폰</th><th class="num">보유 알</th><th>교환일</th><th>처리</th>
+<th>아기 / 가족코드</th><th>키디키디 아이디</th><th>쿠폰</th><th class="num">보유 캔디</th><th>교환일</th><th>처리</th>
 </tr></thead>
 <tbody id="coupons"></tbody>
 </table>
@@ -129,11 +129,11 @@ th{color:var(--sub);font-weight:700;font-size:12px;background:#faf7f3;white-spac
 <div class="layout">
 <!-- ② 회원 목록 -->
 <div class="card">
-<div class="card-h"><span>회원(가족) 목록 <span class="muted">— 보유 알 많은 순</span></span></div>
+<div class="card-h"><span>회원(가족) 목록 <span class="muted">— 보유 캔디 많은 순</span></span></div>
 <div style="overflow:auto;max-height:70vh" class="click">
 <table>
 <thead><tr>
-<th>아기 / 가족코드</th><th>키디 아이디</th><th class="num">보유 알 🥚</th><th class="num">교환 쿠폰</th><th class="num">공개 위시</th>
+<th>아기 / 가족코드</th><th>키디 아이디</th><th class="num">보유 캔디 🍬</th><th class="num">교환 쿠폰</th><th class="num">공개 위시</th>
 </tr></thead>
 <tbody id="members"></tbody>
 </table>
@@ -267,7 +267,7 @@ async function loadDetail(fam){
   document.getElementById("detail").innerHTML =
     '<div class="sec"><div class="sec-title">회원 정보</div><div class="kv">'+
       '<div class="b">키디 아이디 '+kid+'</div>'+
-      '<div class="b">보유 알 <b>'+al(d.points)+'</b> 🥚</div>'+
+      '<div class="b">보유 캔디 <b>'+al(d.points)+'</b> 🍬</div>'+
       '<div class="b">교환 쿠폰 <b>'+(d.coupons||[]).length+'</b>장</div>'+
     '</div></div>'+
     '<div class="sec"><div class="sec-title">🎟️ 교환한 쿠폰 (발급 처리)</div>'+coupons+'</div>'+
