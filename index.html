@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
 <title>베베박스</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css"/>
-<link rel="stylesheet" href="css/style.css?v=42"/>
+<link rel="stylesheet" href="css/style.css?v=43"/>
 <link rel="stylesheet" href="css/onboarding.css?v=5"/>
 <link rel="stylesheet" href="css/theme.css?v=4"/>
 </head>
@@ -211,13 +211,14 @@
 <h2>리워드</h2>
 <p>기록하고 공유해서 캔디를 모으고, 쿠폰으로 바꿔요</p>
 </header>
-<div class="point-balance-card">
-<span class="point-balance-icon">🍬</span>
-<div class="point-balance-info">
-<span class="point-balance-label">내 캔디</span>
-<strong class="point-balance-value"><span class="js-point-balance">0</span> 캔디</strong>
+<div class="candy-card">
+<div class="candy-card-label">내 캔디</div>
+<div class="candy-card-amt"><span class="candy-emoji">🍬</span><strong class="js-point-balance">0</strong><span class="candy-unit">개</span></div>
+<div class="candy-progress">
+<div class="candy-progress-bar"><div class="candy-progress-fill" id="candy-progress-fill"></div></div>
+<p class="candy-progress-text" id="candy-progress-text">상품권까지 100캔디</p>
 </div>
-<button type="button" class="point-exchange-btn" id="btn-claim-coupon">🎟️ 100캔디 → 3,000원 상품권 받기</button>
+<button type="button" class="candy-exchange-btn" id="btn-claim-coupon">🎟️ 100캔디 → 3,000원 상품권 받기</button>
 </div>
 <div class="point-guide">
 <p class="point-guide-title">🍬 캔디 모으기 · 쓰기 안내</p>
@@ -361,11 +362,12 @@
 </section>
 <section class="settings-section">
 <h3>🍬 내 캔디</h3>
-<div class="settings-point-row">
-<span class="settings-point-bal"><span class="js-point-balance">0</span> 캔디</span>
-<button type="button" class="settings-exchange-btn" id="btn-settings-exchange">100캔디 → 3,000원 상품권</button>
+<div class="candy-chip">
+<span class="candy-chip-emoji">🍬</span>
+<span class="candy-chip-amt"><strong class="js-point-balance">0</strong> 캔디</span>
+<button type="button" class="candy-chip-btn" id="btn-settings-exchange">100캔디 → 3,000원 상품권</button>
 </div>
-<p class="settings-hint">기록 +20 · 공유 +30 · 선물 받으면 +50 · 좋아요 200개마다 +10 캔디를 모아, <b>100캔디가면 키디키디 3,000원 상품권</b>으로 바꿔요</p>
+<p class="settings-hint">기록 +20 · 공유 +30 · 선물 받으면 +50 · 좋아요 200개마다 +10 캔디를 모아, <b>100캔디면 키디키디 3,000원 상품권</b>으로 바꿔요</p>
 </section>
 <section class="settings-section">
 <h3>📈 공유 성과</h3>
@@ -801,6 +803,6 @@
 <script src="js/family-data.js?v=4"></script>
 <script src="js/kakao-auth.js?v=1"></script>
 <script src="js/onboarding.js?v=7"></script>
-<script src="js/app.js?v=67"></script>
+<script src="js/app.js?v=68"></script>
 </body>
 </html>

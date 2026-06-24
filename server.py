@@ -324,6 +324,9 @@ class H(SimpleHTTPRequestHandler):
             return json_response(self, 200, db.journey_summary(family))
         if path == "/api/banner":
             return json_response(self, 200, db.get_config("game_banner", {}) or {})
+        if path == "/api/coupons":
+            family = norm_family(self._query("family"))
+            return json_response(self, 200, {"status": db.family_coupon_status(family)})
         if path == "/admin":
             return self._serve_html("admin.html")
         if path.startswith("/api/admin/"):

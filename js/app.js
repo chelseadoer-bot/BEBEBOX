@@ -542,6 +542,10 @@ function renderPointsUI(){
     sx.classList.toggle("is-ready",ok);
     sx.textContent=ok?`🎟️ ${POINT_RULES.couponCost}캔디 → ${won}원 상품권`:`상품권까지 ${formatPoints(POINT_RULES.couponCost-pts)}캔디`;
   }
+  const fill=$("#candy-progress-fill");
+  if(fill)fill.style.width=Math.min(100,Math.round(pts/POINT_RULES.couponCost*100))+"%";
+  const ptxt=$("#candy-progress-text");
+  if(ptxt)ptxt.textContent=ok?"지금 상품권으로 바꿀 수 있어요! 🎉":`상품권까지 ${formatPoints(POINT_RULES.couponCost-pts)}캔디`;
 }
 function onPointsChanged(){renderPointsUI();}
 function onPointsEarned(){}
@@ -589,21 +593,63 @@ function renderSettingsTab(){
     inviteSection.hidden=!creator;
     if(creator&&codeEl)codeEl.textContent=ensureInviteCode(true)||"------";
   }
-  const coupons=getCoupons();
-  $("#coupon-count").textContent=String(coupons.length);
-  const list=$("#coupon-list");
-  if(!list)return;
-  if(!coupons.length){
-    list.innerHTML=`<div class="coupon-empty">아직 받은 쿠폰이 없어요.<br/>1,000캔디를 모으면 1,000원 장바구니 쿠폰으로 바꿀 수 있어요!</div>`;
-    return;
-  }
-  list.innerHTML=coupons.map(c=>{
-    const head=c.percent?`${c.percent}% 할인`:`${(c.amount||0).toLocaleString("ko-KR")}원`;
-    return`<div class="coupon-card"><strong>${head} ${esc(c.label||"쿠폰")}</strong><span>코드 ${esc(c.code)} · ~${esc(c.expires)}까지</span></div>`;
-  }).join("");
+  renderCouponBox();
+  refreshCouponStatus();
   const notify=JSON.parse(localStorage.getItem("photoShare_notify")||"{}");
   $("#settings-notify-visit").checked=notify.visit!==false;
   $("#settings-notify-gift").checked=notify.gift!==false;
+}
+/* ─── 내 쿠폰함: 운영자 발급 상태 반영 + 3개까지만, 더보기 ─────────── */
+let _couponStatus={};      // {coupon_id:{fulfilled,fulfilled_at}} (서버 발급 상태)
+let _couponsExpanded=false;
+function _couponDateLabel(c){
+  const st=_couponStatus[c.id];
+  const ms=(st&&st.fulfilled_at)||c.createdAt;
+  if(!ms)return c.expires||"";
+  const d=new Date(ms);
+  return `${("0"+(d.getMonth()+1)).slice(-2)}/${("0"+d.getDate()).slice(-2)}`;
+}
+function renderCouponBox(){
+  const coupons=getCoupons();
+  const cnt=$("#coupon-count");if(cnt)cnt.textContent=String(coupons.length);
+  const list=$("#coupon-list");
+  if(!list)return;
+  if(!coupons.length){
+    list.innerHTML=`<div class="coupon-empty">아직 받은 쿠폰이 없어요.<br/>100캔디를 모으면 키디키디 3,000원 상품권으로 바꿀 수 있어요!</div>`;
+    return;
+  }
+  const sorted=[...coupons].sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+  const shown=_couponsExpanded?sorted:sorted.slice(0,3);
+  const rows=shown.map(c=>{
+    const amt=c.percent?`${c.percent}% 할인`:`${(c.amount||0).toLocaleString("ko-KR")}원`;
+    const st=_couponStatus[c.id];
+    const badge=st&&st.fulfilled
+      ?`<span class="coupon-badge done">✓ 발급완료</span>`
+      :`<span class="coupon-badge wait">발급 대기</span>`;
+    return`<div class="coupon-row">
+      <span class="coupon-row-ic">🎟️</span>
+      <span class="coupon-row-body"><b>${amt} 상품권</b><small>코드 ${esc(c.code)} · ${_couponDateLabel(c)}</small></span>
+      ${badge}
+    </div>`;
+  }).join("");
+  let more="";
+  if(sorted.length>3){
+    more=_couponsExpanded
+      ?`<button type="button" class="coupon-more" id="btn-coupon-more">접기 ▲</button>`
+      :`<button type="button" class="coupon-more" id="btn-coupon-more">쿠폰 ${sorted.length-3}개 더보기 ▼</button>`;
+  }
+  list.innerHTML=rows+more;
+  const mb=$("#btn-coupon-more");
+  if(mb)mb.onclick=()=>{_couponsExpanded=!_couponsExpanded;renderCouponBox();};
+}
+async function refreshCouponStatus(){
+  try{
+    const fam=encodeURIComponent(typeof getFamilyId==="function"?getFamilyId():"BEBEBOX");
+    const r=await fetch("/api/coupons?family="+fam);
+    const j=await r.json();
+    _couponStatus=(j&&j.status)||{};
+    renderCouponBox();
+  }catch(_){}
 }
 function onPuzzlePiecesChanged(gained,source,total,bonus){
   renderPuzzleTab({animate:gained>0});
@@ -2223,10 +2269,11 @@ function bindEvents(){
   });
   $("#btn-claim-coupon")?.addEventListener("click",()=>{
     const coupon=exchangeCoupon();
-    if(!coupon){showToast("캔디가 부족해요 🍬 (1,000캔디 필요)");return;}
+    if(!coupon){showToast(`캔디가 부족해요 🍬 (${POINT_RULES.couponCost}캔디 필요)`);return;}
+    track("coupon",{amount:coupon.amount||0});
     renderPuzzleTab();
     renderSettingsTab();
-    showToast("1,000원 장바구니 쿠폰으로 교환했어요! 🎟️");
+    showToast(`${(coupon.amount||0).toLocaleString("ko-KR")}원 상품권으로 교환했어요! 🎟️`);
   });
   $("#btn-mission-photo")?.addEventListener("click",openComposer);
   $("#btn-mission-share")?.addEventListener("click",()=>shareProfileLink());
@@ -2252,10 +2299,10 @@ function bindEvents(){
   $("#settings-notify-gift")?.addEventListener("change",saveNotifySettings);
   $("#btn-settings-exchange")?.addEventListener("click",()=>{
     const coupon=exchangeCoupon();
-    if(!coupon){showToast("캔디가 부족해요 🍬 (1,000캔디 필요)");return;}
+    if(!coupon){showToast(`캔디가 부족해요 🍬 (${POINT_RULES.couponCost}캔디 필요)`);return;}
     track("coupon",{amount:coupon.amount||0});
     renderSettingsTab();
-    showToast("1,000원 장바구니 쿠폰으로 교환했어요! 🎟️");
+    showToast(`${(coupon.amount||0).toLocaleString("ko-KR")}원 상품권으로 교환했어요! 🎟️`);
   });
   $("#btn-settings-share")?.addEventListener("click",()=>shareProfileLink());
   $("#btn-settings-preview")?.addEventListener("click",()=>{window.open(getShareUrl(),"_blank");});

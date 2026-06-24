@@ -539,6 +539,17 @@ def set_config(key, value):
     return True
 
 
+def family_coupon_status(family_id):
+    """한 가족의 쿠폰별 발급(지급) 상태: {coupon_id: {fulfilled, fulfilled_at}}."""
+    fam = (family_id or "").strip().upper()
+    with _conn() as conn:
+        rows = conn.execute(
+            "SELECT coupon_id, fulfilled, fulfilled_at FROM coupon_fulfillment WHERE family_id=?",
+            (fam,),
+        ).fetchall()
+    return {r["coupon_id"]: {"fulfilled": bool(r["fulfilled"]), "fulfilled_at": r["fulfilled_at"]} for r in rows}
+
+
 def set_coupon_fulfilled(family_id, coupon_id, fulfilled=True, note=""):
     fam = (family_id or "").strip().upper()
     cid = (coupon_id or "").strip()
