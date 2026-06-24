@@ -340,9 +340,10 @@
   var PIECES = [];
   function openGiftSheet() {
     PIECES = buildPieces();
-    document.getElementById("gift-sheet-title").textContent = CUR_BABY + "의 베이비샤워 위시";
+    document.getElementById("gift-sheet-title").textContent = CUR_BABY + "의 위시";
     document.getElementById("gift-sheet-body").innerHTML = renderRegistry();
     bindRegistry();
+    loadCardProducts();
     document.getElementById("gift-sheet").classList.remove("hidden");
   }
   function closeGiftSheet() { document.getElementById("gift-sheet").classList.add("hidden"); }
@@ -374,9 +375,39 @@
         '<div class="bb-card-emoji">' + esc(p.emoji) + "</div>" +
         '<div class="bb-card-title">' + esc(p.title) + "</div>" +
         '<div class="bb-card-desc">' + esc(p.desc) + "</div>" +
+        '<div class="bb-prods" data-prod="' + esc(p.id) + '"></div>' +
         '<button type="button" class="bb-card-cta" data-piece="' + esc(p.id) + '">' + esc(CUR_BABY) + "에게 선물하기 🎁</button></div>";
     }).join("") + "</div>";
     return planshop + shelf + progress + cards;
+  }
+  // 각 선물 카드에 키디키디 추천 상품 3개를 채운다(클릭 시 상품 상세로 이동).
+  function loadCardProducts() {
+    PIECES.forEach(function (p) {
+      if (guestbookFor(p.id)) return;
+      var box = document.querySelector('.bb-prods[data-prod="' + p.id + '"]');
+      if (!box) return;
+      box.innerHTML = '<div class="bb-prods-h">키디키디 추천 상품</div><div class="bb-prods-row loading">불러오는 중…</div>';
+      fetch('/api/kidikidi/search?limit=3&q=' + encodeURIComponent(p.base))
+        .then(function (r) { return r.json(); })
+        .then(function (j) {
+          var items = (j && j.products) || [];
+          if (!items.length) { box.style.display = 'none'; return; }
+          box.innerHTML = '<div class="bb-prods-h">키디키디 추천 상품</div><div class="bb-prods-row">' +
+            items.slice(0, 3).map(function (it) {
+              var price = it.price ? Number(it.price).toLocaleString('ko-KR') + '원' : '';
+              var img = it.image
+                ? '<span class="bb-prod-img" style="background-image:url(\'' + esc(it.image) + '\')"></span>'
+                : '<span class="bb-prod-img none">🎁</span>';
+              return '<a class="bb-prod" href="' + esc(it.url) + '" target="_blank" rel="noopener" data-prodclick="' + esc(p.id) + '">' +
+                img + '<span class="bb-prod-name">' + esc(it.name) + '</span>' +
+                '<span class="bb-prod-price">' + price + '</span></a>';
+            }).join("") + '</div>';
+          box.querySelectorAll('[data-prodclick]').forEach(function (a) {
+            a.addEventListener('click', function () { track('gift_click', { item_id: p.id, via: 'product' }); });
+          });
+        })
+        .catch(function () { box.style.display = 'none'; });
+    });
   }
   function bindRegistry() {
     var ps = document.getElementById("bb-planshop");

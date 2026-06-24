@@ -704,6 +704,18 @@ body.is-guest .guest-only{display:block!important}
 .point-guide-list li.spend b{color:#e8556e}
 .point-guide-foot{margin-top:13px;padding-top:12px;border-top:1px dashed var(--color-border-light);font-size:12.5px;color:#8a8278;line-height:1.5;text-align:center}
 .point-guide-foot b{color:#ff6b3d;font-weight:800}
+/* 위시 카드 추가 */
+.wish-add-btn{width:100%;margin:0 0 12px;padding:13px;border:1.5px dashed #ffb199;border-radius:14px;background:#fff7f3;color:#e64a19;font-size:14px;font-weight:800;cursor:pointer;font-family:var(--font)}
+.wish-add-btn:active{transform:scale(.99)}
+.wish-add-content{max-width:340px}
+.wish-add-title{font-size:17px;font-weight:800;margin-bottom:6px}
+.wish-add-label{font-size:12px;font-weight:700;color:var(--color-text-tertiary);margin:14px 0 8px}
+.wish-emoji-pick{display:grid;grid-template-columns:repeat(8,1fr);gap:6px}
+.wish-emoji{font-size:22px;padding:6px 0;border:1px solid var(--color-border-light);border-radius:10px;background:#fff;cursor:pointer}
+.wish-emoji.on{border-color:#ff6b3d;background:#fff0ea;box-shadow:0 0 0 2px rgba(255,107,61,.18)}
+.wish-add-input{width:100%;padding:12px 14px;border:1px solid var(--color-border);border-radius:12px;font-size:15px;font-family:var(--font);margin-bottom:14px}
+.wish-add-content .journey-gift-btn{margin-top:2px}
+.wish-add-content .game-retry-btn{margin-top:8px}
 /* 받은 선물 선반 */
 .shelf-section{padding:6px 2px 14px;border-bottom:1px solid var(--color-border-light);margin-bottom:14px}
 .shelf-title{font-size:15px;font-weight:800;margin-bottom:12px}
