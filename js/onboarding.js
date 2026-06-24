@@ -171,6 +171,10 @@ function finishOnboarding(asGuest){
   if(typeof window.enterMainApp==="function")window.enterMainApp(asGuest);
 }
 function showSuccessScreen(){
+  try{ _buildSuccessScreen(); }catch(e){ /* 무슨 일이 있어도 완료 화면은 보여준다 */ }
+  obShow("#onboarding-success-view");
+}
+function _buildSuccessScreen(){
   const baby=onboarding.babyName||"우리 아기";
   const title=document.getElementById("ob-success-title");
   const desc=document.getElementById("ob-success-desc");
@@ -264,22 +268,19 @@ function bindOnboarding(){
   });
   $("#btn-ob-back-kidikidi")?.addEventListener("click",()=>obShow(onboarding.kidikidiBackView||"#onboarding-baby-view"));
   $("#btn-ob-kidikidi-next")?.addEventListener("click",()=>{
+    const note=(m)=>{ if(typeof showToast==="function")showToast(m); else try{alert(m);}catch(_){} };
     const id=normalizeKidikidiId($("#ob-kidikidi-id")?.value);
-    if(!id){
-      if(typeof showToast==="function")showToast("키디키디 아이디를 입력해 주세요");
-      return;
-    }
-    if(id.length<3){
-      if(typeof showToast==="function")showToast("아이디를 3자 이상 입력해 주세요");
-      return;
-    }
+    if(!id){ note("키디키디 아이디를 입력해 주세요 (또는 '나중에 할게요')"); return; }
+    if(id.length<3){ note("아이디를 3자 이상 입력해 주세요"); return; }
     onboarding.kidikidiId=id;
-    saveKidikidiIdFromInput();
-    showSuccessScreen();
+    try{saveKidikidiIdFromInput();}catch(_){}
+    try{showSuccessScreen();}
+    catch(e){ try{finishOnboarding(onboarding.userType==="invited");}catch(_){ obShow("#onboarding-success-view"); } }
   });
   $("#btn-ob-kidikidi-skip")?.addEventListener("click",()=>{
     onboarding.kidikidiId="";
-    showSuccessScreen();
+    try{showSuccessScreen();}
+    catch(e){ try{finishOnboarding(onboarding.userType==="invited");}catch(_){ obShow("#onboarding-success-view"); } }
   });
   $("#btn-ob-back-code")?.addEventListener("click",()=>{
     if(onboarding.userType==="invited")obShow("#onboarding-welcome-view");
