@@ -356,13 +356,6 @@ def member_detail(family_id):
             "item_id": iid, "name": names.get(iid, iid),
             "received": bool(owned.get(iid)), "giver": giftedBy.get(iid) or None,
         })
-    # 선물 퍼즐도 포함
-    for g in (data.get("giftPuzzles") or []):
-        to_give.append({
-            "item_id": g.get("id"), "name": g.get("productName") or "선물",
-            "received": (len(g.get("pieces") or []) >= (g.get("total") or 9)),
-            "giver": None, "puzzle": "%d/%d" % (len(g.get("pieces") or []), g.get("total") or 9),
-        })
 
     # 누가 얼마나 조각을 썼는지: 방명록 + 부모 기록 + 이벤트 집계
     givers = {}

@@ -64,6 +64,14 @@ th{color:var(--sub);font-weight:700;font-size:12px;background:#faf7f3;white-spac
 .code{font-family:ui-monospace,Menlo,monospace;font-size:12px;background:#f3efe9;border-radius:6px;padding:1px 6px}
 .empty{padding:26px 16px;text-align:center;color:var(--muted);font-size:13px}
 .legend{font-size:11px;color:var(--muted);padding:0 16px 12px}
+.drop{margin-bottom:8px;border:1px solid var(--border);border-radius:12px;overflow:hidden;background:#fffdfb}
+.drop>summary{cursor:pointer;list-style:none;padding:11px 14px;font-size:13px;font-weight:800;color:var(--text);background:#faf7f3;user-select:none}
+.drop>summary::-webkit-details-marker{display:none}
+.drop>summary::after{content:"▾";float:right;color:var(--muted)}
+.drop[open]>summary::after{content:"▴"}
+.drop>summary b{color:var(--accent);margin-left:4px}
+.drop .gift-row,.drop .giver-row{padding:10px 14px;border-bottom:1px solid #f4efe8}
+.giver-tag{font-size:12px;font-weight:800;color:#3b6fe0;background:#eef4ff;border-radius:999px;padding:2px 10px;white-space:nowrap}
 .bn-preview{width:96px;height:96px;border-radius:14px;border:1px dashed var(--border);background:#faf7f3;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--muted);text-align:center;overflow:hidden}
 .bn-preview img{width:100%;height:100%;object-fit:cover}
 </style>
@@ -248,21 +256,30 @@ async function loadDetail(fam){
     return '<div class="gift-row"><span>'+won(c.amount)+' <span class="code">'+esc(c.code)+'</span> '+st+'</span>'+btn+'</div>';
   }).join("") || '<div class="msg">교환한 쿠폰이 없어요</div>';
 
-  var give = (d.to_give||[]).map(function(g){
-    return '<div class="gift-row"><span>'+esc(g.name)+(g.puzzle?' <span class="pill">🧩'+g.puzzle+'</span>':'')+'</span>'+
-      (g.received?'<span class="tag recv">받음'+(g.giver?' · '+esc(g.giver):'')+'</span>':'<span class="tag need">받아야</span>')+'</div>';
-  }).join("") || '<div class="msg">공개된 위시가 없어요</div>';
+  var wanted = (d.to_give||[]).filter(function(g){return !g.received;});
+  var received = (d.to_give||[]).filter(function(g){return g.received;});
+  function prodRow(name, giver){
+    return '<div class="gift-row"><span>'+esc(name)+'</span>'+
+      (giver!==undefined?'<span class="giver-tag">'+(giver?esc(giver):'이름 미기록')+'</span>':'')+'</div>';
+  }
+  var wantedHtml = wanted.length
+    ? '<details class="drop" open><summary>받고 싶은 선물 <b>'+wanted.length+'</b></summary>'+
+        wanted.map(function(g){return prodRow(g.name);}).join("")+'</details>'
+    : '<div class="msg">받고 싶은 선물이 없어요</div>';
+  var receivedHtml = received.length
+    ? '<details class="drop"><summary>받은 선물 <b>'+received.length+'</b></summary>'+
+        received.map(function(g){return prodRow(g.name, g.giver||"");}).join("")+'</details>'
+    : '<div class="msg">받은 선물이 없어요</div>';
 
-  var givers = (d.givers||[]).map(function(g){
+  var giverList = (d.givers||[]).map(function(g){
     return '<div class="giver-row"><div><div class="giver-name">'+esc(g.name)+(g.relationship?' <span class="pill">'+esc(g.relationship)+'</span>':'')+'</div>'+
       '<div class="giver-meta">'+esc((g.items||[]).join(", "))+'</div>'+
       ((g.messages||[]).length?'<div class="msg">“'+esc(g.messages[0])+'”</div>':'')+'</div>'+
       '<div class="num"><b>'+g.pieces+'</b><br/><span style="font-size:11px;color:#a8a098">선물</span></div></div>';
-  }).join("") || '<div class="msg">아직 선물한 지인이 없어요</div>';
-
-  var tl = (d.recent||[]).slice(0,12).map(function(e){
-    return '<div class="tl">'+ymd(e.created_at)+' · '+esc(e.actor||"")+(e.name?'('+esc(e.name)+')':'')+' · '+esc(e.type)+'</div>';
   }).join("");
+  var giversHtml = (d.givers||[]).length
+    ? '<details class="drop"><summary>선물해준 사람 <b>'+d.givers.length+'</b>명</summary>'+giverList+'</details>'
+    : '<div class="msg">아직 선물한 지인이 없어요</div>';
 
   document.getElementById("detail").innerHTML =
     '<div class="sec"><div class="sec-title">회원 정보</div><div class="kv">'+
@@ -271,12 +288,11 @@ async function loadDetail(fam){
       '<div class="b">교환 쿠폰 <b>'+(d.coupons||[]).length+'</b>장</div>'+
     '</div></div>'+
     '<div class="sec"><div class="sec-title">🎟️ 교환한 쿠폰 (발급 처리)</div>'+coupons+'</div>'+
-    '<div class="sec"><div class="sec-title">받아야 / 받은 선물</div>'+give+'</div>'+
-    '<div class="sec"><div class="sec-title">누가 선물했는지(지인)</div>'+givers+'</div>'+
+    '<div class="sec"><div class="sec-title">선물 현황</div>'+wantedHtml+receivedHtml+'</div>'+
+    '<div class="sec"><div class="sec-title">선물해준 사람</div>'+giversHtml+'</div>'+
     '<div class="sec"><div class="sec-title">지인 유입 전환</div><div style="font-size:13px;line-height:1.7">'+
       '👀 공유페이지 조회 <b>'+(f.views||0)+'</b> → 🛍 선물 버튼 클릭 <b>'+(f.gift_clicks||0)+'</b> → 🎁 선물 완료 <b>'+(f.gifts_done||0)+'</b><br/>'+
-      '❤️ 하트 '+(f.hearts||0)+' · 💬 댓글 '+(f.comments||0)+' · 🎮 미니앱 '+(f.miniapps||0)+'</div></div>'+
-    '<div class="sec"><div class="sec-title">최근 활동</div>'+(tl||'<div class="msg">없음</div>')+'</div>';
+      '❤️ 하트 '+(f.hearts||0)+' · 💬 댓글 '+(f.comments||0)+' · 🎮 미니앱 '+(f.miniapps||0)+'</div></div>';
 
   document.querySelectorAll("#detail [data-do]").forEach(function(b){b.onclick=function(){fulfillFromDetail(fam,b.dataset.cid,true);};});
   document.querySelectorAll("#detail [data-undo]").forEach(function(b){b.onclick=function(){if(confirm("발급 완료를 취소할까요?"))fulfillFromDetail(fam,b.dataset.cid,false);};});
