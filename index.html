@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
 <title>베베박스</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css"/>
-<link rel="stylesheet" href="css/style.css?v=43"/>
+<link rel="stylesheet" href="css/style.css?v=44"/>
 <link rel="stylesheet" href="css/onboarding.css?v=5"/>
 <link rel="stylesheet" href="css/theme.css?v=4"/>
 </head>
@@ -422,8 +422,21 @@
 <h3 class="shelf-title">🎁 받은 선물 선반</h3>
 <div id="gift-shelf"></div>
 </section>
+<button type="button" class="wish-add-btn" id="btn-add-wish">＋ 위시 카드 추가</button>
 <p class="wishlist-help">❤️ <b>탭</b>하면 공유 위시에 공개돼요 · <b>길게 누르면</b> 준 사람 기록·삭제</p>
 <div class="wishlist-grid" id="wishlist-grid"></div>
+</div>
+</div>
+<div class="modal hidden" id="wish-add-modal">
+<div class="modal-backdrop" id="wish-add-backdrop"></div>
+<div class="modal-content wish-add-content">
+<h3 class="wish-add-title">위시 카드 추가</h3>
+<p class="wish-add-label">이모티콘</p>
+<div class="wish-emoji-pick" id="wish-emoji-pick"></div>
+<p class="wish-add-label">상품 이름</p>
+<input type="text" id="wish-add-name" class="wish-add-input" placeholder="예: 오가닉 배냇저고리" maxlength="30"/>
+<button type="button" class="journey-gift-btn" id="btn-wish-add-submit">위시에 추가</button>
+<button type="button" class="game-retry-btn" id="btn-wish-add-cancel">취소</button>
 </div>
 </div>
 <div class="modal hidden" id="game-minigame-modal">
@@ -803,6 +816,6 @@
 <script src="js/family-data.js?v=4"></script>
 <script src="js/kakao-auth.js?v=1"></script>
 <script src="js/onboarding.js?v=7"></script>
-<script src="js/app.js?v=68"></script>
+<script src="js/app.js?v=69"></script>
 </body>
 </html>

@@ -88,6 +88,16 @@ img{display:block;max-width:100%}
 .shelf-obj img{width:44px;height:44px;border-radius:9px;object-fit:cover;display:block}
 .shelf-board{height:11px;margin-top:3px;border-radius:3px;background:linear-gradient(#e0bd92,#caa06f);box-shadow:0 5px 10px rgba(150,110,70,.24)}
 .shelf-empty{font-size:13px;color:#a99;text-align:center;padding:16px 0}
+/* 선물 카드 안 키디키디 추천 상품 3개 */
+.bb-prods{margin:12px 0 4px}
+.bb-prods-h{font-size:11.5px;font-weight:800;color:#b07a5e;margin-bottom:8px;text-align:left}
+.bb-prods-row{display:flex;gap:8px}
+.bb-prods-row.loading{font-size:12px;color:#bbb;font-weight:600}
+.bb-prod{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;text-decoration:none;color:inherit;background:#fff;border:1px solid #f0e7dd;border-radius:12px;padding:8px;transition:transform .12s}
+.bb-prod:active{transform:scale(.97)}
+.bb-prod-img{width:100%;aspect-ratio:1;border-radius:8px;background:#f5efe7 center/cover no-repeat;display:flex;align-items:center;justify-content:center;font-size:24px}
+.bb-prod-name{font-size:10.5px;font-weight:700;color:#5a4a3a;line-height:1.3;height:27px;overflow:hidden;text-align:left}
+.bb-prod-price{font-size:11px;font-weight:800;color:#ff6b3d;text-align:left}
 .bb-board{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:6px 0 4px}
 .bb-tile{aspect-ratio:1;border-radius:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden}
 .bb-tile.empty{background:repeating-linear-gradient(135deg,#f3ece1,#f3ece1 8px,#efe6d8 8px,#efe6d8 16px)}

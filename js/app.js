@@ -1517,6 +1517,36 @@ function saveOwnedFromPicker(){
   loadKidikidiProducts(item,owned);
   showToast(owned?"보유 중으로 표시했어요":"아직 없음으로 변경했어요");
 }
+/* 위시 카드 직접 추가 (이모티콘 + 상품 이름) */
+const WISH_EMOJIS=["🎁","🍼","🧸","👕","🧦","👟","📚","🍶","🛁","🪀","🎀","🧴","🍪","🪥","🧢","🚗"];
+let _wishEmoji="🎁";
+function openWishAdd(){
+  _wishEmoji="🎁";
+  const pick=$("#wish-emoji-pick");
+  if(pick){
+    pick.innerHTML=WISH_EMOJIS.map((e,i)=>`<button type="button" class="wish-emoji${i===0?" on":""}" data-emoji="${e}">${e}</button>`).join("");
+    pick.querySelectorAll("[data-emoji]").forEach(b=>b.onclick=()=>{_wishEmoji=b.dataset.emoji;pick.querySelectorAll(".wish-emoji").forEach(x=>x.classList.toggle("on",x===b));});
+  }
+  const nm=$("#wish-add-name");if(nm)nm.value="";
+  $("#wish-add-modal")?.classList.remove("hidden");
+  setTimeout(()=>$("#wish-add-name")?.focus(),60);
+}
+function closeWishAdd(){$("#wish-add-modal")?.classList.add("hidden");}
+function submitWishAdd(){
+  const name=($("#wish-add-name")?.value||"").trim();
+  if(!name){showToast("상품 이름을 입력해 주세요");return;}
+  const stage=STAGES[state.currentStage];
+  if(!state.wishlist[stage.id])state.wishlist[stage.id]=[];
+  const id="w"+Date.now();
+  state.wishlist[stage.id].push({id,name,emoji:_wishEmoji,priority:"권장",target:"baby"});
+  state.published[id]=true;   // 추가하면 공유 위시에 바로 공개
+  save();
+  if(typeof pushFamilyDataToServerNow==="function")pushFamilyDataToServerNow().catch(()=>{});
+  if(typeof track==="function")track("wish_add",{name});
+  closeWishAdd();
+  renderWishlistGrid();
+  showToast("위시에 추가했어요 🎁");
+}
 function openWishlist(){
   const t=$(".wishlist-title");if(t)t.textContent=`${babyName()} 옷장`;
   const ca=$("#closet-avatar");if(ca){ca.src=state.profile.avatar;ca.alt=babyName();}
@@ -2377,6 +2407,10 @@ function bindEvents(){
     if(node?.fundKey)openContributeModal("gauge",node.fundKey);
   };
   $("#btn-back-wishlist").onclick=()=>switchMainTab("home");
+  $("#btn-add-wish")?.addEventListener("click",openWishAdd);
+  $("#btn-wish-add-submit")?.addEventListener("click",submitWishAdd);
+  $("#btn-wish-add-cancel")?.addEventListener("click",closeWishAdd);
+  $("#wish-add-backdrop")?.addEventListener("click",closeWishAdd);
   $$(".ig-grid-item").forEach(btn=>btn.onclick=()=>openAiApp(btn.dataset.app,btn.dataset.ig));
   $("#btn-ig-studio")?.addEventListener("click",()=>openAiApp("studio","AI 컨셉스튜디오"));
   $("#btn-ig-recommend")?.addEventListener("click",()=>openAiApp("pastlife","전생 인연"));
