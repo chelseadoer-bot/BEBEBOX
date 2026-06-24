@@ -75,10 +75,17 @@ def _load(slug):
             db = importlib.import_module("db")
             llm = importlib.import_module("llm")
             app_meta = importlib.import_module("app_meta")
-            pipeline = importlib.import_module("pipeline")
             db.init_db()
+            # pipeline 은 무거운 의존성(예: 브이로그=ffmpeg)이 있을 수 있어 따로 로드한다.
+            # 실패해도 meta/health/records(앱 진입)는 동작하고, 생성(run)만 막는다.
+            pipeline, pipe_err = None, None
+            try:
+                pipeline = importlib.import_module("pipeline")
+            except Exception as pe:
+                pipe_err = "%s: %s" % (type(pe).__name__, pe)
             mods = {"config": config, "db": db, "llm": llm,
-                    "app_meta": app_meta, "pipeline": pipeline, "error": None}
+                    "app_meta": app_meta, "pipeline": pipeline,
+                    "pipeline_error": pipe_err, "error": None}
         except Exception as e:
             mods = {"error": "%s: %s" % (type(e).__name__, e)}
         finally:
@@ -173,6 +180,10 @@ def handle(method, slug, sub, query, body):
         return 200, {"ok": True, "record": _scope_media(rec, slug)}
 
     if method == "POST" and sub == "run":
+        # 생성에는 pipeline 이 필요. (무거운 의존성 누락 시 친절히 안내)
+        if not pipeline:
+            return 503, {"ok": False,
+                         "error": "이 미니앱은 현재 준비 중이에요. 잠시 후 다시 시도해 주세요."}
         inputs = body.get("inputs", body) if isinstance(body, dict) else {}
         if isinstance(inputs, dict):
             inputs = {k: v for k, v in inputs.items() if k != "uid"}
@@ -190,7 +201,12 @@ def handle(method, slug, sub, query, body):
         try:
             result = pipeline.run(inputs, ctx)
         except getattr(llm, "LLMError", Exception) as e:
-            return 502, {"ok": False, "error": str(e)}
+            msg = str(e)
+            # AI 키 미설정/오류는 사용자에게 친절한 안내로 바꿔준다.
+            if ("GEMINI_API_KEY" in msg) or ("API key" in msg) or ("api key" in msg) or ("키" in msg):
+                return 503, {"ok": False,
+                             "error": "AI 기능이 아직 준비 중이에요. 운영자가 키를 연결하면 바로 사용할 수 있어요!"}
+            return 502, {"ok": False, "error": msg}
         except ValueError as e:
             return 400, {"ok": False, "error": str(e)}
         except Exception as e:
