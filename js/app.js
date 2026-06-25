@@ -2443,6 +2443,17 @@ function bindEvents(){
   // 메인 배경 사진 변경
   $("#btn-change-bg")?.addEventListener("click",()=>$("#bg-input")?.click());
   $("#bg-input")?.addEventListener("change",e=>{changeBackground(e.target.files[0]);e.target.value="";});
+  // 메인 담벼락(배경)을 직접 눌러도 배경 변경
+  $("#bg-image")?.addEventListener("click",()=>{
+    if(typeof isGuest==="function"&&isGuest()){showToast("초대받은 분은 배경을 바꿀 수 없어요");return;}
+    $("#bg-input")?.click();
+  });
+  // 프로필 사진을 직접 눌러도 프로필 변경(상세 통계 열림 방지)
+  $(".avatar-wrap")?.addEventListener("click",e=>{
+    e.stopPropagation();
+    if(typeof isGuest==="function"&&isGuest()){showToast("초대받은 분은 프로필을 바꿀 수 없어요");return;}
+    $("#avatar-input")?.click();
+  });
   // 옷장 상품 사진 추가
   $("#btn-add-product-image")?.addEventListener("click",()=>$("#add-product-image-input")?.click());
   $("#add-product-image-input")?.addEventListener("change",e=>{pickAddProductImage(e.target.files[0]);e.target.value="";});

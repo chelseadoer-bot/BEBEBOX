@@ -379,6 +379,7 @@
   function renderRegistry() {
     // 키디키디 추천 선물 기획전 바로가기 (조각이 없어도 항상 노출)
     var planshop = '<a class="bb-planshop" id="bb-planshop" href="' + KIDIKIDI_PLANSHOP + '" target="_blank" rel="noopener">' +
+      '<span class="bb-planshop-badge">BEST</span>' +
       '<span class="bb-planshop-ic">🎁</span>' +
       '<span class="bb-planshop-tx"><b>추천 선물 한번에 보기</b><span>키디키디 베이비 기획전에서 골라보세요</span></span>' +
       '<span class="bb-planshop-go">›</span></a>';
@@ -404,7 +405,7 @@
         '<div class="bb-card-title">' + esc(p.title) + "</div>" +
         '<div class="bb-card-desc">' + esc(p.desc) + "</div>" +
         '<div class="bb-prods" data-prod="' + esc(p.id) + '"></div>' +
-        '<button type="button" class="bb-card-cta" data-piece="' + esc(p.id) + '">' + esc(CUR_BABY) + "에게 선물하기 🎁</button></div>";
+        "</div>";
     }).join("") + "</div>";
     return planshop + shelf + progress + cards;
   }
