@@ -2016,37 +2016,28 @@ function submitFunding(){
   const stats=fundingItemStats(fundId);
   if(stats.raised>=stats.goal)showToast(`${FUNDING_ITEMS[fundId].name} 퀘스트가 완성됐어요! 🎉`);
 }
-function initGameTab(){
-  if(initGameTab._timer)return;
-  let slide=0;
-  initGameTab._timer=setInterval(()=>{
-    if(!$("#game-tab-view")?.classList.contains("active"))return;
-    slide=(slide+1)%3;
-    $$(".ig-banner-slide").forEach(s=>s.classList.toggle("active",+s.dataset.slide===slide));
-    const badge=$("#ig-banner-badge");
-    if(badge)badge.textContent=`${slide+1} | 3`;
-  },4000);
-}
-// 운영자가 설정한 상단 배너(배경 사진 + 텍스트 + 우측 아이콘)로 교체한다.
-// 기본 슬라이드는 .custom 일 때 CSS로 숨겨지고, 끄면 다시 보인다.
+function initGameTab(){ /* 상단 배너는 운영자 설정(applyGameBanner)으로 렌더링한다 */ }
+// 게임 탭 상단 배너: 운영자 대시보드 설정(배경사진+제목+설명+우측아이콘+링크)으로
+// 렌더링한다. 운영자가 끄면 기본 배너가 같은 포맷으로 보인다.
+const DEFAULT_GAME_BANNER={
+  title:"AI 게임으로 우리 아이 추억 만들기",
+  subtitle:"결과를 일기에 담고 카카오톡으로 공유해요 🎮",
+  icon:"🎮",image:"",link:"",
+};
 async function applyGameBanner(){
   const banner=$("#ig-banner");if(!banner)return;
   let cfg=null;
   try{const r=await fetch("/api/banner?_t="+Date.now());cfg=await r.json();}catch(_){}
-  const on=cfg&&cfg.enabled&&(cfg.title||cfg.image||cfg.icon);
-  let box=banner.querySelector(".ig-cbanner");
-  if(!on){
-    banner.classList.remove("custom");banner.style.backgroundImage="";banner.onclick=null;
-    if(box)box.remove();
-    return;
-  }
-  banner.classList.add("custom");
-  banner.style.backgroundImage=cfg.image?`url('${cfg.image}')`:"";
-  banner.onclick=cfg.link?()=>window.open(cfg.link,"_blank","noopener"):null;
-  const icon=cfg.icon?`<div class="ig-cbanner-icon">${esc(cfg.icon)}</div>`:"";
-  const html=`<div class="ig-cbanner-tx"><strong>${esc(cfg.title||"")}</strong>${cfg.subtitle?`<span>${esc(cfg.subtitle)}</span>`:""}</div>${icon}`;
-  if(box){box.innerHTML=html;}
-  else{box=document.createElement("div");box.className="ig-cbanner";box.innerHTML=html;banner.appendChild(box);}
+  // 운영자가 켜고 내용이 있으면 그 설정을, 아니면 기본 배너를(같은 포맷) 사용
+  const on=cfg&&cfg.enabled&&(cfg.title||cfg.image||cfg.icon||cfg.subtitle);
+  const use=on?cfg:DEFAULT_GAME_BANNER;
+  banner.classList.toggle("custom",!!use.image);
+  banner.style.backgroundImage=use.image?`url('${use.image}')`:"";
+  banner.onclick=use.link?()=>window.open(use.link,"_blank","noopener"):null;
+  banner.style.cursor=use.link?"pointer":"default";
+  const icon=use.icon?`<div class="ig-cbanner-icon">${esc(use.icon)}</div>`:"";
+  const tx=`<div class="ig-cbanner-tx"><strong>${esc(use.title||"")}</strong>${use.subtitle?`<span>${esc(use.subtitle)}</span>`:""}</div>`;
+  banner.innerHTML=`<div class="ig-cbanner">${tx}${icon}</div>`;
 }
 function openIgView(){switchMainTab("game");}
 /* ─── AI 그라운드 앱 연결 ───────────────────────────────────────────
