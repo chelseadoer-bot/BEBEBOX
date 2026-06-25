@@ -60,9 +60,10 @@ def _load(slug):
         try:
             config = importlib.import_module("config")
             # 실행 중인 서버(예: Render)의 환경변수 키를 각 앱 config 에 확실히 주입한다.
-            # (앱별 .env 누락/이름 차이 대비, GOOGLE_API_KEY 별칭도 허용)
+            # (앱별 .env 누락/이름 차이 대비, GOOGLE_API_KEY·GEMINI_KEY 별칭도 허용)
             _key = (os.environ.get("GEMINI_API_KEY")
                     or os.environ.get("GOOGLE_API_KEY")
+                    or os.environ.get("GEMINI_KEY")
                     or getattr(config, "GEMINI_API_KEY", "") or "")
             config.GEMINI_API_KEY = _key
             # 데이터/스토리지를 /data/ai/<slug> 로 돌려 영구 보존 + 저장소 오염 방지
@@ -160,6 +161,7 @@ def handle(method, slug, sub, query, body):
     # 넣은 경우, 모듈 캐시에 남은 빈 키 때문에 게임이 계속 막히는 일을 방지한다.
     _envkey = (os.environ.get("GEMINI_API_KEY")
                or os.environ.get("GOOGLE_API_KEY")
+               or os.environ.get("GEMINI_KEY")
                or getattr(config, "GEMINI_API_KEY", "") or "").strip()
     if _envkey:
         config.GEMINI_API_KEY = _envkey

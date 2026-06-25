@@ -41,7 +41,7 @@ def get(key, default=None):
 
 
 # ── AI ───────────────────────────────────────────────
-GEMINI_API_KEY = get("GEMINI_API_KEY", "")
+GEMINI_API_KEY = get("GEMINI_API_KEY") or get("GOOGLE_API_KEY") or get("GEMINI_KEY") or ""
 GEMINI_MODEL = get("GEMINI_MODEL", "gemini-2.5-flash-lite")
 GEMINI_IMAGE_MODEL = get("GEMINI_IMAGE_MODEL", "gemini-2.5-flash-image")
 GEMINI_IMAGE_FALLBACK = get("GEMINI_IMAGE_FALLBACK", "gemini-2.0-flash-preview-image-generation")
