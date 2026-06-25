@@ -2024,20 +2024,40 @@ const DEFAULT_GAME_BANNER={
   subtitle:"결과를 일기에 담고 카카오톡으로 공유해요 🎮",
   icon:"🎮",image:"",link:"",
 };
+function _bannerSlideHtml(b,i){
+  const bg=b.image
+    ? `background-image:linear-gradient(90deg,rgba(0,0,0,.5),rgba(0,0,0,.12)),url('${b.image}');`
+    : `background:linear-gradient(135deg,#ff9a76,#ff6b9d 55%,#7a6bff);`;
+  const icon=b.icon?`<div class="ig-cbanner-icon">${esc(b.icon)}</div>`:"";
+  const tx=`<div class="ig-cbanner-tx"><strong>${esc(b.title||"")}</strong>${b.subtitle?`<span>${esc(b.subtitle)}</span>`:""}</div>`;
+  return `<div class="ig-bn-slide${i===0?" on":""}" data-link="${esc(b.link||"")}" style="${bg}">${tx}${icon}</div>`;
+}
 async function applyGameBanner(){
   const banner=$("#ig-banner");if(!banner)return;
+  if(applyGameBanner._t){clearInterval(applyGameBanner._t);applyGameBanner._t=null;}
   let cfg=null;
   try{const r=await fetch("/api/banner?_t="+Date.now());cfg=await r.json();}catch(_){}
-  // 운영자가 켜고 내용이 있으면 그 설정을, 아니면 기본 배너를(같은 포맷) 사용
-  const on=cfg&&cfg.enabled&&(cfg.title||cfg.image||cfg.icon||cfg.subtitle);
-  const use=on?cfg:DEFAULT_GAME_BANNER;
-  banner.classList.toggle("custom",!!use.image);
-  banner.style.backgroundImage=use.image?`url('${use.image}')`:"";
-  banner.onclick=use.link?()=>window.open(use.link,"_blank","noopener"):null;
-  banner.style.cursor=use.link?"pointer":"default";
-  const icon=use.icon?`<div class="ig-cbanner-icon">${esc(use.icon)}</div>`:"";
-  const tx=`<div class="ig-cbanner-tx"><strong>${esc(use.title||"")}</strong>${use.subtitle?`<span>${esc(use.subtitle)}</span>`:""}</div>`;
-  banner.innerHTML=`<div class="ig-cbanner">${tx}${icon}</div>`;
+  const items=(cfg&&cfg.enabled&&Array.isArray(cfg.items)&&cfg.items.length)?cfg.items:[DEFAULT_GAME_BANNER];
+  const dots=items.length>1?`<div class="ig-banner-dots">${items.map((_,i)=>`<span class="${i===0?"on":""}"></span>`).join("")}</div>`:"";
+  banner.innerHTML=items.map(_bannerSlideHtml).join("")+dots;
+  // 각 슬라이드 링크 클릭
+  $$(".ig-bn-slide",banner).forEach(s=>{
+    const lk=s.getAttribute("data-link");
+    s.style.cursor=lk?"pointer":"default";
+    s.onclick=lk?()=>window.open(lk,"_blank","noopener"):null;
+  });
+  // 여러 장이면 자동 회전(크로스페이드)
+  if(items.length>1){
+    let idx=0;
+    applyGameBanner._t=setInterval(()=>{
+      if(!$("#game-tab-view")?.classList.contains("active"))return;
+      const slides=$$(".ig-bn-slide",banner),ds=$$(".ig-banner-dots span",banner);
+      if(!slides.length)return;
+      idx=(idx+1)%slides.length;
+      slides.forEach((s,i)=>s.classList.toggle("on",i===idx));
+      ds.forEach((d,i)=>d.classList.toggle("on",i===idx));
+    },4000);
+  }
 }
 function openIgView(){switchMainTab("game");}
 /* ─── AI 그라운드 앱 연결 ───────────────────────────────────────────

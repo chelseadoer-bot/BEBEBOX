@@ -627,18 +627,12 @@ body.is-guest .guest-only{display:block!important}
 .comment-send-btn.active{opacity:1}
 #game-tab-view.active{display:flex;flex-direction:column;height:calc(100vh - 56px - env(safe-area-inset-bottom,0px));max-height:calc(100vh - 56px - env(safe-area-inset-bottom,0px));background:#f5f6f8;position:relative;overflow:hidden}
 #game-tab-view .ig-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px 16px 24px}
-.ig-banner{position:relative;background:linear-gradient(135deg,#ff9a76,#ff6b9d 55%,#7a6bff);border:none;border-radius:16px;min-height:128px;margin-bottom:20px;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,.08)}
-.ig-banner.custom{background-size:cover;background-position:center;background-repeat:no-repeat}
-.ig-banner-slide{display:none;align-items:center;justify-content:space-between;gap:12px}
-.ig-banner-slide.active{display:flex}
-.ig-banner-text{display:flex;flex-direction:column;gap:6px;flex:1}
-.ig-banner-text strong{font-size:16px;font-weight:800;color:#2a2418;line-height:1.35;letter-spacing:-.02em}
-.ig-banner-text span{font-size:12px;color:#6b5d45;font-weight:500}
-.ig-banner-visual{font-size:56px;line-height:1;opacity:.95;flex-shrink:0}
-.ig-banner-badge{position:absolute;top:12px;right:12px;font-size:11px;color:#666;background:rgba(255,255,255,.72);padding:4px 9px;border-radius:10px;font-weight:600}
-.ig-banner.custom{padding:0;background-size:cover;background-position:center;background-repeat:no-repeat}
-.ig-banner.custom .ig-banner-slide,.ig-banner.custom .ig-banner-badge{display:none!important}
-.ig-cbanner{position:relative;display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:128px;padding:22px 18px;border-radius:16px;background:linear-gradient(90deg,rgba(0,0,0,.5),rgba(0,0,0,.12))}
+.ig-banner{position:relative;background:#efe4d4;border:none;border-radius:16px;min-height:128px;margin-bottom:20px;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,.08)}
+.ig-bn-slide{position:absolute;inset:0;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:22px 18px;background-size:cover;background-position:center;background-repeat:no-repeat;opacity:0;transition:opacity .5s ease}
+.ig-bn-slide.on{opacity:1;z-index:1}
+.ig-banner-dots{position:absolute;bottom:9px;left:50%;transform:translateX(-50%);display:flex;gap:5px;z-index:3}
+.ig-banner-dots span{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.55)}
+.ig-banner-dots span.on{background:#fff}
 .ig-cbanner-tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
 .ig-cbanner-tx strong{font-size:17px;font-weight:800;color:#fff;line-height:1.35;letter-spacing:-.02em;text-shadow:0 1px 5px rgba(0,0,0,.4)}
 .ig-cbanner-tx span{font-size:12.5px;color:rgba(255,255,255,.93);font-weight:500;line-height:1.45;text-shadow:0 1px 4px rgba(0,0,0,.4)}

@@ -325,7 +325,20 @@ class H(SimpleHTTPRequestHandler):
             family = norm_family(self._query("family"))
             return json_response(self, 200, db.journey_summary(family))
         if path == "/api/banner":
-            return json_response(self, 200, db.get_config("game_banner", {}) or {})
+            cfg = db.get_config("game_banner", {}) or {}
+            items = cfg.get("items")
+            if not isinstance(items, list):
+                # 구버전(단일 배너) 호환 → 리스트로 변환
+                if cfg.get("title") or cfg.get("image") or cfg.get("icon"):
+                    items = [{
+                        "title": cfg.get("title", ""), "subtitle": cfg.get("subtitle", ""),
+                        "image": cfg.get("image", ""), "icon": cfg.get("icon", ""),
+                        "link": cfg.get("link", ""),
+                    }]
+                else:
+                    items = []
+            enabled = bool(cfg.get("enabled")) and len(items) > 0
+            return json_response(self, 200, {"enabled": enabled, "items": items})
         if path == "/api/coupons":
             family = norm_family(self._query("family"))
             return json_response(self, 200, {"status": db.family_coupon_status(family)})
@@ -437,15 +450,26 @@ class H(SimpleHTTPRequestHandler):
                 body = read_json_body(self)
             except json.JSONDecodeError:
                 return json_response(self, 400, {"error": "invalid_json"})
-            db.set_config("game_banner", {
-                "enabled": bool(body.get("enabled", True)),
-                "title": (body.get("title") or "").strip(),
-                "subtitle": (body.get("subtitle") or "").strip(),
-                "image": (body.get("image") or "").strip(),
-                "icon": (body.get("icon") or "").strip(),
-                "link": (body.get("link") or "").strip(),
-            })
-            return json_response(self, 200, {"ok": True})
+            raw = body.get("items")
+            if not isinstance(raw, list):
+                # 구버전 단일 배너 본문 호환
+                raw = [body] if (body.get("title") or body.get("image") or body.get("icon")) else []
+            items = []
+            for it in raw[:12]:
+                if not isinstance(it, dict):
+                    continue
+                title = (it.get("title") or "").strip()
+                image = (it.get("image") or "").strip()
+                icon = (it.get("icon") or "").strip()
+                if not (title or image or icon):
+                    continue
+                items.append({
+                    "title": title[:40], "subtitle": (it.get("subtitle") or "").strip()[:60],
+                    "image": image, "icon": icon[:8], "link": (it.get("link") or "").strip(),
+                })
+            enabled = bool(body.get("enabled", True)) and len(items) > 0
+            db.set_config("game_banner", {"enabled": enabled, "items": items})
+            return json_response(self, 200, {"ok": True, "count": len(items)})
         # AI 그라운드 미니앱 실행: POST /apps/<slug>/api/run
         m = re.match(r"^/apps/([^/]+)/api/(.*)$", path)
         if m:
