@@ -518,7 +518,8 @@ class H(SimpleHTTPRequestHandler):
         import urllib.request
         import urllib.error
         key = (os.environ.get("GEMINI_API_KEY")
-               or os.environ.get("GOOGLE_API_KEY") or "").strip()
+               or os.environ.get("GOOGLE_API_KEY")
+               or os.environ.get("GEMINI_KEY") or "").strip()
         text_model = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash-lite")
 
         def probe(model):
