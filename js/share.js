@@ -224,7 +224,9 @@
     var baby = profile.babyName || (profile.name || "").replace("의 일기", "") || "우리 아기";
     CUR_BABY = baby;
     var avatar = profile.avatar || "/public/photos/ai-01.jpg";
-    var hero = profile.shareImage || profile.background || collectPhotos(data)[0] || avatar;
+    // 사용자가 설정에서 지정한 배경(담벼락)을 최우선으로. (shareImage 는 카카오 공유용
+    // 자동 합성 이미지라서 사용자가 지정한 배경과 달라 보이던 문제 수정)
+    var hero = profile.background || collectPhotos(data)[0] || profile.shareImage || avatar;
     var age = ageLabel(profile.currentAge);
     var posts = (data.posts || []).filter(isPublic).slice().sort(function (a, b) { return (b.createdAt || 0) - (a.createdAt || 0); });
     var registry = data.giftPuzzles || [];

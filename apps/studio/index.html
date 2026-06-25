@@ -90,7 +90,7 @@ input[type=file]{display:none;}
   </div>
 </div>
 
-<script src="kidikidi-app.js?v=3"></script>
+<script src="kidikidi-app.js?v=4"></script>
 <script>
 var CONCEPTS = [
   { id:'spring',     emoji:'🌸', name:'봄꽃 스튜디오',   desc:'화사한 벚꽃 화보' },
@@ -155,7 +155,13 @@ function showResult(o){
 }
 function downloadImg(){var a=document.createElement('a');a.href=state.image_url;a.download='kidikidi-studio-'+(state.concept||'concept')+'.png';a.click();}
 function copyShot(){KD.copyShot({target:'#cs-card',filename:'kidikidi-studio.png'});}
-function shareResult(){KD.shareSquare({target:'#cs-card',title:'AI 컨셉 스튜디오',caption:'우리 아이 AI 컨셉 화보 📸',filename:'kidikidi-studio'});}
+function shareResult(){
+  var src=document.getElementById('result-img').src;
+  var tag=(document.getElementById('result-tag').textContent||'').replace('📍','').trim();
+  if(!src){return KD.shareSquare({target:'#cs-card',title:'AI 컨셉 스튜디오',caption:'우리 아이 AI 컨셉 화보 📸',filename:'kidikidi-studio'});}
+  var html='<div style="background:#fff;border-radius:32px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,.10);"><img src="'+src+'" style="width:100%;display:block;"></div>';
+  KD.shareCardHtml({html:html,title:tag||'AI 컨셉 화보',caption:'우리 아이 AI 컨셉 화보 📸',filename:'kidikidi-studio',bg1:'#EFF6FF',bg2:'#FFF1F6'});
+}
 function restart(){show('s-input');}
 
 KD.mountHistory({

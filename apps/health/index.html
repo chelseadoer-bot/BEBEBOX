@@ -144,7 +144,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 </div>
 <div class="toast" id="toast"></div>
 
-<script src="kidikidi-app.js?v=3"></script>
+<script src="kidikidi-app.js?v=4"></script>
 <script>
 function showToast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},2500);}
 function animSteps(ids,interval){
@@ -213,6 +213,7 @@ function buildResultHtml(d){
 
 function renderResult(d){
   d=d||{};
+  window._lastResult=d;
   document.getElementById('step1').style.display='none';
   document.getElementById('step2').style.display='none';
   var urgencyMap={'즉시응급':'🚨 즉시 응급실 방문','오늘병원':'🏥 오늘 병원','내일병원':'📅 내일 병원','가정관리':'🏠 가정 관리'};
@@ -222,7 +223,19 @@ function renderResult(d){
   setTimeout(function(){wrap.scrollIntoView({behavior:'smooth',block:'start'});},100);
 }
 function copyRes(){KD.copyShot({filename:'kidikidi-symptom.png'});}
-function shareResult(){KD.shareSquare({target:'#result-wrap',title:'아이 건강 체크',caption:'우리 아이 건강 체크 결과 🩺',filename:'kidikidi-health'});}
+function shareResult(){
+  var d=window._lastResult;
+  if(!d){return KD.shareSquare({target:'#result-wrap',title:'아이 건강 체크',caption:'우리 아이 건강 체크 결과 🩺',filename:'kidikidi-health'});}
+  var urgencyMap={'즉시응급':'🚨 즉시 응급실 방문','오늘병원':'🏥 오늘 병원','내일병원':'📅 내일 병원','가정관리':'🏠 가정 관리'};
+  var ulab=urgencyMap[d.urgency]||(d.urgency||'결과');
+  var care=(d.home_care&&d.home_care.length?d.home_care:[]).slice(0,3).map(function(c,i){
+    return '<div style="display:flex;gap:14px;margin-bottom:16px;align-items:flex-start;"><div style="width:44px;height:44px;border-radius:50%;background:#4A90E2;color:#fff;font-size:24px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;">'+(i+1)+'</div><div style="font-size:30px;line-height:1.5;color:#334155;">'+escHtml(c)+'</div></div>';
+  }).join('');
+  var top='<div style="text-align:center;background:#fff;border-radius:30px;padding:40px;box-shadow:0 8px 26px rgba(74,144,226,.10);margin-bottom:22px;"><div style="font-size:48px;font-weight:800;color:#2563EB;margin-bottom:14px;">'+ulab+'</div><div style="font-size:31px;line-height:1.6;color:#475569;">'+escHtml(d.urgency_reason||'')+'</div></div>';
+  var careBox=care?'<div style="background:#fff;border-radius:30px;padding:40px;box-shadow:0 8px 26px rgba(74,144,226,.10);margin-bottom:22px;"><div style="font-size:32px;font-weight:800;margin-bottom:22px;">🏠 지금 집에서 할 수 있는 것</div>'+care+'</div>':'';
+  var disc='<div style="background:#FEF8E0;border-radius:24px;padding:28px;font-size:25px;line-height:1.6;color:#7A5A00;">⚠️ 이 결과는 AI 참고용이며 의학적 진단을 대체하지 않아요.</div>';
+  KD.shareCardHtml({html:top+careBox+disc,title:'아이 건강 체크 🩺',caption:'우리 아이 건강 체크 결과 🩺',filename:'kidikidi-health',bg1:'#EFF6FF',bg2:'#F0FDFA'});
+}
 
 KD.mountHistory({
   mountTarget: document.querySelector('.app'),

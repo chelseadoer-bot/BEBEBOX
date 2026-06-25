@@ -1250,7 +1250,7 @@ html .app .header p{display:block!important;font-size:13px!important;text-align:
       </div>
     </div>
 
-    <button class="btn btn-primary" style="width:100%;" onclick="KD.shareSquare({target:'.result-content',title:'오늘의 집안일 당번',caption:'오늘의 집안일 당번 결과 🧹',filename:'kidikidi-chores'})">📔 일기에 저장하고 공유하기</button>
+    <button class="btn btn-primary" style="width:100%;" onclick="shareResult()">📔 일기에 저장하고 공유하기</button>
     <div class="btn-group">
       <button class="btn btn-secondary" onclick="KD.copyShot({target:'.result-content',filename:'kidikidi-chores.png'})">📋 이미지 복사</button>
       <button class="btn btn-primary" onclick="goScreen('select')">다시 게임하기</button>
@@ -1738,6 +1738,16 @@ function openDoor(idx) {
 /* ==========================================================
    RESULT
    ========================================================== */
+function shareResult() {
+  var esc = function(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');};
+  if (!(window.KD && KD.shareCardHtml)) { return KD.shareSquare({target:'.result-content',title:'오늘의 집안일 당번',caption:'오늘의 집안일 당번 🧹',filename:'kidikidi-chores'}); }
+  var html = '<div style="text-align:center;background:#fff;border-radius:34px;padding:60px 40px;box-shadow:0 10px 30px rgba(0,0,0,.08);">'
+    + '<div style="font-size:120px;line-height:1;margin-bottom:16px;">🧹</div>'
+    + '<div style="font-size:34px;color:#64748B;margin-bottom:10px;">오늘의 당번은</div>'
+    + '<div style="font-size:92px;font-weight:800;color:#4A90E2;margin-bottom:24px;">' + esc(state.winner || '???') + '</div>'
+    + '<div style="font-size:36px;line-height:1.5;color:#334155;">오늘은 <b>' + esc(state.task || '') + '</b><br>부탁해요!</div></div>';
+  KD.shareCardHtml({ html: html, title: '오늘의 집안일 당번', caption: '오늘의 집안일 당번 🧹', filename: 'kidikidi-chores', bg1:'#EFF6FF', bg2:'#FFF1F6' });
+}
 function showResult() {
   document.getElementById('winner-name').textContent = state.winner || '???';
   document.getElementById('result-task-name').textContent = state.task;
@@ -1792,7 +1802,7 @@ function triggerConfetti() {
    ========================================================== */
 renderChips();
 </script>
-<script src="kidikidi-app.js?v=3"></script>
+<script src="kidikidi-app.js?v=4"></script>
 <script>
 function buildResultHtml(o){
   o = o || {};
