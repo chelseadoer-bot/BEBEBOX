@@ -867,7 +867,8 @@ body {
       </div>
 
       <footer class="preview-footer">
-        <button type="button" class="btn-download" id="btn-copy-shot">📋 결과 복사</button>
+        <button type="button" class="btn-download" id="btn-diary">📔 일기에 저장하고 공유하기</button>
+        <button type="button" class="btn-download secondary" id="btn-copy-shot">📋 이미지 복사</button>
         <button type="button" class="btn-download secondary" id="btn-share">🔗 공유 링크 복사</button>
         <button type="button" class="btn-download secondary" id="btn-download-result">저장하기</button>
         <button type="button" class="btn-download secondary" id="btn-retry-preview">다시 만들기</button>
@@ -915,7 +916,7 @@ body {
     <div class="save-toast" id="save-toast" role="status"></div>
   </div>
 
-<script src="kidikidi-app.js"></script>
+<script src="kidikidi-app.js?v=2"></script>
 <script>
 const SLOTS = ["eat", "play", "sleep"];
 const SLOT_LABELS = { eat: "먹", play: "놀", sleep: "잠" };
@@ -1314,6 +1315,7 @@ infoModal.addEventListener("click", (e) => { if (e.target === infoModal) infoMod
 $("#btn-back").addEventListener("click", () => showView("editor"));
 $("#btn-close-preview").addEventListener("click", () => showView("editor"));
 $("#btn-copy-shot").addEventListener("click", copyResultShot);
+$("#btn-diary").addEventListener("click", () => KD.shareSquare({ target: ".result-wrap", title: "성장 브이로그", caption: "우리 아이 성장 브이로그 🎬", filename: "kidikidi-vlog", toast: showToast }));
 $("#btn-share").addEventListener("click", () => copyShare(lastOutput));
 $("#btn-download-result").addEventListener("click", () => downloadResult(lastOutput));
 $("#btn-retry-preview").addEventListener("click", () => { showView("editor"); retryAll(); });

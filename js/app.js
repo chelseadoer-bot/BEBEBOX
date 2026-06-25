@@ -2076,7 +2076,7 @@ function openAiApp(slug,label){
              ||(typeof getInviteCode==="function"&&getInviteCode())||"";
     if(code)url+=(url.indexOf("?")<0?"?":"&")+"uid="+encodeURIComponent(String(code).toUpperCase());
   }catch(_){}
-  url+=(url.indexOf("?")<0?"?":"&")+"_v=4";   // 앱 정적파일 캐시 무력화
+  url+=(url.indexOf("?")<0?"?":"&")+"_v=5";   // 앱 정적파일 캐시 무력화
   $("#app-frame-title").textContent=label||"";
   $("#app-frame").src=url;            // 앱 안에서 iframe 으로 띄움
   showOverlay("#app-frame-view");
@@ -2171,6 +2171,33 @@ function handleMiniAppEvent(data){
     _syncProfileChange();
     return;
   }
+  if(ev==="save_diary"){
+    // 게임 결과(1:1 카드 이미지)를 일기 기록(피드)에 자동 저장
+    saveMiniAppResultToDiary(data,app);
+    return;
+  }
+}
+// 게임 결과 이미지를 업로드해 일기 게시물로 저장한다.
+async function saveMiniAppResultToDiary(data,app){
+  try{
+    const img=data&&data.image;
+    if(!img||typeof uploadPhotoToServer!=="function")return;
+    const label=(app&&app.label)||"AI 게임";
+    const caption=(data&&data.caption)||`${label} 결과 🎮`;
+    const blob=await(await fetch(img)).blob();
+    const file=new File([blob],"game-result.png",{type:blob.type||"image/png"});
+    const up=await uploadPhotoToServer(file);
+    if(!up||!up.src)return;
+    const post=ensurePostMeta({id:"post"+Date.now(),text:caption,photos:[up.src],
+      ageMonth:state.profile.currentAge||9,createdAt:Date.now(),gauge:0,comments:[],
+      visibility:"all",fromGame:(app&&app.slug)||"game"});
+    state.posts.unshift(post);
+    save();
+    if(typeof pushFamilyDataToServerNow==="function")pushFamilyDataToServerNow().catch(()=>{});
+    if(typeof track==="function")track("record",{photos:1,fromGame:(app&&app.slug)||"game"});
+    if(typeof showToast==="function")showToast("게임 결과를 일기에 저장했어요 📔");
+    _syncProfileChange();
+  }catch(_){}
 }
 // 결제 게이트 모달 (결과 보기 전 중간 단계)
 let _gateCb=null;

@@ -1250,8 +1250,9 @@ html .app .header p{display:block!important;font-size:13px!important;text-align:
       </div>
     </div>
 
+    <button class="btn btn-primary" style="width:100%;" onclick="KD.shareSquare({target:'.result-content',title:'오늘의 집안일 당번',caption:'오늘의 집안일 당번 결과 🧹',filename:'kidikidi-chores'})">📔 일기에 저장하고 공유하기</button>
     <div class="btn-group">
-      <button class="btn btn-secondary" onclick="KD.copyShot({target:'.result-content',filename:'kidikidi-chores.png'})">📋 결과 복사</button>
+      <button class="btn btn-secondary" onclick="KD.copyShot({target:'.result-content',filename:'kidikidi-chores.png'})">📋 이미지 복사</button>
       <button class="btn btn-primary" onclick="goScreen('select')">다시 게임하기</button>
       <button class="btn btn-secondary" onclick="goScreen('home')">처음으로</button>
     </div>
@@ -1791,7 +1792,7 @@ function triggerConfetti() {
    ========================================================== */
 renderChips();
 </script>
-<script src="kidikidi-app.js"></script>
+<script src="kidikidi-app.js?v=2"></script>
 <script>
 function buildResultHtml(o){
   o = o || {};
