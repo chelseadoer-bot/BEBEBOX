@@ -307,6 +307,8 @@ class H(SimpleHTTPRequestHandler):
                 "storage": "sqlite",
                 "kakaoEnabled": ka.is_configured(),
             })
+        if path == "/ai-health" or path == "/api/ai-health":
+            return self._serve_ai_health()
         if path == "/api/family-data":
             family = norm_family(self._query("family"))
             row = db.get_family_data(family)
@@ -504,6 +506,102 @@ class H(SimpleHTTPRequestHandler):
             for k, v in replacements.items():
                 page = page.replace(k, v)
         body = page.encode("utf-8")
+        self.send_response(200)
+        self.send_header("Content-Type", "text/html; charset=utf-8")
+        self.send_header("Content-Length", str(len(body)))
+        self.send_header("Cache-Control", "no-cache")
+        self.end_headers()
+        self.wfile.write(body)
+
+    def _serve_ai_health(self):
+        """AI(제미나이) 키/모델 실시간 진단 페이지. 게임 결과가 안 뜰 때 원인 확인용."""
+        import urllib.request
+        import urllib.error
+        key = (os.environ.get("GEMINI_API_KEY")
+               or os.environ.get("GOOGLE_API_KEY") or "").strip()
+        text_model = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash-lite")
+
+        def probe(model):
+            url = ("https://generativelanguage.googleapis.com/v1beta/models/"
+                   + urllib.parse.quote(model) + ":generateContent?key="
+                   + urllib.parse.quote(key))
+            payload = json.dumps({"contents": [{"role": "user",
+                     "parts": [{"text": "ping"}]}]}).encode("utf-8")
+            req = urllib.request.Request(url, data=payload,
+                  headers={"Content-Type": "application/json"}, method="POST")
+            try:
+                with urllib.request.urlopen(req, timeout=30) as r:
+                    return True, r.status, ""
+            except urllib.error.HTTPError as e:
+                b = e.read().decode("utf-8", "ignore")
+                try:
+                    m = json.loads(b).get("error", {}).get("message", b)
+                except Exception:
+                    m = b
+                return False, e.code, m
+            except Exception as e:
+                return False, 0, str(e)
+
+        # 진단
+        if not key:
+            verdict = ("❌ 키가 설정되지 않았어요",
+                       "Render 환경변수 <b>GEMINI_API_KEY</b> 가 비어 있습니다. "
+                       "Render → Environment 에서 키를 넣고 다시 배포해 주세요.")
+            ok = False
+            detail = ""
+        else:
+            ok, code, msg = probe(text_model)
+            detail = "모델: %s · 응답코드: %s<br>%s" % (text_model, code,
+                     (msg or "정상").replace("<", "&lt;"))
+            low = (msg or "").lower()
+            if ok:
+                verdict = ("✅ AI 키 정상 작동",
+                           "게임 결과 생성이 정상입니다. 그래도 안 되면 게임에서 "
+                           "한 번 더 시도해 주세요(일시 혼잡일 수 있어요).")
+            elif code == 400 and ("api key not valid" in low or "api_key_invalid" in low):
+                verdict = ("❌ 키가 잘못됐어요",
+                           "키 값이 유효하지 않습니다. Google AI Studio에서 새 키를 "
+                           "발급받아 Render의 <b>GEMINI_API_KEY</b>를 교체해 주세요.")
+            elif code == 429:
+                verdict = ("⚠️ 사용량 한도 초과",
+                           "무료 사용량(분당/일일 한도)을 초과했어요. 잠시 후 다시 "
+                           "시도하거나, Google에서 결제를 연결하면 한도가 늘어납니다.")
+            elif code == 404:
+                verdict = ("❌ 모델 이름 문제",
+                           "모델 '%s' 을(를) 찾을 수 없어요. GEMINI_MODEL 환경변수를 "
+                           "비우거나 'gemini-2.5-flash' 로 설정해 주세요." % text_model)
+            elif code == 403:
+                verdict = ("❌ 권한/지역 차단",
+                           "키 권한 또는 지역 제한 문제일 수 있어요. AI Studio에서 키 "
+                           "권한과 사용 지역을 확인해 주세요.")
+            else:
+                verdict = ("❌ AI 호출 실패",
+                           "아래 상세 오류를 확인해 주세요.")
+
+        masked = (key[:6] + "…" + key[-4:]) if len(key) > 12 else ("(" + str(len(key)) + "자)" if key else "(없음)")
+        html = (
+            "<!doctype html><html lang='ko'><head><meta charset='utf-8'>"
+            "<meta name='viewport' content='width=device-width,initial-scale=1'>"
+            "<title>AI 상태 점검</title><style>"
+            "body{font-family:-apple-system,'Pretendard',sans-serif;background:#F0F7FF;"
+            "margin:0;padding:24px;color:#1E293B;}"
+            ".card{max-width:480px;margin:0 auto;background:#fff;border:1px solid #DBEAFE;"
+            "border-radius:18px;padding:24px;box-shadow:0 4px 20px rgba(30,58,95,.06);}"
+            "h1{font-size:20px;margin:0 0 6px;}h2{font-size:17px;margin:16px 0 8px;}"
+            ".v{font-size:18px;font-weight:800;margin:10px 0;}"
+            ".p{font-size:14px;line-height:1.7;color:#475569;}"
+            ".k{font-size:13px;color:#64748B;margin-top:14px;}"
+            ".d{font-size:12px;color:#94A3B8;background:#F8FAFC;border-radius:10px;"
+            "padding:12px;margin-top:12px;word-break:break-all;line-height:1.6;}"
+            "</style></head><body><div class='card'>"
+            "<h1>🩺 AI 상태 점검</h1>"
+            "<div class='v'>" + verdict[0] + "</div>"
+            "<div class='p'>" + verdict[1] + "</div>"
+            "<div class='k'>키: <b>" + masked + "</b></div>"
+            "<div class='d'>" + (detail or "") + "</div>"
+            "</div></body></html>"
+        )
+        body = html.encode("utf-8")
         self.send_response(200)
         self.send_header("Content-Type", "text/html; charset=utf-8")
         self.send_header("Content-Length", str(len(body)))
