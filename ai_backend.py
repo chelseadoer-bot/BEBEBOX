@@ -156,6 +156,14 @@ def handle(method, slug, sub, query, body):
     config = mods["config"]
     pipeline = mods["pipeline"]
 
+    # 매 요청마다 환경변수에서 키를 다시 주입(self-heal): Render 에 키를 새로
+    # 넣은 경우, 모듈 캐시에 남은 빈 키 때문에 게임이 계속 막히는 일을 방지한다.
+    _envkey = (os.environ.get("GEMINI_API_KEY")
+               or os.environ.get("GOOGLE_API_KEY")
+               or getattr(config, "GEMINI_API_KEY", "") or "").strip()
+    if _envkey:
+        config.GEMINI_API_KEY = _envkey
+
     if method == "GET" and sub == "meta":
         return 200, getattr(am, "META", {})
 
@@ -202,11 +210,21 @@ def handle(method, slug, sub, query, body):
             result = pipeline.run(inputs, ctx)
         except getattr(llm, "LLMError", Exception) as e:
             msg = str(e)
-            # AI 키 미설정/오류는 사용자에게 친절한 안내로 바꿔준다.
-            if ("GEMINI_API_KEY" in msg) or ("API key" in msg) or ("api key" in msg) or ("키" in msg):
-                return 503, {"ok": False,
-                             "error": "AI 기능이 아직 준비 중이에요. 운영자가 키를 연결하면 바로 사용할 수 있어요!"}
-            return 502, {"ok": False, "error": msg}
+            low = msg.lower()
+            # 일시적 혼잡(요청량 초과/타임아웃/서버 일시오류)은 잠시 후 재시도 안내.
+            # 키 미설정/무효 등 진짜 키 문제일 때만 별도 detail 을 남긴다.
+            # 사용자에게는 어느 경우든 "잠시 후 다시" 로 통일(겁주는 운영자 안내 제거).
+            key_problem = (
+                not config.GEMINI_API_KEY
+                or "api_key_invalid" in low
+                or "api key not valid" in low
+                or "gemini_api_key" in low
+            )
+            return 503, {"ok": False,
+                         "error": "지금은 결과 생성이 잠시 지연되고 있어요. 잠시 후 다시 시도해 주세요 🙏",
+                         "retry": True,
+                         "key_problem": bool(key_problem),
+                         "detail": msg}
         except ValueError as e:
             return 400, {"ok": False, "error": str(e)}
         except Exception as e:

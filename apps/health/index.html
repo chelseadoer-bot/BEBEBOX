@@ -144,7 +144,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 </div>
 <div class="toast" id="toast"></div>
 
-<script src="kidikidi-app.js"></script>
+<script src="kidikidi-app.js?v=2"></script>
 <script>
 function showToast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},2500);}
 function animSteps(ids,interval){
@@ -216,12 +216,13 @@ function renderResult(d){
   document.getElementById('step1').style.display='none';
   document.getElementById('step2').style.display='none';
   var urgencyMap={'즉시응급':'🚨 즉시 응급실 방문','오늘병원':'🏥 오늘 병원','내일병원':'📅 내일 병원','가정관리':'🏠 가정 관리'};
-  var html=buildResultHtml(d)+'<div class="share-row"><button class="btn-share" onclick="copyRes()">📋 결과 복사</button><button class="btn-share primary" onclick="location.reload()">🔄 다시 체크</button></div>';
+  var html=buildResultHtml(d)+'<button class="btn-share primary" style="width:100%;margin-top:6px;" onclick="shareResult()">📔 일기에 저장하고 공유하기</button><div class="share-row"><button class="btn-share" onclick="copyRes()">📋 이미지 복사</button><button class="btn-share" onclick="location.reload()">🔄 다시 체크</button></div>';
   var wrap=document.getElementById('result-wrap'); wrap.innerHTML=html; wrap.style.display='block';
   window._copyText='🩺 AI 건강 체크 | '+(d.symptoms||'')+' | 나이 '+(d.age||'')+' 열 '+(d.fever||'')+' 기간 '+(d.dur||'')+' | '+(urgencyMap[d.urgency]||'')+' | '+(d.urgency_reason||'');
   setTimeout(function(){wrap.scrollIntoView({behavior:'smooth',block:'start'});},100);
 }
 function copyRes(){KD.copyShot({filename:'kidikidi-symptom.png'});}
+function shareResult(){KD.shareSquare({target:'#result-wrap',title:'아이 건강 체크',caption:'우리 아이 건강 체크 결과 🩺',filename:'kidikidi-health'});}
 
 KD.mountHistory({
   mountTarget: document.querySelector('.app'),

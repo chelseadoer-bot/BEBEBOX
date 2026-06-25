@@ -8,6 +8,7 @@
 """
 import json
 import re
+import time
 import urllib.request
 import urllib.parse
 
@@ -20,8 +21,12 @@ class LLMError(Exception):
     pass
 
 
+_RETRY_CODES = (429, 500, 502, 503, 504)
+_MAX_RETRY = 2
+
+
 def _call(model, payload):
-    key = config.GEMINI_API_KEY
+    key = (config.GEMINI_API_KEY or "").strip()
     if not key:
         raise LLMError("GEMINI_API_KEY 가 설정되지 않았습니다. .env 를 확인하세요.")
     url = _API_BASE + urllib.parse.quote(model) + ":generateContent"
@@ -32,19 +37,31 @@ def _call(model, payload):
         url += "?key=" + urllib.parse.quote(key)
     data = json.dumps(payload).encode("utf-8")
     req = urllib.request.Request(url, data=data, headers=headers, method="POST")
-    try:
-        with urllib.request.urlopen(req, timeout=120) as resp:
-            body = resp.read().decode("utf-8")
-    except urllib.error.HTTPError as e:
-        err_body = e.read().decode("utf-8", "ignore")
+    # 일시적 혼잡(요청량 초과/타임아웃/서버 일시오류)은 짧게 재시도해 게임이
+    # 끊기지 않도록 한다. 키 무효 등 영구 오류(4xx)는 즉시 중단.
+    last = None
+    for attempt in range(_MAX_RETRY + 1):
         try:
-            msg = json.loads(err_body).get("error", {}).get("message", err_body)
-        except Exception:
-            msg = err_body
-        raise LLMError("Gemini API %s: %s" % (e.code, msg))
-    except Exception as e:
-        raise LLMError("Gemini 호출 실패: %s" % e)
-    return json.loads(body)
+            with urllib.request.urlopen(req, timeout=120) as resp:
+                return json.loads(resp.read().decode("utf-8"))
+        except urllib.error.HTTPError as e:
+            err_body = e.read().decode("utf-8", "ignore")
+            try:
+                msg = json.loads(err_body).get("error", {}).get("message", err_body)
+            except Exception:
+                msg = err_body
+            last = LLMError("Gemini API %s: %s" % (e.code, msg))
+            if e.code in _RETRY_CODES and attempt < _MAX_RETRY:
+                time.sleep(1.2 * (attempt + 1))
+                continue
+            raise last
+        except Exception as e:
+            last = LLMError("Gemini 호출 실패: %s" % e)
+            if attempt < _MAX_RETRY:
+                time.sleep(1.0 * (attempt + 1))
+                continue
+            raise last
+    raise last or LLMError("Gemini 호출 실패")
 
 
 def _extract_json_blob(raw):

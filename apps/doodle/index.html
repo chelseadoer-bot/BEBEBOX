@@ -158,7 +158,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 </div>
 <div class="toast" id="toast"></div>
 
-<script src="kidikidi-app.js"></script>
+<script src="kidikidi-app.js?v=2"></script>
 <script>
 function showToast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},2500);}
 function animSteps(ids,interval){
@@ -239,12 +239,13 @@ function renderResult(d,isHistory){
   document.getElementById('preview-section').style.display='none';
   document.getElementById('input-section').style.display='none';
   document.getElementById('btn-analyze').style.display='none';
-  var html=buildResultHtml(d)+'<div class="share-row"><button class="btn-share" onclick="copyRes()">📋 결과 복사</button><button class="btn-share primary" onclick="location.reload()">🖍️ 다른 그림</button></div>';
+  var html=buildResultHtml(d)+'<button class="btn-share primary" style="width:100%;margin-top:6px;" onclick="shareResult()">📔 일기에 저장하고 공유하기</button><div class="share-row"><button class="btn-share" onclick="copyRes()">📋 이미지 복사</button><button class="btn-share" onclick="location.reload()">🖍️ 다른 그림</button></div>';
   var wrap=document.getElementById('result-wrap');wrap.innerHTML=html;wrap.style.display='block';
   window._copyText='🎨 '+(d.artwork_title||'')+'  '+(d.dev_comment||'')+'  '+(d.emotion_analysis||'')+'  💌 '+(d.message_to_mom||'');
   setTimeout(function(){wrap.scrollIntoView({behavior:'smooth',block:'start'});},150);
 }
 function copyRes(){KD.copyShot({filename:'kidikidi-drawing.png'});}
+function shareResult(){KD.shareSquare({target:'#result-wrap',title:'낙서 심리 분석',caption:'우리 아이 낙서 심리 분석 결과 🎨',filename:'kidikidi-doodle'});}
 
 KD.mountHistory({
   mountTarget: document.querySelector('.app'),

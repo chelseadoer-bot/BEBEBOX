@@ -196,9 +196,9 @@
       </div>
     </div>
     <div class="actions">
-      <button class="btn-main" id="btn-save" style="margin-top:14px;">📥 결과지 이미지 저장</button>
+      <button class="btn-main" id="btn-diary" style="margin-top:14px;">📔 일기에 저장하고 공유하기</button>
       <div class="row">
-        <button class="btn-line brand" id="btn-copy">📋 결과 복사</button>
+        <button class="btn-line brand" id="btn-copy">📋 이미지 복사</button>
         <button class="btn-line" id="btn-restart">다시 검사</button>
       </div>
     </div>
@@ -207,7 +207,7 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="kidikidi-app.js"></script>
+<script src="kidikidi-app.js?v=2"></script>
 <script>
 /* ========== 데이터 (0529 최초 기획 원본) ========== */
 var QUESTIONS = [
@@ -472,8 +472,8 @@ $('btn-info-next').onclick=function(){
 };
 $('btn-prev').onclick=function(){ if(state.currentQ>0){ state.currentQ--; renderQuestion(); window.scrollTo(0,0); } };
 
-$('btn-save').onclick=function(){
-  if(window.KD&&KD.copyShot){ KD.copyShot({target:'#result-card',bg:'#FFF8F3',filename:'kidikidi-ktype.png',toast:showToast}); }
+$('btn-diary').onclick=function(){
+  if(window.KD&&KD.shareSquare){ KD.shareSquare({target:'#result-card',bg1:'#FFF8F3',bg2:'#FFF1F6',title:'성향·기질 분석',caption:'우리 아이 성향·기질(K-TYPE) 결과 🐻',filename:'kidikidi-ktype',toast:showToast}); }
 };
 $('btn-copy').onclick=function(){
   if(window.KD&&KD.copyShot){ KD.copyShot({target:'#result-card',bg:'#FFF8F3',filename:'kidikidi-ktype.png',toast:showToast}); }

@@ -392,6 +392,115 @@
     }
   };
 
+  // ── 둥근 사각형 헬퍼 ─────────────────────────────────
+  KD._roundRect = function (ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  };
+
+  /**
+   * 결과를 1:1(정사각) 카드로 합성 → (1) 베베박스 일기에 저장, (2) 이미지로
+   * 복사/저장해 카카오톡 등으로 바로 공유. 모든 게임 공통.
+   * @param {Object} opts
+   *  - target  : 결과 영역(선택자/Element). 기본: 표준 결과 컨테이너 자동 탐색
+   *  - title   : 카드 상단 제목(게임 이름)
+   *  - caption : 일기에 저장될 글귀
+   *  - bg1/bg2 : 배경 그라데이션 색
+   *  - filename: 폴백 다운로드 파일명
+   */
+  KD.shareSquare = async function (opts) {
+    opts = opts || {};
+    var target = opts.target;
+    if (typeof target === 'string') target = document.querySelector(target);
+    target = target ||
+      document.getElementById('result-wrap') ||
+      document.querySelector('.result-content') ||
+      document.querySelector('.result-wrap') ||
+      document.getElementById('result-card') ||
+      document.getElementById('cs-card') ||
+      document.querySelector('.app') ||
+      document.body;
+    var toast = opts.toast || KD.toast;
+    var hideSel = opts.hide || '.share-row, .kd-hist-btn, .preview-footer, .btn-group, .kd-share-actions, .btn-download';
+    var restore = [];
+    try {
+      toast('공유 이미지를 만드는 중...');
+      await KD._loadH2C();
+      var hideEls = target.querySelectorAll ? target.querySelectorAll(hideSel) : [];
+      Array.prototype.forEach.call(hideEls, function (el) {
+        restore.push([el, el.style.visibility]);
+        el.style.visibility = 'hidden';
+      });
+      var content = await global.html2canvas(target, {
+        backgroundColor: '#ffffff', scale: 2, useCORS: true, logging: false,
+      });
+      restore.forEach(function (r) { r[0].style.visibility = r[1]; });
+      restore = [];
+
+      // 1:1 정사각 카드 합성
+      var S = 1080;
+      var c = document.createElement('canvas');
+      c.width = S; c.height = S;
+      var ctx = c.getContext('2d');
+      var g = ctx.createLinearGradient(0, 0, 0, S);
+      g.addColorStop(0, opts.bg1 || '#FFF1F6');
+      g.addColorStop(1, opts.bg2 || '#EFF6FF');
+      ctx.fillStyle = g; ctx.fillRect(0, 0, S, S);
+
+      var pad = 60, headerH = 96, footerH = 64;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillStyle = '#1E293B';
+      ctx.font = '800 44px Pretendard, system-ui, sans-serif';
+      ctx.fillText(opts.title || '키디키디 게임 결과', S / 2, pad + 22);
+
+      var boxX = pad, boxY = pad + headerH;
+      var boxW = S - pad * 2, boxH = S - pad * 2 - headerH - footerH;
+      var cw = content.width, ch = content.height;
+      var scale = Math.min(boxW / cw, boxH / ch);
+      if (scale > 0 && isFinite(scale)) {
+        var dw = cw * scale, dh = ch * scale;
+        var dx = boxX + (boxW - dw) / 2, dy = boxY + (boxH - dh) / 2;
+        KD._roundRect(ctx, dx - 14, dy - 14, dw + 28, dh + 28, 26);
+        ctx.fillStyle = '#ffffff'; ctx.fill();
+        ctx.drawImage(content, dx, dy, dw, dh);
+      }
+
+      ctx.fillStyle = '#94A3B8';
+      ctx.font = '700 26px Pretendard, system-ui, sans-serif';
+      ctx.fillText('베베박스 · 키디키디', S / 2, S - pad + 4);
+
+      var dataUrl = c.toDataURL('image/png');
+
+      // (1) 부모(베베박스) 앱의 일기에 저장 요청
+      KD._emit('save_diary', { image: dataUrl, caption: opts.caption || (opts.title || 'AI 게임 결과') });
+      // (2) 공유 보상
+      KD._emit('shared');
+      // (3) 이미지 복사/저장 → 다른 사람에게 바로 공유
+      var blob = await new Promise(function (res) { c.toBlob(res, 'image/png'); });
+      try {
+        if (!global.ClipboardItem || !navigator.clipboard || !navigator.clipboard.write) {
+          throw new Error('clipboard image unsupported');
+        }
+        await navigator.clipboard.write([new global.ClipboardItem({ 'image/png': blob })]);
+        toast('일기에 저장하고 이미지도 복사했어요! 📋');
+      } catch (e) {
+        var a = document.createElement('a');
+        a.href = dataUrl;
+        a.download = (opts.filename || 'kidikidi-result') + '.png';
+        a.click();
+        toast('일기에 저장하고 이미지로 내려받았어요! 💾');
+      }
+    } catch (err) {
+      restore.forEach(function (r) { r[0].style.visibility = r[1]; });
+      toast('공유 이미지 생성에 실패했어요 😢');
+    }
+  };
+
   // ── 간이 로그인 / 회원가입 (현재 버전 임시; 추후 베베박스 uid 연동으로 대체) ──
   // 회원 자격증명은 로컬에 보관(간이). 로그인 시 uid = 회원 아이디로 설정되어
   // 회원별로 결과/이용이력이 적치된다. 기본 계정: test / test
