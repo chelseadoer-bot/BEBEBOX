@@ -2076,7 +2076,7 @@ function openAiApp(slug,label){
              ||(typeof getInviteCode==="function"&&getInviteCode())||"";
     if(code)url+=(url.indexOf("?")<0?"?":"&")+"uid="+encodeURIComponent(String(code).toUpperCase());
   }catch(_){}
-  url+=(url.indexOf("?")<0?"?":"&")+"_v=6";   // 앱 정적파일 캐시 무력화
+  url+=(url.indexOf("?")<0?"?":"&")+"_v=7";   // 앱 정적파일 캐시 무력화
   $("#app-frame-title").textContent=label||"";
   $("#app-frame").src=url;            // 앱 안에서 iframe 으로 띄움
   showOverlay("#app-frame-view");
@@ -2197,6 +2197,24 @@ async function saveMiniAppResultToDiary(data,app){
     if(typeof track==="function")track("record",{photos:1,fromGame:(app&&app.slug)||"game"});
     if(typeof showToast==="function")showToast("게임 결과를 일기에 저장했어요 📔");
     _syncProfileChange();
+    // 업로드된 게임 이미지(공개 URL)로 카카오톡 공유 띄우기 (게임별 화면 그대로)
+    shareGameResultToKakao(up.src,data,label);
+  }catch(_){}
+}
+// 게임별 결과 이미지를 카카오톡 카드(피드)로 공유. 이미지는 각자 사진/결과 그대로,
+// 링크는 사용자 공유 페이지로 연결해 친구가 보고 선물할 수 있게 한다.
+function shareGameResultToKakao(src,data,label){
+  try{
+    if(!(window.Kakao&&Kakao.isInitialized&&Kakao.isInitialized()))return;
+    const imageUrl=(/^https?:/.test(src)?src:location.origin+src);
+    const url=(typeof getShareUrl==="function")?getShareUrl():location.origin;
+    const title=(data&&data.kakaoTitle)||`${label} 결과 🎮`;
+    const description=(data&&data.kakaoDesc)||`${babyName()}의 ${label} 결과를 확인해보세요!`;
+    Kakao.Share.sendDefault({
+      objectType:"feed",
+      content:{title,description,imageUrl,link:{mobileWebUrl:url,webUrl:url}},
+      buttons:[{title:"나도 해보기 🎁",link:{mobileWebUrl:url,webUrl:url}}],
+    });
   }catch(_){}
 }
 // 결제 게이트 모달 (결과 보기 전 중간 단계)

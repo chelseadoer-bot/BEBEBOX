@@ -546,17 +546,40 @@
       var shot = await global.html2canvas(host, { backgroundColor: null, scale: 2, useCORS: true, logging: false });
       host.remove(); host = null;
 
-      // 콘텐츠를 축소하지 않고 1:1 정사각으로 맞춤(남는 여백만 배경으로 채움)
-      var side = Math.max(shot.width, shot.height);
+      // 1:1 정사각으로 맞춤. cropTop 이면 윗부분만(아래 잘림), 아니면 중앙 배치.
+      var side = opts.cropTop ? shot.width : Math.max(shot.width, shot.height);
       var c = document.createElement('canvas'); c.width = side; c.height = side;
       var ctx = c.getContext('2d');
       var g = ctx.createLinearGradient(0, 0, 0, side);
       g.addColorStop(0, bg1); g.addColorStop(1, bg2);
       ctx.fillStyle = g; ctx.fillRect(0, 0, side, side);
-      ctx.drawImage(shot, (side - shot.width) / 2, (side - shot.height) / 2);
+      var dy = opts.cropTop ? 0 : (side - shot.height) / 2;
+      ctx.drawImage(shot, (side - shot.width) / 2, dy);
+
+      // 아래 일부를 블러 처리(당번: 윗부분만 보이고 아래는 흐리게)
+      if (opts.blurBottom && opts.blurBottom > 0) {
+        var bh = Math.round(side * opts.blurBottom), by = side - bh;
+        var tmp = document.createElement('canvas'); tmp.width = side; tmp.height = side;
+        tmp.getContext('2d').drawImage(c, 0, 0);
+        ctx.save();
+        ctx.beginPath(); ctx.rect(0, by, side, bh); ctx.clip();
+        ctx.filter = 'blur(14px)';
+        ctx.drawImage(tmp, 0, 0);
+        ctx.restore();
+        ctx.filter = 'none';
+        var fade = ctx.createLinearGradient(0, by, 0, side);
+        fade.addColorStop(0, 'rgba(255,255,255,0)');
+        fade.addColorStop(1, 'rgba(255,255,255,.35)');
+        ctx.fillStyle = fade; ctx.fillRect(0, by, side, bh);
+      }
       var dataUrl = c.toDataURL('image/png');
 
-      KD._emit('save_diary', { image: dataUrl, caption: opts.caption || opts.title || 'AI 게임 결과' });
+      KD._emit('save_diary', {
+        image: dataUrl,
+        caption: opts.caption || opts.title || 'AI 게임 결과',
+        kakaoTitle: opts.kakaoTitle || opts.title || 'AI 게임 결과',
+        kakaoDesc: opts.kakaoDesc || opts.caption || '베베박스에서 우리 아이 결과를 확인해요 🎮',
+      });
       KD._emit('shared');
       var blob = await new Promise(function (res) { c.toBlob(res, 'image/png'); });
       try {

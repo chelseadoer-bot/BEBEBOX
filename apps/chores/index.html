@@ -1741,12 +1741,14 @@ function openDoor(idx) {
 function shareResult() {
   var esc = function(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');};
   if (!(window.KD && KD.shareCardHtml)) { return KD.shareSquare({target:'.result-content',title:'오늘의 집안일 당번',caption:'오늘의 집안일 당번 🧹',filename:'kidikidi-chores'}); }
-  var html = '<div style="text-align:center;background:#fff;border-radius:34px;padding:60px 40px;box-shadow:0 10px 30px rgba(0,0,0,.08);">'
+  var html = '<div style="text-align:center;background:#fff;border-radius:34px;padding:64px 40px;box-shadow:0 10px 30px rgba(0,0,0,.08);">'
     + '<div style="font-size:120px;line-height:1;margin-bottom:16px;">🧹</div>'
     + '<div style="font-size:34px;color:#64748B;margin-bottom:10px;">오늘의 당번은</div>'
-    + '<div style="font-size:92px;font-weight:800;color:#4A90E2;margin-bottom:24px;">' + esc(state.winner || '???') + '</div>'
+    + '<div style="font-size:92px;font-weight:800;color:#4A90E2;margin-bottom:30px;">' + esc(state.winner || '???') + '</div>'
     + '<div style="font-size:36px;line-height:1.5;color:#334155;">오늘은 <b>' + esc(state.task || '') + '</b><br>부탁해요!</div></div>';
-  KD.shareCardHtml({ html: html, title: '오늘의 집안일 당번', caption: '오늘의 집안일 당번 🧹', filename: 'kidikidi-chores', bg1:'#EFF6FF', bg2:'#FFF1F6' });
+  // 윗부분(당번)은 선명하게, 아래(미션)는 블러 처리
+  KD.shareCardHtml({ html: html, title: '오늘의 집안일 당번 🧹', caption: '오늘의 집안일 당번 🧹', blurBottom: 0.4,
+    kakaoTitle: '오늘의 집안일 당번은? 🧹', kakaoDesc: '베베박스에서 우리 집 오늘의 당번을 확인해요', filename: 'kidikidi-chores', bg1:'#EFF6FF', bg2:'#FFF1F6' });
 }
 function showResult() {
   document.getElementById('winner-name').textContent = state.winner || '???';
@@ -1802,7 +1804,7 @@ function triggerConfetti() {
    ========================================================== */
 renderChips();
 </script>
-<script src="kidikidi-app.js?v=4"></script>
+<script src="kidikidi-app.js?v=5"></script>
 <script>
 function buildResultHtml(o){
   o = o || {};

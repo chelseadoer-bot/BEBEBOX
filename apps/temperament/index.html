@@ -207,7 +207,7 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="kidikidi-app.js?v=4"></script>
+<script src="kidikidi-app.js?v=5"></script>
 <script>
 /* ========== 데이터 (0529 최초 기획 원본) ========== */
 var QUESTIONS = [
@@ -478,12 +478,10 @@ $('btn-diary').onclick=function(){
   var L=window._lastResult;
   if(!L||!L.result){ if(window.KD&&KD.shareSquare){KD.shareSquare({target:'#result-card',bg1:'#FFF8F3',bg2:'#FFF1F6',title:'성향·기질 분석',caption:'우리 아이 성향·기질(K-TYPE) 결과 🐻',filename:'kidikidi-ktype',toast:showToast});} return; }
   var r=L.result, nm=(L.userInfo&&L.userInfo.name)||'우리 아이';
-  var tags=(r.hashtags||[]).map(function(t){return '<span style="display:inline-block;background:#FFE0B2;color:#F4511E;font-size:26px;font-weight:800;padding:8px 22px;border-radius:40px;margin:6px 6px 0 0;">'+esc(t)+'</span>';}).join('');
-  var desc=(r.description||[]).slice(0,3).map(function(d){return '<div style="display:flex;gap:12px;margin-bottom:14px;font-size:30px;line-height:1.5;color:#5D4037;"><span style="color:#FF7043;">•</span><span>'+esc(d)+'</span></div>';}).join('');
-  var top='<div style="text-align:center;background:#fff;border-radius:30px;padding:40px;box-shadow:0 8px 26px rgba(255,112,67,.12);margin-bottom:22px;"><div style="font-size:30px;color:#8D6E63;margin-bottom:8px;">'+esc(nm)+'의 기질은</div><div style="font-size:58px;font-weight:800;color:#FF7043;margin-bottom:18px;">'+esc(r.name)+'</div><div>'+tags+'</div></div>';
-  var descBox=desc?'<div style="background:#fff;border-radius:30px;padding:40px;box-shadow:0 8px 26px rgba(255,112,67,.12);margin-bottom:22px;">'+desc+'</div>':'';
-  var par=r.parenting?'<div style="background:#FFF1E0;border-radius:30px;padding:40px;font-size:30px;line-height:1.6;color:#5D4037;">💡 '+esc(r.parenting)+'</div>':'';
-  if(window.KD&&KD.shareCardHtml){ KD.shareCardHtml({html:top+descBox+par,title:'우리 아이 K-TYPE 🐻',caption:'우리 아이 성향·기질(K-TYPE) 결과 🐻',filename:'kidikidi-ktype',bg1:'#FFF8F3',bg2:'#FFF1F6',toast:showToast}); }
+  var tags=(r.hashtags||[]).map(function(t){return '<span style="display:inline-block;background:#FFE0B2;color:#F4511E;font-size:28px;font-weight:800;padding:10px 26px;border-radius:40px;margin:8px 6px 0 0;">'+esc(t)+'</span>';}).join('');
+  // 타입만 크게 (1:1)
+  var top='<div style="text-align:center;background:#fff;border-radius:36px;padding:90px 44px;box-shadow:0 10px 30px rgba(255,112,67,.14);"><div style="font-size:36px;color:#8D6E63;margin-bottom:16px;">'+esc(nm)+'의 기질은</div><div style="font-size:84px;font-weight:800;color:#FF7043;margin-bottom:28px;line-height:1.15;">'+esc(r.name)+'</div><div>'+tags+'</div></div>';
+  if(window.KD&&KD.shareCardHtml){ KD.shareCardHtml({html:top,title:'우리 아이 K-TYPE 🐻',caption:'우리 아이 성향·기질(K-TYPE) 결과 🐻',kakaoTitle:esc(nm)+'의 기질은 '+esc(r.name)+' 🐻',kakaoDesc:'베베박스 K-TYPE 기질 검사 결과',filename:'kidikidi-ktype',bg1:'#FFF8F3',bg2:'#FFF1F6',toast:showToast}); }
 };
 $('btn-copy').onclick=function(){
   if(window.KD&&KD.copyShot){ KD.copyShot({target:'#result-card',bg:'#FFF8F3',filename:'kidikidi-ktype.png',toast:showToast}); }
