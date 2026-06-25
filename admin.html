@@ -108,9 +108,12 @@ th{color:var(--sub);font-weight:700;font-size:12px;background:#faf7f3;white-spac
 
 <!-- 게임 탭 상단 배너 교체 -->
 <div class="card">
-<div class="card-h"><span>🖼️ 게임 탭 상단 배너</span><span class="muted">배경 사진 + 텍스트 + 우측 아이콘</span></div>
+<div class="card-h"><span>🖼️ 게임 탭 상단 배너 (여러 개 가능)</span><span class="muted">배경 사진 + 텍스트 + 우측 아이콘</span></div>
 <div style="padding:16px">
-<div id="bn-mode" class="muted" style="margin-bottom:14px;font-size:13px">현재 상태를 불러오는 중…</div>
+<div id="bn-mode" class="muted" style="margin-bottom:12px;font-size:13px">현재 상태를 불러오는 중…</div>
+<div id="bn-list" style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px"></div>
+<div style="border-top:1px dashed var(--border,#e5e5e5);padding-top:14px">
+<div style="font-weight:700;font-size:13px;margin-bottom:10px">＋ 배너 추가</div>
 <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start">
 <div style="flex:0 0 auto;text-align:center">
 <div id="bn-preview" class="bn-preview">배경<br/>사진</div>
@@ -122,11 +125,12 @@ th{color:var(--sub);font-weight:700;font-size:12px;background:#faf7f3;white-spac
 <input class="search" id="bn-subtitle" placeholder="설명 텍스트 (작게 들어가는 한 줄)" maxlength="60"/>
 <input class="search" id="bn-icon" placeholder="우측 아이콘 이모지 (예: 🎁 🍼 🧸)" maxlength="8"/>
 <input class="search" id="bn-link" placeholder="클릭 시 이동할 링크 URL (선택)"/>
-<div style="display:flex;gap:8px"><button class="btn" id="bn-save" style="flex:1">이 배너로 저장하고 적용</button><button class="btn ghost" id="bn-reset" style="flex:0 0 auto">기본 배너로</button></div>
+<div style="display:flex;gap:8px"><button class="btn" id="bn-add" style="flex:1">배너 추가하기</button><button class="btn ghost" id="bn-reset" style="flex:0 0 auto">전체 비우기</button></div>
 <span id="bn-status" class="muted"></span>
 </div>
 </div>
-<p class="legend" style="padding:10px 0 0">※ 배경 사진 위에 흰색 텍스트가 얹혀요. 사진이 없으면 텍스트+아이콘만 표시됩니다.</p>
+</div>
+<p class="legend" style="padding:10px 0 0">※ 여러 개를 추가하면 게임 탭에서 자동으로 번갈아 보여요. 배경 사진 위에 흰색 텍스트가 얹히고, 사진이 없으면 텍스트+아이콘만 표시됩니다.</p>
 </div>
 </div>
 
@@ -304,76 +308,82 @@ async function fulfillFromDetail(fam,cid,val){
   await loadDetail(fam);
 }
 
-/* 게임 탭 상단 배너 편집 */
+/* 게임 탭 상단 배너 편집 (여러 개) */
 var BN_IMG = "";
+var BANNERS = [];
 function bnPreview(){
   var p=document.getElementById("bn-preview");
   p.innerHTML = BN_IMG ? '<img src="'+esc(BN_IMG)+'" alt=""/>' : "사진<br/>없음";
 }
+function bnStatus(t){document.getElementById("bn-status").textContent=t||"";}
+function renderBannerList(){
+  var m=document.getElementById("bn-mode");
+  if(m)m.innerHTML = BANNERS.length
+    ? "🟢 현재 <b>"+BANNERS.length+"개 배너</b>가 게임 탭에서 번갈아 보이고 있어요."
+    : "⚪ 현재 <b>기본 배너</b>가 보이고 있어요. 아래에서 배너를 추가하세요.";
+  var box=document.getElementById("bn-list");
+  if(!BANNERS.length){ box.innerHTML='<div class="muted" style="font-size:12px">등록된 배너가 없어요.</div>'; return; }
+  box.innerHTML = BANNERS.map(function(b,i){
+    var thumb = b.image ? '<img src="'+esc(b.image)+'" style="width:54px;height:40px;object-fit:cover;border-radius:8px;flex:0 0 auto"/>'
+      : '<div style="width:54px;height:40px;border-radius:8px;background:linear-gradient(135deg,#ff9a76,#7a6bff);display:flex;align-items:center;justify-content:center;font-size:18px;flex:0 0 auto">'+esc(b.icon||"🖼️")+'</div>';
+    return '<div style="display:flex;align-items:center;gap:10px;border:1px solid var(--border,#eee);border-radius:12px;padding:8px 10px">'
+      +thumb
+      +'<div style="flex:1;min-width:0"><div style="font-weight:700;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+(esc(b.title)||"(제목 없음)")+' '+esc(b.icon||"")+'</div>'
+      +'<div class="muted" style="font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+(esc(b.subtitle)||"")+'</div></div>'
+      +'<button class="btn ghost sm" data-bn-del="'+i+'" style="flex:0 0 auto">삭제</button></div>';
+  }).join("");
+  box.querySelectorAll("[data-bn-del]").forEach(function(btn){
+    btn.onclick=function(){ var i=+btn.getAttribute("data-bn-del"); BANNERS.splice(i,1); saveBanners("삭제했어요 ✓"); };
+  });
+}
+async function saveBanners(okMsg){
+  bnStatus("저장 중...");
+  var r=await apiPost("/api/admin/banner",{enabled:BANNERS.length>0,items:BANNERS});
+  if(r && r.ok){ bnStatus(okMsg||"저장됐어요 ✓ (게임 탭에 반영)"); renderBannerList(); }
+  else bnStatus("저장 실패 — 상단 관리자 키를 확인해 주세요");
+}
 async function loadBanner(){
   var b={};
   try{ b = await (await fetch("/api/banner")).json(); }catch(e){}
-  var m=document.getElementById("bn-mode");
-  if(m)m.innerHTML = b.enabled
-    ? "🟢 현재 <b>이 배너가 사용 중</b>이에요."
-    : "⚪ 현재 <b>기본 배너</b>가 보이고 있어요. 아래를 채우고 ‘이 배너로 저장하고 적용’을 누르세요.";
-  document.getElementById("bn-title").value = b.title||"";
-  document.getElementById("bn-subtitle").value = b.subtitle||"";
-  document.getElementById("bn-icon").value = b.icon||"";
-  document.getElementById("bn-link").value = b.link||"";
-  BN_IMG = b.image||"";
-  bnPreview();
+  BANNERS = Array.isArray(b.items) ? b.items.slice() : [];
+  renderBannerList();
 }
 document.getElementById("bn-upload").onclick=function(){document.getElementById("bn-file").click();};
 document.getElementById("bn-file").onchange=async function(e){
   var f=e.target.files[0]; if(!f) return;
-  document.getElementById("bn-status").textContent="업로드 중...";
+  bnStatus("업로드 중...");
   try{
     var fd=new FormData(); fd.append("file",f); fd.append("family_id","_BANNER");
     var r=await fetch("/api/photos/upload",{method:"POST",body:fd});
     var j=await r.json();
-    if(j&&j.src){ BN_IMG=j.src; bnPreview(); document.getElementById("bn-status").textContent="사진 준비됨 (저장을 눌러 적용)"; }
-    else document.getElementById("bn-status").textContent="업로드 실패";
-  }catch(err){ document.getElementById("bn-status").textContent="업로드 실패"; }
+    if(j&&j.src){ BN_IMG=j.src; bnPreview(); bnStatus("사진 준비됨 (배너 추가하기를 누르세요)"); }
+    else bnStatus("업로드 실패");
+  }catch(err){ bnStatus("업로드 실패"); }
   e.target.value="";
 };
-document.getElementById("bn-save").onclick=async function(){
+function clearBnForm(){
+  BN_IMG=""; bnPreview();
+  document.getElementById("bn-title").value="";
+  document.getElementById("bn-subtitle").value="";
+  document.getElementById("bn-icon").value="";
+  document.getElementById("bn-link").value="";
+}
+document.getElementById("bn-add").onclick=async function(){
   var title=document.getElementById("bn-title").value.trim();
-  if(!title && !BN_IMG && !document.getElementById("bn-icon").value.trim()){
-    document.getElementById("bn-status").textContent="제목/배경사진/아이콘 중 하나는 입력해 주세요";
-    return;
-  }
-  var body={
-    enabled:true,   // 저장하면 바로 이 배너가 적용됩니다
-    title:title,
-    subtitle:document.getElementById("bn-subtitle").value.trim(),
-    image:BN_IMG,
-    icon:document.getElementById("bn-icon").value.trim(),
-    link:document.getElementById("bn-link").value.trim()
-  };
-  document.getElementById("bn-status").textContent="저장 중...";
-  var r=await apiPost("/api/admin/banner",body);
-  if(r && r.ok){
-    document.getElementById("bn-status").textContent="저장됐어요 ✓ (게임 탭에 반영)";
-    loadBanner();
-  }else{
-    document.getElementById("bn-status").textContent="저장 실패 — 상단 관리자 키를 확인해 주세요";
-  }
+  var icon=document.getElementById("bn-icon").value.trim();
+  if(!title && !BN_IMG && !icon){ bnStatus("제목/배경사진/아이콘 중 하나는 입력해 주세요"); return; }
+  BANNERS.push({
+    title:title, subtitle:document.getElementById("bn-subtitle").value.trim(),
+    image:BN_IMG, icon:icon, link:document.getElementById("bn-link").value.trim()
+  });
+  await saveBanners("배너를 추가했어요 ✓ (게임 탭에 반영)");
+  clearBnForm();
 };
 document.getElementById("bn-reset").onclick=async function(){
-  document.getElementById("bn-status").textContent="되돌리는 중...";
-  var r=await apiPost("/api/admin/banner",{enabled:false,title:"",subtitle:"",image:"",icon:"",link:""});
-  if(r && r.ok){
-    BN_IMG=""; bnPreview();
-    document.getElementById("bn-title").value="";
-    document.getElementById("bn-subtitle").value="";
-    document.getElementById("bn-icon").value="";
-    document.getElementById("bn-link").value="";
-    document.getElementById("bn-status").textContent="기본 배너로 되돌렸어요 ✓";
-    loadBanner();
-  }else{
-    document.getElementById("bn-status").textContent="실패 — 관리자 키를 확인해 주세요";
-  }
+  if(!confirm("등록된 배너를 모두 비우고 기본 배너로 되돌릴까요?"))return;
+  BANNERS=[];
+  await saveBanners("기본 배너로 되돌렸어요 ✓");
+  clearBnForm();
 };
 document.getElementById("gate-btn").onclick=function(){
   KEY=document.getElementById("key-input").value.trim();
