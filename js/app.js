@@ -2301,7 +2301,7 @@ function openShareLinkModal(url){
 async function shareProfileLink(){
   const url=getShareUrl();
   track("share");
-  const title=`${babyName()}의 베베박스`;
+  const title=`${babyName()}의 일기`;
   const text=`${babyName()}에게 선물하고 키디키디 쿠폰도 받아가세요 🎁`;
   showToast("공유 이미지를 만드는 중...");
   const grid=await buildAndSaveShareImage();
@@ -2315,7 +2315,8 @@ async function shareProfileLink(){
           link:{mobileWebUrl:url,webUrl:url}},
         buttons:[{title:"선물하러 가기",link:{mobileWebUrl:url,webUrl:url}}],
       });
-      addPoints(POINT_RULES.share,"share");addPuzzlePieces(3,"share");
+      addPoints(POINT_RULES.share,"share");
+      showToast(`카카오톡으로 공유하고 +${POINT_RULES.share}캔디 🍬`);
       return;
     }catch(_){}
   }
