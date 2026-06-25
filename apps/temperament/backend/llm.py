@@ -30,11 +30,10 @@ def _call(model, payload):
     if not key:
         raise LLMError("GEMINI_API_KEY 가 설정되지 않았습니다. .env 를 확인하세요.")
     url = _API_BASE + urllib.parse.quote(model) + ":generateContent"
-    headers = {"Content-Type": "application/json"}
-    if key.startswith("AQ."):
-        headers["Authorization"] = "Bearer " + key
-    else:
-        url += "?key=" + urllib.parse.quote(key)
+    # 모든 형식의 Gemini API 키(AIza…, AQ.… 포함)는 x-goog-api-key 헤더로 인증한다.
+    # (예전엔 AQ. 키를 Bearer 로 보냈는데, 신형 API 키는 Bearer 가 아니라 일반
+    #  API 키라서 인증 실패했음 → 게임만 막히고 ?key= 쓰는 점검은 통과하던 원인)
+    headers = {"Content-Type": "application/json", "x-goog-api-key": key}
     data = json.dumps(payload).encode("utf-8")
     req = urllib.request.Request(url, data=data, headers=headers, method="POST")
     # 일시적 혼잡(요청량 초과/타임아웃/서버 일시오류)은 짧게 재시도해 게임이
