@@ -2037,7 +2037,9 @@ async function applyGameBanner(){
   if(applyGameBanner._t){clearInterval(applyGameBanner._t);applyGameBanner._t=null;}
   let cfg=null;
   try{const r=await fetch("/api/banner?_t="+Date.now());cfg=await r.json();}catch(_){}
-  const items=(cfg&&cfg.enabled&&Array.isArray(cfg.items)&&cfg.items.length)?cfg.items:[DEFAULT_GAME_BANNER];
+  // 기본 배너는 항상 첫 장. 운영자가 추가한 배너를 그 뒤에 더해 함께 회전.
+  const extra=(cfg&&Array.isArray(cfg.items))?cfg.items:[];
+  const items=[DEFAULT_GAME_BANNER,...extra];
   const dots=items.length>1?`<div class="ig-banner-dots">${items.map((_,i)=>`<span class="${i===0?"on":""}"></span>`).join("")}</div>`:"";
   banner.innerHTML=items.map(_bannerSlideHtml).join("")+dots;
   // 각 슬라이드 링크 클릭

@@ -316,22 +316,27 @@ function bnPreview(){
   p.innerHTML = BN_IMG ? '<img src="'+esc(BN_IMG)+'" alt=""/>' : "사진<br/>없음";
 }
 function bnStatus(t){document.getElementById("bn-status").textContent=t||"";}
+var BN_DEFAULT={title:"AI 게임으로 우리 아이 추억 만들기",subtitle:"결과를 일기에 담고 카카오톡으로 공유해요 🎮",icon:"🎮"};
+function bnRowHtml(b,opts){
+  opts=opts||{};
+  var thumb = b.image ? '<img src="'+esc(b.image)+'" style="width:54px;height:40px;object-fit:cover;border-radius:8px;flex:0 0 auto"/>'
+    : '<div style="width:54px;height:40px;border-radius:8px;background:linear-gradient(135deg,#ff9a76,#7a6bff);display:flex;align-items:center;justify-content:center;font-size:18px;flex:0 0 auto">'+esc(b.icon||"🖼️")+'</div>';
+  var right = opts.fixed
+    ? '<span class="tag" style="background:#eef3ee;color:#5a8a66;flex:0 0 auto">기본 · 항상 표시</span>'
+    : '<button class="btn ghost sm" data-bn-del="'+opts.idx+'" style="flex:0 0 auto">삭제</button>';
+  return '<div style="display:flex;align-items:center;gap:10px;border:1px solid var(--border,#eee);border-radius:12px;padding:8px 10px'+(opts.fixed?";background:#faf7f3":"")+'">'
+    +thumb
+    +'<div style="flex:1;min-width:0"><div style="font-weight:700;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+(esc(b.title)||"(제목 없음)")+' '+esc(b.icon||"")+'</div>'
+    +'<div class="muted" style="font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+(esc(b.subtitle)||"")+'</div></div>'
+    +right+'</div>';
+}
 function renderBannerList(){
   var m=document.getElementById("bn-mode");
-  if(m)m.innerHTML = BANNERS.length
-    ? "🟢 현재 <b>"+BANNERS.length+"개 배너</b>가 게임 탭에서 번갈아 보이고 있어요."
-    : "⚪ 현재 <b>기본 배너</b>가 보이고 있어요. 아래에서 배너를 추가하세요.";
+  if(m)m.innerHTML = "🟢 게임 탭에 <b>기본 배너 + 추가 "+BANNERS.length+"개</b>가 번갈아 보여요. (기본 배너는 항상 표시)";
   var box=document.getElementById("bn-list");
-  if(!BANNERS.length){ box.innerHTML='<div class="muted" style="font-size:12px">등록된 배너가 없어요.</div>'; return; }
-  box.innerHTML = BANNERS.map(function(b,i){
-    var thumb = b.image ? '<img src="'+esc(b.image)+'" style="width:54px;height:40px;object-fit:cover;border-radius:8px;flex:0 0 auto"/>'
-      : '<div style="width:54px;height:40px;border-radius:8px;background:linear-gradient(135deg,#ff9a76,#7a6bff);display:flex;align-items:center;justify-content:center;font-size:18px;flex:0 0 auto">'+esc(b.icon||"🖼️")+'</div>';
-    return '<div style="display:flex;align-items:center;gap:10px;border:1px solid var(--border,#eee);border-radius:12px;padding:8px 10px">'
-      +thumb
-      +'<div style="flex:1;min-width:0"><div style="font-weight:700;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+(esc(b.title)||"(제목 없음)")+' '+esc(b.icon||"")+'</div>'
-      +'<div class="muted" style="font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+(esc(b.subtitle)||"")+'</div></div>'
-      +'<button class="btn ghost sm" data-bn-del="'+i+'" style="flex:0 0 auto">삭제</button></div>';
-  }).join("");
+  var html = bnRowHtml(BN_DEFAULT,{fixed:true});
+  html += BANNERS.map(function(b,i){ return bnRowHtml(b,{idx:i}); }).join("");
+  box.innerHTML = html;
   box.querySelectorAll("[data-bn-del]").forEach(function(btn){
     btn.onclick=function(){ var i=+btn.getAttribute("data-bn-del"); BANNERS.splice(i,1); saveBanners("삭제했어요 ✓"); };
   });
@@ -380,9 +385,9 @@ document.getElementById("bn-add").onclick=async function(){
   clearBnForm();
 };
 document.getElementById("bn-reset").onclick=async function(){
-  if(!confirm("등록된 배너를 모두 비우고 기본 배너로 되돌릴까요?"))return;
+  if(!confirm("추가한 배너를 모두 지울까요? (기본 배너는 그대로 남아요)"))return;
   BANNERS=[];
-  await saveBanners("기본 배너로 되돌렸어요 ✓");
+  await saveBanners("추가 배너를 모두 비웠어요 ✓ (기본 배너만 표시)");
   clearBnForm();
 };
 document.getElementById("gate-btn").onclick=function(){
