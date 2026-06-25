@@ -70,13 +70,15 @@ img{display:block;max-width:100%}
 .gift-sheet-body{overflow-y:auto;padding:8px 18px calc(28px + env(safe-area-inset-bottom))}
 
 /* 3x3 진행 퍼즐 보드 */
-.bb-planshop{display:flex;align-items:center;gap:12px;width:100%;margin:2px 0 16px;padding:15px 16px;border-radius:18px;background:linear-gradient(135deg,#fff3ec,#ffe6da);border:1px solid #ffd9c6;text-decoration:none;box-shadow:0 6px 18px rgba(255,107,61,.14)}
+.bb-planshop{position:relative;display:flex;align-items:center;gap:14px;width:100%;margin:6px 0 20px;padding:20px 18px;border-radius:20px;background:linear-gradient(135deg,#ff8a5b,#ff6b3d);border:none;text-decoration:none;box-shadow:0 10px 26px rgba(255,107,61,.34);animation:bbPlanPulse 2.2s ease-in-out infinite}
+@keyframes bbPlanPulse{0%,100%{box-shadow:0 10px 26px rgba(255,107,61,.34)}50%{box-shadow:0 13px 34px rgba(255,107,61,.55)}}
 .bb-planshop:active{transform:scale(.99)}
-.bb-planshop-ic{font-size:26px;line-height:1;flex:0 0 auto}
-.bb-planshop-tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
-.bb-planshop-tx b{font-size:15px;font-weight:800;color:#7a3d22;letter-spacing:-.02em}
-.bb-planshop-tx span{font-size:12px;color:#b07a5e}
-.bb-planshop-go{font-size:22px;color:#ff6b3d;font-weight:800;flex:0 0 auto}
+.bb-planshop-badge{position:absolute;top:-9px;left:16px;background:#1E293B;color:#fff;font-size:10px;font-weight:800;letter-spacing:.06em;padding:3px 10px;border-radius:20px;box-shadow:0 3px 8px rgba(0,0,0,.2)}
+.bb-planshop-ic{font-size:32px;line-height:1;flex:0 0 auto}
+.bb-planshop-tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.bb-planshop-tx b{font-size:17px;font-weight:800;color:#fff;letter-spacing:-.02em}
+.bb-planshop-tx span{font-size:12.5px;color:rgba(255,255,255,.92)}
+.bb-planshop-go{font-size:26px;color:#fff;font-weight:800;flex:0 0 auto}
 .shelf-block{margin:2px 0 18px}
 .shelf-h{font-size:14px;font-weight:800;color:#5a3a26;margin-bottom:12px}
 .gift-shelf-wrap{display:flex;flex-direction:column;gap:16px}

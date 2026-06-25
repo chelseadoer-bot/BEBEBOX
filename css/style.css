@@ -33,7 +33,7 @@ body{display:flex;justify-content:center;min-height:100vh}
 .view.active{display:block}
 #wishlist-view.active{display:flex;flex-direction:column;height:100vh;max-height:100vh;overflow:hidden;background:var(--wl-bg)}
 .profile-header{position:relative;height:260px;overflow:hidden}
-.bg-image{position:absolute;inset:0;background:url("../public/photos/ai-02.jpg") center/cover}
+.bg-image{position:absolute;inset:0;background:url("../public/photos/ai-02.jpg") center/cover;cursor:pointer}
 .bg-gradient{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,.02),rgba(0,0,0,.55))}
 .top-nav{position:relative;z-index:2;display:flex;justify-content:flex-end;gap:2px;padding:48px 16px 0}
 .icon-btn{background:rgba(255,255,255,.12);backdrop-filter:blur(8px);border:none;color:#fff;width:40px;height:40px;cursor:pointer;border-radius:var(--radius-full);display:flex;align-items:center;justify-content:center;padding:0;transition:background .15s}
@@ -45,7 +45,7 @@ body{display:flex;justify-content:center;min-height:100vh}
 .icon-btn.dark{color:var(--color-text);background:var(--color-bg-muted)}
 .profile-info{position:absolute;bottom:0;left:0;right:0;z-index:2;padding:0 20px 20px}
 .profile-row{display:flex;align-items:flex-end;gap:14px}
-.avatar-wrap{width:68px;height:68px;border-radius:var(--radius-full);overflow:hidden;border:2px solid rgba(255,255,255,.85);box-shadow:var(--shadow-md)}
+.avatar-wrap{width:68px;height:68px;border-radius:var(--radius-full);overflow:hidden;border:2px solid rgba(255,255,255,.85);box-shadow:var(--shadow-md);cursor:pointer}
 .avatar-wrap img{width:100%;height:100%;object-fit:cover}
 .profile-text h1{font-size:17px;font-weight:700;color:#fff;letter-spacing:-.02em}
 .profile-text p{font-size:13px;color:rgba(255,255,255,.82);margin-top:3px;font-weight:500}
