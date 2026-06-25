@@ -133,7 +133,7 @@ def complete_text(prompt, images=None, max_tokens=2048, model=None, temperature=
         "contents": [{"role": "user", "parts": _build_parts(prompt, images)}],
         "generationConfig": gen_cfg,
     }
-    # 설정된 모델이 사라졌을(404) 때를 대비해 안정적인 대체 모델로 폴백.
+    # 모델이 사라졌거나(404) 혼잡할 때(503/overloaded) 다른 모델로 자동 폴백.
     candidates = [model]
     for fb in ("gemini-2.5-flash", "gemini-2.0-flash", "gemini-flash-latest"):
         if fb not in candidates:
@@ -145,7 +145,11 @@ def complete_text(prompt, images=None, max_tokens=2048, model=None, temperature=
             break
         except LLMError as e:
             last_err = e
-            if "404" in str(e) or "not found" in str(e).lower():
+            low = str(e).lower()
+            switch = ("404" in low or "not found" in low or "503" in low
+                      or "overloaded" in low or "high demand" in low
+                      or "unavailable" in low or "500" in low)
+            if switch:
                 continue
             raise
     if resp is None:
