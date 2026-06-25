@@ -552,25 +552,38 @@ class H(SimpleHTTPRequestHandler):
             detail = ""
         else:
             ok, code, msg = probe(text_model)
-            detail = "모델: %s · 응답코드: %s<br>%s" % (text_model, code,
+            used = text_model
+            # 모델 혼잡(503)이면 대체 모델로 한 번 더 시도(게임도 자동 폴백함)
+            low = (msg or "").lower()
+            if not ok and (code == 503 or "overloaded" in low or "high demand" in low
+                           or "unavailable" in low) and text_model != "gemini-2.5-flash":
+                ok2, code2, msg2 = probe("gemini-2.5-flash")
+                if ok2:
+                    ok, code, msg, used = ok2, code2, msg2, "gemini-2.5-flash"
+            detail = "모델: %s · 응답코드: %s<br>%s" % (used, code,
                      (msg or "정상").replace("<", "&lt;"))
             low = (msg or "").lower()
             if ok:
                 verdict = ("✅ AI 키 정상 작동",
-                           "게임 결과 생성이 정상입니다. 그래도 안 되면 게임에서 "
-                           "한 번 더 시도해 주세요(일시 혼잡일 수 있어요).")
+                           "키와 모델이 정상입니다. 게임에서 결과를 만들어 보세요. "
+                           "(혼잡할 때는 자동으로 다른 모델로 바꿔 시도해요.)")
             elif code == 400 and ("api key not valid" in low or "api_key_invalid" in low):
                 verdict = ("❌ 키가 잘못됐어요",
                            "키 값이 유효하지 않습니다. Google AI Studio에서 새 키를 "
-                           "발급받아 Render의 <b>GEMINI_API_KEY</b>를 교체해 주세요.")
+                           "발급받아 Render의 <b>GEMINI_KEY</b>를 교체해 주세요.")
             elif code == 429:
                 verdict = ("⚠️ 사용량 한도 초과",
                            "무료 사용량(분당/일일 한도)을 초과했어요. 잠시 후 다시 "
                            "시도하거나, Google에서 결제를 연결하면 한도가 늘어납니다.")
+            elif code == 503 or "overloaded" in low or "high demand" in low or "unavailable" in low:
+                verdict = ("⚠️ 모델이 잠시 혼잡해요 (키는 정상!)",
+                           "키는 정상인데 지금 구글 AI 모델이 일시적으로 붐벼요. "
+                           "잠시 후 게임에서 다시 시도하면 대부분 됩니다. 게임은 "
+                           "자동으로 여유 있는 모델로 바꿔 재시도해요.")
             elif code == 404:
                 verdict = ("❌ 모델 이름 문제",
                            "모델 '%s' 을(를) 찾을 수 없어요. GEMINI_MODEL 환경변수를 "
-                           "비우거나 'gemini-2.5-flash' 로 설정해 주세요." % text_model)
+                           "비우거나 'gemini-2.5-flash' 로 설정해 주세요." % used)
             elif code == 403:
                 verdict = ("❌ 권한/지역 차단",
                            "키 권한 또는 지역 제한 문제일 수 있어요. AI Studio에서 키 "
