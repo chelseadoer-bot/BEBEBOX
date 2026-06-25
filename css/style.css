@@ -627,7 +627,8 @@ body.is-guest .guest-only{display:block!important}
 .comment-send-btn.active{opacity:1}
 #game-tab-view.active{display:flex;flex-direction:column;height:calc(100vh - 56px - env(safe-area-inset-bottom,0px));max-height:calc(100vh - 56px - env(safe-area-inset-bottom,0px));background:#f5f6f8;position:relative;overflow:hidden}
 #game-tab-view .ig-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px 16px 24px}
-.ig-banner{position:relative;background:linear-gradient(135deg,#f5ebe0,#efe4d4);border:none;border-radius:16px;padding:22px 18px;min-height:128px;margin-bottom:20px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.04)}
+.ig-banner{position:relative;background:linear-gradient(135deg,#ff9a76,#ff6b9d 55%,#7a6bff);border:none;border-radius:16px;min-height:128px;margin-bottom:20px;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,.08)}
+.ig-banner.custom{background-size:cover;background-position:center;background-repeat:no-repeat}
 .ig-banner-slide{display:none;align-items:center;justify-content:space-between;gap:12px}
 .ig-banner-slide.active{display:flex}
 .ig-banner-text{display:flex;flex-direction:column;gap:6px;flex:1}
