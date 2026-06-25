@@ -916,7 +916,7 @@ body {
     <div class="save-toast" id="save-toast" role="status"></div>
   </div>
 
-<script src="kidikidi-app.js?v=4"></script>
+<script src="kidikidi-app.js?v=5"></script>
 <script>
 const SLOTS = ["eat", "play", "sleep"];
 const SLOT_LABELS = { eat: "먹", play: "놀", sleep: "잠" };
@@ -1315,7 +1315,31 @@ infoModal.addEventListener("click", (e) => { if (e.target === infoModal) infoMod
 $("#btn-back").addEventListener("click", () => showView("editor"));
 $("#btn-close-preview").addEventListener("click", () => showView("editor"));
 $("#btn-copy-shot").addEventListener("click", copyResultShot);
-$("#btn-diary").addEventListener("click", () => KD.shareSquare({ target: ".result-wrap", title: "성장 브이로그", caption: "우리 아이 성장 브이로그 🎬", filename: "kidikidi-vlog", toast: showToast }));
+function shareVlogResult() {
+  const o = lastOutput || {};
+  const url = o.result_url || "";
+  if (!url) { showToast("공유할 결과가 없어요"); return; }
+  let imgSrc = url;
+  // 영상이면 현재 프레임을 캡처해 정지 이미지로(상단만 보여줄 거라 첫 화면이면 충분)
+  if (o.result_type === "video") {
+    const v = document.querySelector("#result-media video");
+    if (v && (v.videoWidth || 0) > 0) {
+      try {
+        const cn = document.createElement("canvas");
+        cn.width = v.videoWidth; cn.height = v.videoHeight;
+        cn.getContext("2d").drawImage(v, 0, 0, cn.width, cn.height);
+        imgSrc = cn.toDataURL("image/jpeg", 0.9);
+      } catch (e) { /* 캡처 실패 시 원본 URL 사용 */ }
+    }
+  }
+  KD.shareCardHtml({
+    html: '<div style="border-radius:26px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,.12);"><img src="' + imgSrc + '" style="width:100%;display:block;"></div>',
+    title: "성장 브이로그 🎬", caption: "우리 아이 성장 브이로그 🎬", cropTop: true,
+    kakaoTitle: "우리 아이 성장 브이로그 🎬", kakaoDesc: "오늘의 먹놀잠을 영상으로 담았어요",
+    filename: "kidikidi-vlog", bg1: "#EFF6FF", bg2: "#FFF1F6", toast: showToast,
+  });
+}
+$("#btn-diary").addEventListener("click", shareVlogResult);
 $("#btn-share").addEventListener("click", () => copyShare(lastOutput));
 $("#btn-download-result").addEventListener("click", () => downloadResult(lastOutput));
 $("#btn-retry-preview").addEventListener("click", () => { showView("editor"); retryAll(); });
