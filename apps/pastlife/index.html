@@ -137,7 +137,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 </div>
 <div class="toast" id="toast"></div>
 
-<script src="kidikidi-app.js?v=3"></script>
+<script src="kidikidi-app.js?v=4"></script>
 <script>
 function showToast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},2500);}
 function animSteps(ids,interval){
@@ -198,6 +198,7 @@ function buildResultHtml(d){
 
 function renderResult(d){
   d=d||{};
+  window._lastResult=d;
   document.getElementById('input-section').style.display='none';
   document.getElementById('btn-divine').style.display='none';
   var html=buildResultHtml(d)+'<button class="btn-share primary" style="width:100%;margin-top:6px;" onclick="shareResult()">📔 일기에 저장하고 공유하기</button><div class="share-row"><button class="btn-share" onclick="copyRes()">📋 이미지 복사</button><button class="btn-share" onclick="location.reload()">🔮 다시 감정</button></div>';
@@ -207,7 +208,15 @@ function renderResult(d){
   setTimeout(function(){wrap.scrollIntoView({behavior:'smooth',block:'start'});},150);
 }
 function copyRes(){KD.copyShot({filename:'kidikidi-pastlife.png'});}
-function shareResult(){KD.shareSquare({target:'#result-wrap',title:'아이와 나의 전생',caption:'아이와 나의 전생 인연 이야기 🔮',filename:'kidikidi-pastlife'});}
+function shareResult(){
+  var d=window._lastResult;
+  if(!d){return KD.shareSquare({target:'#result-wrap',title:'아이와 나의 전생',caption:'아이와 나의 전생 인연 이야기 🔮',filename:'kidikidi-pastlife'});}
+  var story=escHtml(d.story||'');if(story.length>220)story=story.slice(0,220)+'…';
+  var rel='<div style="text-align:center;margin-bottom:26px;"><div style="font-size:32px;color:#6b5bd0;margin-bottom:10px;">🔮 '+escHtml(d.era||'')+'</div><div style="font-size:34px;font-weight:800;">'+escHtml(d.parent_name||'')+' <span style="font-size:26px;color:#94A3B8;">('+escHtml(d.parent_past_role||'')+')</span></div><div style="font-size:30px;color:#c084fc;margin:6px 0;">❤</div><div style="font-size:34px;font-weight:800;">'+escHtml(d.child_name||'')+' <span style="font-size:26px;color:#94A3B8;">('+escHtml(d.child_past_role||'')+')</span></div><div style="display:inline-block;margin-top:16px;font-size:30px;font-weight:800;color:#fff;background:#6366F1;padding:10px 28px;border-radius:40px;">'+escHtml(d.relation_type||'')+'</div></div>';
+  var body='<div style="background:#fff;border-radius:30px;padding:40px;box-shadow:0 8px 26px rgba(99,102,241,.10);font-size:31px;line-height:1.65;color:#334155;margin-bottom:22px;">'+story+'</div>';
+  var quote='<div style="background:#1E293B;border-radius:30px;padding:40px;color:#fff;font-size:32px;line-height:1.6;text-align:center;">"'+escHtml(d.this_life_quote||'')+'"</div>';
+  KD.shareCardHtml({html:rel+body+quote,title:'아이와 나의 전생',caption:'아이와 나의 전생 인연 이야기 🔮',filename:'kidikidi-pastlife',bg1:'#EEF2FF',bg2:'#F5F3FF'});
+}
 
 KD.mountHistory({
   mountTarget: document.querySelector('.app'),

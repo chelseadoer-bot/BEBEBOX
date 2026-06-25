@@ -193,6 +193,8 @@ body{display:flex;justify-content:center;min-height:100vh}
 .coupon-card strong{display:block;font-size:15px;font-weight:800;color:#e64a19;margin-bottom:4px}
 .coupon-card span{font-size:12px;color:var(--color-text-secondary)}
 .coupon-empty{padding:24px;text-align:center;font-size:13px;color:var(--color-text-tertiary);border:1px dashed var(--color-border);border-radius:var(--radius-md)}
+.coupon-note{margin-top:10px;font-size:11.5px;line-height:1.6;color:var(--color-text-tertiary);text-align:center}
+.coupon-note b{color:var(--color-text-secondary);font-weight:800}
 .feed-add-btn{display:block;width:calc(100% - 32px);margin:12px auto;padding:13px;border:1px dashed var(--color-border);border-radius:var(--radius-md);background:var(--color-bg);font-size:14px;font-weight:600;color:var(--color-text-secondary);cursor:pointer}
 .photo-feed{display:flex;flex-direction:column;gap:0;padding:0 0 24px}
 .feed-card{background:var(--color-bg);border-bottom:8px solid var(--color-bg-subtle)}

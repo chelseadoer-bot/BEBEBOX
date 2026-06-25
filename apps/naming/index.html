@@ -147,7 +147,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 </div>
 <div class="toast" id="toast"></div>
 
-<script src="kidikidi-app.js?v=3"></script>
+<script src="kidikidi-app.js?v=4"></script>
 <script>
 function showToast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},2500);}
 function animSteps(ids,interval){
@@ -212,6 +212,7 @@ function buildResultHtml(d){
 }
 
 function renderResult(d,isHistory){
+  window._lastResult=d;
   document.getElementById('input-section').style.display='none';
   document.getElementById('btn-gen').style.display='none';
   var html=buildResultHtml(d)+
@@ -223,7 +224,21 @@ function renderResult(d,isHistory){
   setTimeout(function(){wrap.scrollIntoView({behavior:'smooth',block:'start'});},100);
 }
 function copyRes(){KD.copyShot({filename:'kidikidi-naming.png'});}
-function shareResult(){KD.shareSquare({target:'#result-wrap',title:'글로벌 작명소',caption:'우리 아이 글로벌 이름 추천 결과 🌍',filename:'kidikidi-naming'});}
+function shareResult(){
+  var d=window._lastResult;
+  if(!d){return KD.shareSquare({target:'#result-wrap',title:'글로벌 작명소',caption:'우리 아이 글로벌 이름 추천 🌍',filename:'kidikidi-naming'});}
+  var loc=LOCALES[d.locale||'en']||LOCALES.en;
+  var cards=(d.suggestions||[]).map(function(s,i){
+    var persona=escHtml(s.persona||'').replace(/\\n|\n/g,' ');
+    if(persona.length>90)persona=persona.slice(0,90)+'…';
+    return '<div style="background:#fff;border-radius:30px;padding:36px 38px;margin-bottom:24px;box-shadow:0 8px 26px rgba(99,102,241,.10);">'
+      +'<div style="font-size:28px;font-weight:800;color:#6366F1;margin-bottom:10px;">추천 '+(i+1)+' · '+escHtml(s.pronunciation||'')+' 발음</div>'
+      +'<div style="font-size:64px;font-weight:800;letter-spacing:-.01em;margin-bottom:12px;">'+escHtml(s.name||'')+'</div>'
+      +'<div style="font-size:30px;line-height:1.5;color:#475569;">'+persona+'</div></div>';
+  }).join('');
+  var head='<div style="text-align:center;font-size:36px;color:#475569;margin-bottom:28px;">'+loc.flag+' '+escHtml(d.input_name||'')+' · '+escHtml(d.korean_meaning||'')+'</div>';
+  KD.shareCardHtml({html:head+cards,title:loc.label+' 이름 추천',caption:'우리 아이 '+loc.label+' 이름 추천 🌍',filename:'kidikidi-naming',bg1:'#EEF2FF',bg2:'#EFF6FF'});
+}
 
 KD.mountHistory({
   mountTarget: document.querySelector('.app'),

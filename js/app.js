@@ -2076,7 +2076,7 @@ function openAiApp(slug,label){
              ||(typeof getInviteCode==="function"&&getInviteCode())||"";
     if(code)url+=(url.indexOf("?")<0?"?":"&")+"uid="+encodeURIComponent(String(code).toUpperCase());
   }catch(_){}
-  url+=(url.indexOf("?")<0?"?":"&")+"_v=5";   // 앱 정적파일 캐시 무력화
+  url+=(url.indexOf("?")<0?"?":"&")+"_v=6";   // 앱 정적파일 캐시 무력화
   $("#app-frame-title").textContent=label||"";
   $("#app-frame").src=url;            // 앱 안에서 iframe 으로 띄움
   showOverlay("#app-frame-view");

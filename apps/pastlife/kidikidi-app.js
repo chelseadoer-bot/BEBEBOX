@@ -516,6 +516,68 @@
     }
   };
 
+  /**
+   * 게임이 만든 카드 HTML을 "원래 크기 그대로"(축소 없이) 정사각 이미지로 만들어
+   * 일기에 저장 + 외부 공유. 각 게임이 읽기 좋은 카드 레이아웃을 직접 만들어 넘긴다.
+   * @param {Object} opts - html, title, caption, filename, bg1, bg2, width(기본 1040)
+   */
+  KD.shareCardHtml = async function (opts) {
+    opts = opts || {};
+    var toast = opts.toast || KD.toast;
+    var W = opts.width || 1040;
+    var bg1 = opts.bg1 || '#FFF1F6', bg2 = opts.bg2 || '#EFF6FF';
+    var host = null;
+    try {
+      toast('공유 이미지를 만드는 중...');
+      await KD._loadH2C();
+      host = document.createElement('div');
+      host.style.cssText = 'position:fixed;left:-99999px;top:0;width:' + W +
+        'px;box-sizing:border-box;padding:48px;background:linear-gradient(160deg,' +
+        bg1 + ',' + bg2 + ');font-family:Pretendard,system-ui,-apple-system,sans-serif;color:#1E293B;';
+      host.innerHTML =
+        (opts.title ? '<div style="text-align:center;font-size:46px;font-weight:800;line-height:1.2;margin-bottom:28px;">' + opts.title + '</div>' : '') +
+        '<div>' + (opts.html || '') + '</div>' +
+        '<div style="text-align:center;font-size:24px;font-weight:700;color:#94A3B8;margin-top:30px;">베베박스 · 키디키디</div>';
+      document.body.appendChild(host);
+      var imgs = host.querySelectorAll('img');
+      await Promise.all(Array.prototype.map.call(imgs, function (im) {
+        return im.complete ? Promise.resolve() : new Promise(function (r) { im.onload = im.onerror = r; });
+      }));
+      var shot = await global.html2canvas(host, { backgroundColor: null, scale: 2, useCORS: true, logging: false });
+      host.remove(); host = null;
+
+      // 콘텐츠를 축소하지 않고 1:1 정사각으로 맞춤(남는 여백만 배경으로 채움)
+      var side = Math.max(shot.width, shot.height);
+      var c = document.createElement('canvas'); c.width = side; c.height = side;
+      var ctx = c.getContext('2d');
+      var g = ctx.createLinearGradient(0, 0, 0, side);
+      g.addColorStop(0, bg1); g.addColorStop(1, bg2);
+      ctx.fillStyle = g; ctx.fillRect(0, 0, side, side);
+      ctx.drawImage(shot, (side - shot.width) / 2, (side - shot.height) / 2);
+      var dataUrl = c.toDataURL('image/png');
+
+      KD._emit('save_diary', { image: dataUrl, caption: opts.caption || opts.title || 'AI 게임 결과' });
+      KD._emit('shared');
+      var blob = await new Promise(function (res) { c.toBlob(res, 'image/png'); });
+      try {
+        if (!global.ClipboardItem || !navigator.clipboard || !navigator.clipboard.write) {
+          throw new Error('clipboard image unsupported');
+        }
+        await navigator.clipboard.write([new global.ClipboardItem({ 'image/png': blob })]);
+        toast('일기에 저장하고 이미지도 복사했어요! 📋');
+      } catch (e) {
+        var a = document.createElement('a');
+        a.href = dataUrl;
+        a.download = (opts.filename || 'kidikidi-result') + '.png';
+        a.click();
+        toast('일기에 저장하고 이미지로 내려받았어요! 💾');
+      }
+    } catch (err) {
+      if (host) host.remove();
+      toast('공유 이미지 생성에 실패했어요 😢');
+    }
+  };
+
   // ── 간이 로그인 / 회원가입 (현재 버전 임시; 추후 베베박스 uid 연동으로 대체) ──
   // 회원 자격증명은 로컬에 보관(간이). 로그인 시 uid = 회원 아이디로 설정되어
   // 회원별로 결과/이용이력이 적치된다. 기본 계정: test / test
