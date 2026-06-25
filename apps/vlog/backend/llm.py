@@ -133,7 +133,23 @@ def complete_text(prompt, images=None, max_tokens=2048, model=None, temperature=
         "contents": [{"role": "user", "parts": _build_parts(prompt, images)}],
         "generationConfig": gen_cfg,
     }
-    resp = _call(model, payload)
+    # 설정된 모델이 사라졌을(404) 때를 대비해 안정적인 대체 모델로 폴백.
+    candidates = [model]
+    for fb in ("gemini-2.5-flash", "gemini-2.0-flash", "gemini-flash-latest"):
+        if fb not in candidates:
+            candidates.append(fb)
+    resp, last_err = None, None
+    for m in candidates:
+        try:
+            resp = _call(m, payload)
+            break
+        except LLMError as e:
+            last_err = e
+            if "404" in str(e) or "not found" in str(e).lower():
+                continue
+            raise
+    if resp is None:
+        raise last_err or LLMError("Gemini 호출 실패")
     cand = (resp.get("candidates") or [{}])[0]
     if cand.get("finishReason") == "MAX_TOKENS":
         raise LLMError("AI 응답이 너무 길어 잘렸어요. 잠시 후 다시 시도해 주세요.")
@@ -153,11 +169,15 @@ def complete_text(prompt, images=None, max_tokens=2048, model=None, temperature=
 
 def generate_image(prompt, images=None, model=None, temperature=0.9):
     """이미지 생성. data URL(str) 반환."""
-    models = [model] if model else [config.GEMINI_IMAGE_MODEL, config.GEMINI_IMAGE_FALLBACK]
+    models = ([model] if model else
+              [config.GEMINI_IMAGE_MODEL, config.GEMINI_IMAGE_FALLBACK,
+               "gemini-2.5-flash-image-preview", "gemini-2.0-flash-preview-image-generation"])
+    seen = set()
     last_err = None
     for m in models:
-        if not m:
+        if not m or m in seen:
             continue
+        seen.add(m)
         payload = {
             "contents": [{"role": "user", "parts": _build_parts(prompt, images)}],
             "generationConfig": {"temperature": temperature, "responseModalities": ["IMAGE", "TEXT"]},
