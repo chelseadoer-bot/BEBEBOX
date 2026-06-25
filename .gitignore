@@ -34,6 +34,7 @@ data/photos.json
 data/sessions.json
 data/families/*
 !data/families/.gitkeep
+data/ai/
 
 # Editor directories and files
 .vscode/*
