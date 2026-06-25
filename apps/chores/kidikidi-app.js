@@ -80,20 +80,35 @@
   };
 
   // ── API ────────────────────────────────────────────
+  KD._postRun = async function (inputs) {
+    var resp = await fetch('api/run', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ uid: KD.uid(), inputs: inputs }),
+    });
+    var json = null;
+    // 콜드스타트/게이트웨이 오류 시 본문이 JSON이 아닌 HTML일 수 있음 → 안전 파싱
+    try { json = await resp.json(); } catch (e) { json = null; }
+    return { resp: resp, json: json };
+  };
   KD.run = async function (inputs) {
     KD._emit('request');
     var allowed = await KD._gate();   // 결과 받기 전 포인트 차감 단계
     if (!allowed) { var ce = new Error('포인트가 부족하거나 결과 보기를 취소했어요.'); ce.cancelled = true; throw ce; }
     var json;
     try {
-      var resp = await fetch('api/run', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ uid: KD.uid(), inputs: inputs }),
-      });
-      json = await resp.json();
-      if (!resp.ok || json.ok === false) {
-        throw new Error((json && json.error) || ('API ' + resp.status));
+      var r = await KD._postRun(inputs);
+      // 서버가 깨어나는 중(콜드스타트)이거나 일시 오류(5xx)·비정상 응답이면 한 번 더 시도
+      if (!r.json || r.resp.status === 502 || r.resp.status === 503 || r.resp.status === 504) {
+        await new Promise(function (res) { setTimeout(res, 2500); });
+        r = await KD._postRun(inputs);
+      }
+      if (!r.json) {
+        throw new Error('서버가 잠시 깨어나는 중이거나 혼잡해요. 잠시 후 다시 시도해 주세요 🙏');
+      }
+      json = r.json;
+      if (!r.resp.ok || json.ok === false) {
+        throw new Error((json && json.error) || ('서버 오류 ' + r.resp.status + ' · 잠시 후 다시 시도해 주세요'));
       }
     } catch (err) {
       KD._emit('failed');   // 생성 실패 → 부모가 차감 포인트 환불
