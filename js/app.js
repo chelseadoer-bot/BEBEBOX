@@ -781,13 +781,57 @@ function renderGiftProgress(){
   if(!total){el.classList.add("hidden");el.innerHTML="";return;}
   el.classList.remove("hidden");
   const pct=Math.round(done/total*100);
-  const msg=done>=total?"🎉 선물이 모두 채워졌어요!":`친구들이 ${done}개를 선물해줬어요`;
+  const reward=(typeof POINT_RULES!=="undefined"?POINT_RULES.giftReceived:50);
+  const msg=done>=total
+    ?`🎉 받고 싶던 선물을 모두 받았어요!`
+    :`선물 1개 받을 때마다 +${reward}🍬 적립돼요`;
   el.innerHTML=
-    `<div class="gp-top"><span class="gp-title">🎁 선물 달성률</span><span class="gp-count">${done}/${total} · ${pct}%</span></div>`+
+    `<div class="gp-top"><span class="gp-title">🎁 받고 싶은 선물 ${done}/${total}개 도착</span><span class="gp-count">${pct}%</span></div>`+
     `<div class="gp-bar"><div class="gp-fill" style="width:${pct}%"></div></div>`+
-    `<div class="gp-sub">${msg} · 탭하면 위시 관리 ›</div>`;
+    `<div class="gp-sub">${msg} · 탭해서 위시 관리 ›</div>`;
+}
+// 홈 상단 "이렇게 모으고 이렇게 써요" 흐름 가이드(핵심 루프를 한눈에).
+function renderHomeFlow(){
+  const el=$("#home-flow");if(!el)return;
+  const R=(typeof POINT_RULES!=="undefined")?POINT_RULES:{photo:20,likeReward:10,giftReceived:50,couponCost:100,couponAmount:3000};
+  const collapsed=localStorage.getItem("bbx_flow_collapsed")==="1";
+  el.classList.toggle("collapsed",collapsed);
+  el.innerHTML=
+    `<button type="button" class="hf-head" id="hf-toggle">
+       <span class="hf-title">🍬 이렇게 모으고, 이렇게 써요</span>
+       <span class="hf-caret">${collapsed?"펼치기 ▾":"접기 ▴"}</span>
+     </button>
+     <div class="hf-body">
+       <div class="hf-steps">
+         <div class="hf-step" data-go="write"><span class="hf-ic">✍️</span><span class="hf-lb">일기 쓰기</span><span class="hf-rw">+${R.photo}🍬</span></div>
+         <span class="hf-arrow">›</span>
+         <div class="hf-step"><span class="hf-ic">❤️</span><span class="hf-lb">친구 공감</span><span class="hf-rw">+${R.likeReward}🍬</span></div>
+         <span class="hf-arrow">›</span>
+         <div class="hf-step" data-go="wish"><span class="hf-ic">🎁</span><span class="hf-lb">선물 도착</span><span class="hf-rw">+${R.giftReceived}🍬</span></div>
+         <span class="hf-arrow">›</span>
+         <div class="hf-step"><span class="hf-ic">🍬</span><span class="hf-lb">캔디 적립</span></div>
+         <span class="hf-arrow">›</span>
+         <div class="hf-step hf-step--use" data-go="game"><span class="hf-ic">✨</span><span class="hf-lb">AI·게임·꾸미기</span></div>
+       </div>
+       <p class="hf-foot">모은 캔디 🍬는 AI 분석·게임에 쓰고, ${R.couponCost}개면 ${R.couponAmount.toLocaleString("ko-KR")}원 상품권으로도 바꿔요</p>
+     </div>`;
+  $("#hf-toggle").onclick=()=>{
+    const now=!el.classList.contains("collapsed");
+    el.classList.toggle("collapsed",now);
+    localStorage.setItem("bbx_flow_collapsed",now?"1":"0");
+    const c=$("#hf-toggle .hf-caret");if(c)c.textContent=now?"펼치기 ▾":"접기 ▴";
+  };
+  el.querySelectorAll(".hf-step[data-go]").forEach(s=>{
+    s.onclick=()=>{
+      const g=s.dataset.go;
+      if(g==="write"&&typeof openComposer==="function")openComposer();
+      else if(g==="wish"&&typeof openWishlist==="function")openWishlist();
+      else if(g==="game"&&typeof switchMainTab==="function")switchMainTab("game");
+    };
+  });
 }
 function renderFeed(){
+  renderHomeFlow();
   renderGiftProgress();
   const feed=$("#photo-feed");
   if(!feed)return;
