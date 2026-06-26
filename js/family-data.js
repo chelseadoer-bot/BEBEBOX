@@ -14,6 +14,8 @@ function packFamilyState() {
     hidden: state.hidden,
     published: state.published,
     giftedBy: state.giftedBy,
+    giftedMsg: state.giftedMsg,
+    guestbook: state.guestbook,
     itemProducts: state.itemProducts,
     funding: state.funding,
     fundingGauge: state.fundingGauge,
@@ -47,6 +49,8 @@ function applyFamilyState(data) {
   if (data.hidden) state.hidden = data.hidden;
   if (data.published) state.published = data.published;
   if (data.giftedBy) state.giftedBy = data.giftedBy;
+  if (data.giftedMsg) state.giftedMsg = data.giftedMsg;
+  if (Array.isArray(data.guestbook)) state.guestbook = data.guestbook;
   if (data.itemProducts) state.itemProducts = data.itemProducts;
   if (data.funding) state.funding = data.funding;
   if (data.fundingGauge) state.fundingGauge = data.fundingGauge;

@@ -374,6 +374,8 @@ function load(){
   state.hidden=hidden?JSON.parse(hidden):{};
   try{state.published=JSON.parse(localStorage.getItem(STORAGE_KEYS.wishlist+"_published")||"{}")||{};}catch(_){state.published={};}
   try{state.giftedBy=JSON.parse(localStorage.getItem(STORAGE_KEYS.wishlist+"_giftedby")||"{}")||{};}catch(_){state.giftedBy={};}
+  try{state.giftedMsg=JSON.parse(localStorage.getItem(STORAGE_KEYS.wishlist+"_giftedmsg")||"{}")||{};}catch(_){state.giftedMsg={};}
+  try{state.guestbook=JSON.parse(localStorage.getItem(STORAGE_KEYS.wishlist+"_guestbook")||"[]")||[];}catch(_){state.guestbook=[];}
   const products=localStorage.getItem(STORAGE_KEYS.wishlist+"_products");
   state.itemProducts=products?JSON.parse(products):{};
   const fund=localStorage.getItem(STORAGE_KEYS.wishlist+"_funding");
@@ -411,6 +413,8 @@ function saveLocalCache(){
   localStorage.setItem(STORAGE_KEYS.wishlist+"_hidden",JSON.stringify(state.hidden));
   localStorage.setItem(STORAGE_KEYS.wishlist+"_published",JSON.stringify(state.published||{}));
   localStorage.setItem(STORAGE_KEYS.wishlist+"_giftedby",JSON.stringify(state.giftedBy||{}));
+  localStorage.setItem(STORAGE_KEYS.wishlist+"_giftedmsg",JSON.stringify(state.giftedMsg||{}));
+  localStorage.setItem(STORAGE_KEYS.wishlist+"_guestbook",JSON.stringify(state.guestbook||[]));
   localStorage.setItem(STORAGE_KEYS.wishlist+"_products",JSON.stringify(state.itemProducts));
   localStorage.setItem(STORAGE_KEYS.wishlist+"_funding",JSON.stringify(state.funding));
   localStorage.setItem(STORAGE_KEYS.wishlist+"_funding_gauge",JSON.stringify(state.fundingGauge));
@@ -1286,7 +1290,7 @@ function collectReceivedGifts(){
   Object.values(state.wishlist||{}).forEach(arr=>(arr||[]).forEach(it=>{
     if(it&&state.owned[it.id]&&!seen[it.id]){
       seen[it.id]=1;
-      out.push({emoji:it.emoji||"🎁",name:it.name,giver:state.giftedBy[it.id]||""});
+      out.push({id:it.id,emoji:it.emoji||"🎁",name:it.name,giver:state.giftedBy[it.id]||""});
     }
   }));
   (state.giftPuzzles||[]).forEach(g=>{
@@ -1306,13 +1310,48 @@ function giftShelfHtml(gifts,emptyMsg){
     `<div class="shelf"><div class="shelf-objs">`+row.map(g=>{
       const obj=g.image?`<span class="shelf-obj"><img src="${esc(g.image)}" alt=""/></span>`:`<span class="shelf-obj">${esc(g.emoji||"🎁")}</span>`;
       const giver=g.giver?`<span class="shelf-giver">${esc(g.giver)}</span>`:`<span class="shelf-giver muted">선물</span>`;
-      return `<span class="shelf-item">${giver}${obj}</span>`;
+      const tappable=g.id?` shelf-item--tappable`:"";
+      const dataId=g.id?` data-id="${esc(g.id)}"`:"";
+      return `<span class="shelf-item${tappable}"${dataId}>${giver}${obj}</span>`;
     }).join("")+`</div><div class="shelf-board"></div></div>`
   ).join("")+`</div>`;
 }
 function renderGiftShelf(){
   const el=$("#gift-shelf");if(!el)return;
   el.innerHTML=giftShelfHtml(collectReceivedGifts(),"아직 받은 선물이 없어요");
+  el.querySelectorAll(".shelf-item--tappable").forEach(s=>{
+    s.onclick=()=>openGiftMessageSheet(s.dataset.id);
+  });
+}
+// 위시 아이템을 id로 찾는다(어느 단계에 있든).
+function wishItemById(id){
+  for(const arr of Object.values(state.wishlist||{})){
+    const f=(arr||[]).find(i=>i&&i.id===id);
+    if(f)return f;
+  }
+  return null;
+}
+// 받은 선물의 인사말을 찾는다. 선물 준 사람이 공유페이지에서 남긴 한마디(guestbook)를
+// 우선 보고, 없으면 부모가 직접 적어둔 인사말(giftedMsg)을 본다.
+function giftMessageFor(id){
+  const gb=(state.guestbook||[]).filter(g=>g&&g.item_id===id&&(g.message||"").trim());
+  if(gb.length){
+    const last=gb[gb.length-1];
+    return {message:(last.message||"").trim(),from:last.guest_name||state.giftedBy[id]||"가족"};
+  }
+  const m=(state.giftedMsg||{})[id];
+  if(m&&m.trim())return {message:m.trim(),from:state.giftedBy[id]||"가족"};
+  return {message:"",from:state.giftedBy[id]||""};
+}
+// 선반의 받은 선물을 누르면 그 사람이 써준 인사말을 보여준다.
+function openGiftMessageSheet(id){
+  const item=wishItemById(id);
+  const gm=giftMessageFor(id);
+  $("#ppl-emoji").textContent=item?.emoji||"🎁";
+  $("#ppl-title").textContent=item?item.name:"받은 선물";
+  $("#ppl-message").textContent=gm.message||"따뜻한 마음을 담아 선물해 주셨어요 💝";
+  $("#ppl-from").textContent=gm.from?`${gm.from}님이 선물해 줬어요`:"선물 받았어요";
+  $("#ppl-sheet").classList.remove("hidden");
 }
 function renderWishlistGrid(){
   const stage=STAGES[state.currentStage];
@@ -1346,14 +1385,9 @@ function renderWishlistGrid(){
   }).join("");
   grid.querySelectorAll(".wish-card").forEach(card=>{
     const id=card.dataset.id;
-    let timer=null,longed=false;
     card.oncontextmenu=e=>e.preventDefault();
-    const start=()=>{longed=false;clearTimeout(timer);timer=setTimeout(()=>{longed=true;openWishActionSheet(id);},480);};
-    const cancel=()=>clearTimeout(timer);
-    card.addEventListener("pointerdown",start);
-    card.addEventListener("pointerup",()=>{cancel();if(!longed)togglePublish(id);});
-    card.addEventListener("pointerleave",cancel);
-    card.addEventListener("pointercancel",cancel);
+    // 탭 한 번이면 통합 시트가 열려 공개·받음·인사말·상품을 한 자리에서 설정한다.
+    card.onclick=()=>openWishActionSheet(id);
   });
 }
 function togglePublish(id){
@@ -1365,8 +1399,10 @@ function openWishActionSheet(id){
   const item=(state.wishlist[STAGES[state.currentStage].id]||[]).find(i=>i.id===id);
   if(!item)return;
   const has=hasItem(id),pub=!!state.published[id];
+  const gm=giftMessageFor(id);
   const rows=[];
-  rows.push(`<button type="button" class="wish-act-btn" data-act="received">🎁 받았어요 · 준 사람 적기</button>`);
+  if(has&&gm.message)rows.push(`<button type="button" class="wish-act-btn highlight" data-act="message">💌 ${esc(gm.from||"준 분")}님의 인사말 보기</button>`);
+  rows.push(`<button type="button" class="wish-act-btn" data-act="received">🎁 받았어요 · 준 사람·인사말 적기</button>`);
   rows.push(`<button type="button" class="wish-act-btn" data-act="pub">${pub?"🙈 공개 취소":"❤️ 공유 위시에 공개"}</button>`);
   rows.push(`<button type="button" class="wish-act-btn" data-act="products">🛍 상품 고르기</button>`);
   if(has)rows.push(`<button type="button" class="wish-act-btn" data-act="unreceive">↩️ 받음 취소</button>`);
@@ -1378,11 +1414,16 @@ function openWishActionSheet(id){
 }
 function closeWishActionSheet(){$("#wish-action-sheet")?.classList.add("hidden");}
 function doWishAction(id,act){
-  if(act==="received"){
+  if(act==="message"){
+    closeWishActionSheet();return openGiftMessageSheet(id);
+  }else if(act==="received"){
     const who=(prompt("누가 선물해 줬나요? (예: 체리이모)")||"").trim();
     if(who){
+      const msg=(prompt(`${who}님이 남긴 인사말이 있나요? (없으면 비워두세요)`)||"").trim();
       const already=!!state.owned[id];
       state.owned[id]=true;state.giftedBy[id]=who;state.published[id]=true;
+      if(!state.giftedMsg)state.giftedMsg={};
+      if(msg)state.giftedMsg[id]=msg;else delete state.giftedMsg[id];
       if(!already&&typeof addPoints==="function"){
         addPoints(POINT_RULES.giftReceived,"gift_received");
         if(typeof track==="function")track("gift_received",{item_id:id,giver:who});
@@ -1394,9 +1435,9 @@ function doWishAction(id,act){
   }else if(act==="products"){
     closeWishActionSheet();return openProductPicker(STAGES[state.currentStage].id,id);
   }else if(act==="unreceive"){
-    delete state.owned[id];delete state.giftedBy[id];showToast("받음 표시를 취소했어요");
+    delete state.owned[id];delete state.giftedBy[id];if(state.giftedMsg)delete state.giftedMsg[id];showToast("받음 표시를 취소했어요");
   }else if(act==="delete"){
-    delete state.published[id];delete state.owned[id];delete state.giftedBy[id];showToast("삭제했어요");
+    delete state.published[id];delete state.owned[id];delete state.giftedBy[id];if(state.giftedMsg)delete state.giftedMsg[id];showToast("삭제했어요");
   }
   save();renderWishlistGrid();closeWishActionSheet();
 }
