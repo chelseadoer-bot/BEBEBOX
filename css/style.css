@@ -360,10 +360,14 @@ body.is-guest .guest-only{display:block!important}
 .contribute-anon{display:flex;align-items:center;gap:8px;font-size:13px;margin:8px 0;cursor:pointer}
 .contribute-content input[type=text],.contribute-content input[type=number]{width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;margin-bottom:8px}
 .contribute-custom-input.hidden{display:none}
-.ppl-panel{text-align:center;padding-bottom:24px}
-.ppl-emoji{font-size:48px;margin:8px 0}
-.ppl-message{font-size:14px;color:#333;line-height:1.55;padding:0 20px 8px}
-.ppl-from{font-size:12px;color:#888}
+.ppl-panel{text-align:center;padding-bottom:28px}
+/* 인사말 시트는 따뜻한 밝은 카드로(어두운 배경에 글자가 묻히지 않게) */
+.comment-panel.ppl-panel{background:#fffaf3}
+.ppl-panel .comment-handle{background:#e6dccd}
+.ppl-panel h3{color:#2b2b2b;font-size:18px;font-weight:800;margin-top:2px;padding:0 20px}
+.ppl-emoji{font-size:48px;margin:10px 0 4px}
+.ppl-message{font-size:15px;color:#4a4a4a;line-height:1.65;padding:6px 24px 10px;word-break:keep-all}
+.ppl-from{font-size:12px;color:#a08a72;font-weight:600}
 .need-panel .need-sheet-desc{font-size:13px;color:#666;padding:0 16px 12px;line-height:1.45}
 .need-sheet-list{padding:0 12px 20px;display:flex;flex-direction:column;gap:10px}
 .need-item{display:flex;gap:12px;align-items:center;padding:12px;background:#f8f8f8;border-radius:12px;cursor:pointer;border:none;width:100%;text-align:left}
@@ -701,6 +705,25 @@ body.is-guest .guest-only{display:block!important}
 .gp-bar{height:9px;border-radius:999px;background:#ffd9c6;overflow:hidden}
 .gp-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,#ff8a5c,#ff6b3d);transition:width .4s ease}
 .gp-sub{font-size:11.5px;color:#b07a5e;margin-top:6px}
+/* 홈 상단 사용 흐름 가이드 */
+.home-flow{margin:12px 12px 0;padding:11px 13px;border:1px solid #ffe1cf;border-radius:16px;background:linear-gradient(135deg,#fff8f1,#fdeef4);overflow:hidden}
+.hf-head{width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;background:none;border:none;padding:0;cursor:pointer;font-family:var(--font)}
+.hf-title{font-size:13px;font-weight:800;color:#c2511e;letter-spacing:-.02em}
+.hf-caret{font-size:11px;font-weight:700;color:#bb8f78;white-space:nowrap}
+.hf-body{margin-top:11px}
+.home-flow.collapsed .hf-body{display:none}
+.hf-steps{display:flex;align-items:center;gap:3px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding-bottom:2px}
+.hf-steps::-webkit-scrollbar{display:none}
+.hf-step{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:3px;min-width:60px;background:#fff;border:1px solid #ffe0cc;border-radius:11px;padding:8px 6px 7px}
+.hf-step[data-go]{cursor:pointer;transition:transform .12s}
+.hf-step[data-go]:active{transform:scale(.95)}
+.hf-ic{font-size:21px;line-height:1}
+.hf-lb{font-size:10px;font-weight:700;color:#5a4a42;white-space:nowrap}
+.hf-rw{font-size:9px;font-weight:800;color:#e8830c;background:#fff3e6;border-radius:6px;padding:1px 5px;line-height:1.4}
+.hf-step--use{background:#f3ecff;border-color:#e3d6ff}
+.hf-step--use .hf-lb{color:#6b46c1}
+.hf-arrow{flex:0 0 auto;color:#e6ab85;font-weight:800;font-size:14px}
+.hf-foot{font-size:11px;color:#a77e6a;line-height:1.5;margin-top:9px;word-break:keep-all}
 /* 포인트(캔디) 안내 카드 */
 .point-guide{background:#fff;border:1px solid var(--color-border-light);border-radius:16px;padding:16px;margin:0 0 16px}
 .point-guide-title{font-size:14px;font-weight:800;margin-bottom:12px}
