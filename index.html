@@ -6,7 +6,7 @@
 <title>베베박스</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css"/>
 <link rel="stylesheet" href="css/style.css?v=53"/>
-<link rel="stylesheet" href="css/onboarding.css?v=5"/>
+<link rel="stylesheet" href="css/onboarding.css?v=6"/>
 <link rel="stylesheet" href="css/theme.css?v=4"/>
 </head>
 <body>
@@ -19,6 +19,7 @@
 <h1 class="ob-logo-ko">베베박스</h1>
 <p class="ob-logo-en">BEBEBOX</p>
 <p class="ob-slogan">오늘의 아이를<br/>가족과 함께 담아요</p>
+<p class="ob-value">✍️ AI 육아일기 · 🎁 출산 선물 받기 · 🍬 캔디 리워드</p>
 </div>
 <div class="ob-social-wrap">
 <p class="ob-social-label">간편 로그인으로 시작해요</p>
@@ -125,8 +126,9 @@
 <button type="button" class="ob-back" id="btn-ob-back-baby">←</button>
 <div class="ob-progress"><span class="ob-progress-fill" style="width:100%"></span></div>
 <h2 class="ob-title">아이 이름을 알려주세요</h2>
-<p class="ob-desc">가족과 지인에게 보여질 아기 이름이에요</p>
-<input type="text" class="ob-input" id="ob-baby-name" placeholder="예: 민우" maxlength="12"/>
+<p class="ob-desc">아직 태어나기 전이라면 <b>태명</b>을 적어도 좋아요 😊</p>
+<input type="text" class="ob-input" id="ob-baby-name" placeholder="예: 콩이 · 튼튼이 · 민우" maxlength="12"/>
+<button type="button" class="ob-undecided" id="btn-ob-baby-undecided">아직 안 정했어요</button>
 <button type="button" class="ob-primary" id="btn-ob-baby-next">다음</button>
 </div>
 </div>
@@ -383,7 +385,6 @@
 <p class="journey-intro" id="journey-intro">🌱 스케치 정원 길을 따라 내려가면, 지나온 육아 여정이 펼쳐져요. 반짝이는 꽃 노드를 눌러 퀘스트에 참여해 보세요!</p>
 <div class="journey-shortcuts">
 <button type="button" class="journey-shortcut-btn" id="btn-journey-gift-shortcut">🎁 선물하기</button>
-<button type="button" class="journey-shortcut-btn alt" id="btn-journey-puzzle-shortcut">🧩 선물 퍼즐</button>
 </div>
 <div class="journey-scroll" id="journey-scroll">
 <div class="journey-map" id="journey-map"></div>
@@ -696,50 +697,6 @@
 </div>
 </div>
 </div>
-<div class="modal hidden" id="gift-create-modal">
-<div class="modal-backdrop" id="gc-backdrop"></div>
-<div class="modal-content gift-create-content">
-<h3>선물 퍼즐 만들기</h3>
-<p class="modal-desc">갖고 싶은 선물을 등록하면 9조각 퍼즐이 만들어져요</p>
-<button type="button" class="gc-image-btn" id="btn-gc-image">📷 상품 사진 (선택)</button>
-<img class="gc-image-preview" id="gc-image-preview" alt="" style="display:none"/>
-<input type="file" id="gc-image-input" accept="image/*" class="hidden-input"/>
-<input type="text" id="gc-name" class="gc-input" placeholder="선물 이름 (예: 유모차)" maxlength="40"/>
-<input type="text" id="gc-brand" class="gc-input" placeholder="브랜드 (예: 부가부)" maxlength="30"/>
-<input type="number" id="gc-price" class="gc-input" placeholder="가격 (원, 선택)" min="0" step="1000"/>
-<input type="url" id="gc-url" class="gc-input" placeholder="키디키디 상품 링크 (선택)" inputmode="url" autocapitalize="off"/>
-<div class="modal-actions">
-<button class="modal-btn" id="btn-gc-cancel">취소</button>
-<button class="modal-btn primary" id="btn-gc-submit">퍼즐 만들기</button>
-</div>
-</div>
-</div>
-<div class="modal hidden" id="gift-fill-modal">
-<div class="modal-backdrop" id="gf-backdrop"></div>
-<div class="modal-content gift-fill-content">
-<button type="button" class="journey-modal-close" id="btn-gf-close">✕</button>
-<p class="gf-baby" id="gf-baby"></p>
-<img class="gf-thumb" id="gf-thumb" alt="" style="display:none"/>
-<h3 class="gf-name" id="gf-name"></h3>
-<p class="gf-brand" id="gf-brand"></p>
-<div class="gp-grid gf-grid" id="gf-grid"></div>
-<p class="gf-progress" id="gf-progress"></p>
-<div id="gf-actions">
-<p class="gf-actions-title">한 가지만 해주면 한 조각이 채워져요 🧩</p>
-<button type="button" class="gf-action-btn" id="gf-ad">📺 광고 보기</button>
-<button type="button" class="gf-action-btn" id="gf-signup">📲 앱 가입하기</button>
-<button type="button" class="gf-action-btn" id="gf-message">💌 축하 메시지 쓰기</button>
-<div class="gf-msg-wrap hidden" id="gf-msg-wrap">
-<textarea id="gf-msg-input" class="gf-msg-input" rows="2" maxlength="200" placeholder="축하 메시지를 남겨주세요"></textarea>
-<button type="button" class="gf-msg-send" id="btn-gf-msg-send">보내고 조각 채우기</button>
-</div>
-</div>
-<div class="gf-done hidden" id="gf-done">
-<p class="gf-done-emoji">🎉</p>
-<p class="gf-done-text">퍼즐이 모두 채워졌어요!<br/>부모님께 할인 쿠폰이 전달됐어요.</p>
-</div>
-</div>
-</div>
 <div class="wish-action-sheet hidden" id="wish-action-sheet">
 <div class="wish-action-backdrop" id="wish-action-backdrop"></div>
 <div class="wish-action-panel">
@@ -794,16 +751,15 @@
 <script>try{if(window.Kakao&&!Kakao.isInitialized())Kakao.init("c468732137cae3e7c39c5aa7efe9a329");}catch(e){console.warn("Kakao init failed",e);}</script>
 <script src="js/wishlist-data.js"></script>
 <script src="js/feed-data.js?v=7"></script>
-<script src="js/kidikidi.js?v=4"></script>
+<script src="js/kidikidi.js?v=5"></script>
 <script src="js/points.js?v=4"></script>
-<script src="js/gift-puzzle.js?v=2"></script>
 <script src="js/puzzle-mission.js?v=5"></script>
 <script src="js/minigame.js?v=4"></script>
 <script src="js/photo-quest-detect.js?v=1"></script>
 <script src="js/photo-storage.js?v=2"></script>
-<script src="js/family-data.js?v=5"></script>
+<script src="js/family-data.js?v=6"></script>
 <script src="js/kakao-auth.js?v=1"></script>
-<script src="js/onboarding.js?v=9"></script>
-<script src="js/app.js?v=81"></script>
+<script src="js/onboarding.js?v=10"></script>
+<script src="js/app.js?v=83"></script>
 </body>
 </html>

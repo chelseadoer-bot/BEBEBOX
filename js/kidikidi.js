@@ -114,7 +114,15 @@ async function fetchKidikidiDirect(keyword, limit) {
 async function fetchKidikidiViaProxy(keyword, limit) {
   const q = encodeURIComponent(keyword);
   const n = limit || 4;
-  const res = await fetch(`/api/kidikidi/search?q=${q}&limit=${n}`);
+  // 프록시가 무응답이면 무한 로딩이 되므로 7초 후 끊고 에러로 처리한다.
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 7000);
+  let res;
+  try {
+    res = await fetch(`/api/kidikidi/search?q=${q}&limit=${n}`, { signal: ctrl.signal });
+  } finally {
+    clearTimeout(timer);
+  }
   if (res.status === 404) throw new Error("proxy_not_available");
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));

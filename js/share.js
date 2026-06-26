@@ -1,6 +1,6 @@
 /** 지인용 공유 페이지(/share/:baby_id) — 로그인 없이 보는 반응형 웹.
- * 기록(사진)을 크게 보여주고, 선물(조각 채우기)은 하단 플로팅 버튼으로 진입.
- * "조각 채우기" 섹션 = 선물 퍼즐 + 옷장(시기별 필요/보유) 전체.
+ * 기록(사진)을 크게 보여주고, 선물(위시·받은 선반)은 하단 플로팅 버튼으로 진입.
+ * 선물 섹션 = 부모가 공개한 옷장 위시(시기별 필요/보유) 항목.
  */
 (function () {
   var BABY_ID = (window.__BABY_ID__ && window.__BABY_ID__ !== "{{BABY_ID}}")
@@ -229,11 +229,10 @@
     var hero = profile.background || collectPhotos(data)[0] || profile.shareImage || avatar;
     var age = ageLabel(profile.currentAge);
     var posts = (data.posts || []).filter(isPublic).slice().sort(function (a, b) { return (b.createdAt || 0) - (a.createdAt || 0); });
-    var registry = data.giftPuzzles || [];
 
     var recHtml = renderRecords(posts, profile, baby);
 
-    // 첫 화면은 기록만. 선물(조각 채우기)은 플로팅 버튼 → 오버레이로만 진입.
+    // 첫 화면은 기록만. 선물(위시·받은 선반)은 플로팅 버튼 → 오버레이로만 진입.
     root.innerHTML =
       '<section class="s-hero">' +
         '<div class="s-hero-bg" style="background-image:url(\'' + esc(hero) + '\')"></div>' +
@@ -288,7 +287,7 @@
     });
   }
 
-  // 선물(조각 채우기) 오버레이
+  // 선물(위시·선반) 오버레이
   /* ===== 감성 큐레이션: 베이비샤워 위시리스트 ===== */
   // 상품명 키워드 → 감성 카피
   var EMO = [
@@ -344,15 +343,9 @@
       return { emoji: p.emoji || "🎁", name: p.base, giver: (gb && gb.guest_name) || "가족" };
     });
   }
-  // 보드/카드에 쓸 9조각: 선물 퍼즐 + 옷장 필요 항목
+  // 부모가 옷장에서 '공개(published)'로 설정한 위시 항목으로 선물 보드를 만든다.
   function buildPieces() {
     var out = [], seen = {};
-    (CURRENT_DATA.giftPuzzles || []).forEach(function (g) {
-      if (seen[g.id]) return; seen[g.id] = 1;
-      var e = emoFor(g.productName);
-      out.push({ id: g.id, base: g.productName, title: e.t, desc: e.d, emoji: (e.t.match(/\p{Emoji}/u) || ["🎁"])[0], url: g.url, brand: g.brand });
-    });
-    // 부모가 옷장에서 '공개(published)'로 설정한 항목만 노출
     var wl = CURRENT_DATA.wishlist || {}, published = CURRENT_DATA.published || {};
     STAGES.forEach(function (st) {
       (wl[st.id] || []).forEach(function (it) {
@@ -416,11 +409,19 @@
       var box = document.querySelector('.bb-prods[data-prod="' + p.id + '"]');
       if (!box) return;
       box.innerHTML = '<div class="bb-prods-h">키디키디 추천 상품</div><div class="bb-prods-row loading">불러오는 중…</div>';
-      fetch('/api/kidikidi/search?limit=3&q=' + encodeURIComponent(p.base))
+      // 무응답이어도 영원히 "불러오는 중…"에 머물지 않도록 7초 타임아웃.
+      var ctrl = new AbortController();
+      var timer = setTimeout(function () { ctrl.abort(); }, 7000);
+      var fallback = function () {
+        box.innerHTML = '<div class="bb-prods-h">키디키디 추천 상품</div>' +
+          '<a class="bb-prods-fallback" href="' + KIDIKIDI_PLANSHOP + '" target="_blank" rel="noopener">' +
+          '🎁 키디키디에서 「' + esc(p.base) + '」 선물 보기 →</a>';
+      };
+      fetch('/api/kidikidi/search?limit=3&q=' + encodeURIComponent(p.base), { signal: ctrl.signal })
         .then(function (r) { return r.json(); })
         .then(function (j) {
           var items = (j && j.products) || [];
-          if (!items.length) { box.style.display = 'none'; return; }
+          if (!items.length) { fallback(); return; }
           box.innerHTML = '<div class="bb-prods-h">키디키디 추천 상품</div><div class="bb-prods-row">' +
             items.slice(0, 3).map(function (it) {
               var price = it.price ? Number(it.price).toLocaleString('ko-KR') + '원' : '';
@@ -435,7 +436,8 @@
             a.addEventListener('click', function () { track('gift_click', { item_id: p.id, via: 'product' }); });
           });
         })
-        .catch(function () { box.style.display = 'none'; });
+        .catch(function () { fallback(); })
+        .then(function () { clearTimeout(timer); }, function () { clearTimeout(timer); });
     });
   }
   function bindRegistry() {
