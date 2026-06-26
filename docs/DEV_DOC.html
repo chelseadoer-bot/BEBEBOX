@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>베베박스(BEBEBOX) · 개발 문서</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍼</text></svg>"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css"/>
+<style>
+:root{
+  --bg:#f6f4f0;--card:#fff;--ink:#241f1b;--sub:#6b6258;--muted:#a59c92;
+  --line:#e9e2d8;--accent:#ff6b3d;--accent-soft:#fff4ef;--ok:#2f9e5e;--ok-soft:#e9f8ef;
+  --blue:#3b6fe0;--blue-soft:#eef4ff;--purple:#6b46c1;--purple-soft:#f3ecff;--code:#f3efe9;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Pretendard",system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.6;letter-spacing:-.01em}
+.wrap{max-width:980px;margin:0 auto;padding:40px 20px 80px}
+header.hero{background:linear-gradient(135deg,#ff8a5c,#ff6b3d);color:#fff;border-radius:22px;padding:34px 30px;box-shadow:0 14px 36px rgba(255,107,61,.28)}
+header.hero .logo{font-size:40px}
+header.hero h1{font-size:30px;font-weight:800;margin:6px 0 4px}
+header.hero p{font-size:15px;opacity:.95;font-weight:500}
+header.hero .meta{margin-top:16px;display:flex;flex-wrap:wrap;gap:8px}
+.chip{display:inline-block;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.35);border-radius:999px;padding:5px 12px;font-size:12px;font-weight:700;color:#fff}
+nav.toc{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px 22px;margin:22px 0}
+nav.toc b{display:block;font-size:13px;color:var(--sub);margin-bottom:10px;font-weight:800}
+nav.toc ol{margin:0;padding-left:20px;columns:2;column-gap:28px}
+nav.toc a{color:var(--ink);text-decoration:none;font-size:14px;font-weight:600}
+nav.toc a:hover{color:var(--accent)}
+section{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:26px 28px;margin:18px 0}
+h2{font-size:21px;font-weight:800;margin-bottom:6px;padding-bottom:12px;border-bottom:2px solid var(--accent-soft);display:flex;align-items:center;gap:8px}
+h2 .n{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;background:var(--accent);color:#fff;border-radius:8px;font-size:14px;flex:0 0 auto}
+h3{font-size:16px;font-weight:800;margin:20px 0 8px;color:#3a322b}
+p.lead{color:var(--sub);font-size:14.5px;margin:10px 0}
+ul,ol.list{margin:8px 0 8px 20px}
+li{margin:5px 0;font-size:14px}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:12px 0}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:#faf7f3;color:var(--sub);font-weight:700;font-size:12.5px;white-space:nowrap}
+td code,code.inline{background:var(--code);border-radius:6px;padding:1px 6px;font-family:ui-monospace,Menlo,monospace;font-size:12.5px;color:#9a4a1f}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:14px 0}
+.fcard{border:1px solid var(--line);border-radius:13px;padding:14px 16px;background:#fffdfb}
+.fcard .ico{font-size:22px}
+.fcard b{display:block;font-size:14.5px;margin:6px 0 3px}
+.fcard span{font-size:12.5px;color:var(--sub);line-height:1.5}
+.badge{display:inline-block;font-size:11px;font-weight:800;border-radius:999px;padding:2px 9px;margin-left:6px}
+.b-ok{background:var(--ok-soft);color:var(--ok)}
+.b-new{background:var(--accent-soft);color:var(--accent)}
+.b-fix{background:var(--blue-soft);color:var(--blue)}
+.b-del{background:#fdeef1;color:#d24b6a}
+pre{background:#241f1b;color:#f3ede4;border-radius:12px;padding:16px 18px;overflow:auto;font-size:12.5px;line-height:1.65;font-family:ui-monospace,Menlo,monospace;margin:12px 0}
+pre .c{color:#9b8e7e}
+.flow{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:14px 0;font-size:13px;font-weight:700}
+.flow .step{background:var(--accent-soft);border:1px solid #ffd9c6;color:#c2511e;border-radius:10px;padding:8px 12px}
+.flow .step.use{background:var(--purple-soft);border-color:#e2d4ff;color:var(--purple)}
+.flow .arr{color:#e0a980;font-weight:800}
+.note{background:var(--accent-soft);border:1px solid #ffdcc9;border-radius:12px;padding:12px 16px;font-size:13.5px;color:#8a4a28;margin:12px 0}
+.cols2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:680px){.cols2{grid-template-columns:1fr}nav.toc ol{columns:1}}
+footer{text-align:center;color:var(--muted);font-size:12px;margin-top:30px}
+.surface-tag{font-size:11px;font-weight:800;border-radius:6px;padding:2px 7px;margin-right:6px}
+.s-user{background:#eaf6ee;color:#2f9e5e}.s-share{background:#eef4ff;color:#3b6fe0}.s-admin{background:#f3ecff;color:#6b46c1}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <div class="logo">🍼</div>
+  <h1>베베박스 (BEBEBOX)</h1>
+  <p>육아일기 · AI 콘텐츠로 자연스럽게 잇는 <b>베이비 선물 레지스트리</b> 개발 문서</p>
+  <div class="meta">
+    <span class="chip">Python 표준 라이브러리 서버</span>
+    <span class="chip">SQLite</span>
+    <span class="chip">바닐라 JS SPA</span>
+    <span class="chip">Render 자동배포</span>
+    <span class="chip">문서 갱신 2026-06-26</span>
+  </div>
+</header>
+
+<nav class="toc">
+  <b>목차</b>
+  <ol>
+    <li><a href="#overview">서비스 개요 · 핵심 전략</a></li>
+    <li><a href="#arch">시스템 아키텍처</a></li>
+    <li><a href="#surfaces">3개 화면(서피스)</a></li>
+    <li><a href="#features">핵심 기능 상세</a></li>
+    <li><a href="#candy">캔디 리워드 경제</a></li>
+    <li><a href="#ai">AI 미니앱(8종)</a></li>
+    <li><a href="#files">파일 구조 · JS 모듈</a></li>
+    <li><a href="#api">API 엔드포인트</a></li>
+    <li><a href="#data">데이터 모델 · 동기화</a></li>
+    <li><a href="#deploy">배포 · 운영 규칙</a></li>
+    <li><a href="#changelog">최근 작업 이력</a></li>
+  </ol>
+</nav>
+
+<!-- 1 -->
+<section id="overview">
+  <h2><span class="n">1</span> 서비스 개요 · 핵심 전략</h2>
+  <p class="lead">아기 성장 기록(육아일기)과 AI 콘텐츠를 가족·지인과 공유하고, 그 흐름 안에서 자연스럽게 <b>출산/육아 선물(레지스트리)</b>을 주고받는 모바일 웹 서비스.</p>
+  <h3>핵심 우회 전략 (Why)</h3>
+  <p class="lead">한국 정서상 "내 선물 링크 보세요"는 민망하다. 그래서 <b>육아일기 + AI 카드</b>를 만들어 지인에게 공유하고, 지인은 "아기 보러" 자연스럽게 들어왔다가 레지스트리를 발견해 선물한다. 모든 활동은 <b>캔디(🍬)</b>로 보상되어 행동→보상→소비→교환 루프로 묶인다.</p>
+  <div class="flow">
+    <span class="step">✍️ 일기 작성</span><span class="arr">›</span>
+    <span class="step">❤️ 지인 공감</span><span class="arr">›</span>
+    <span class="step">🎁 선물 도착(선반)</span><span class="arr">›</span>
+    <span class="step">🍬 캔디 적립</span><span class="arr">›</span>
+    <span class="step use">✨ AI·게임·상품권</span>
+  </div>
+</section>
+
+<!-- 2 -->
+<section id="arch">
+  <h2><span class="n">2</span> 시스템 아키텍처</h2>
+  <table>
+    <tr><th>레이어</th><th>구현</th><th>비고</th></tr>
+    <tr><td>웹 서버</td><td><code>server.py</code> — Python 표준 라이브러리 <code>http.server</code></td><td>외부 의존성 없음(포트 8080, <code>directory=ROOT</code> 정적 서빙)</td></tr>
+    <tr><td>데이터</td><td>SQLite <code>data/bebebox.db</code> (<code>db.py</code>)</td><td>테이블: photos · family_data · sessions</td></tr>
+    <tr><td>이미지</td><td><code>uploads/</code> 디렉터리</td><td>배포 시 영구 디스크 <code>/data</code> 마운트</td></tr>
+    <tr><td>프론트엔드</td><td>바닐라 JS SPA (<code>index.html</code> + <code>js/*</code>)</td><td>빌드 없음, <code>?v=N</code> 캐시버스팅</td></tr>
+    <tr><td>인증</td><td>카카오 OAuth (<code>kakao_auth.py</code> + 세션 쿠키)</td><td>공유는 Kakao JS SDK</td></tr>
+    <tr><td>AI 백엔드</td><td><code>ai_backend.py</code> + <code>apps/*/backend/</code></td><td>Gemini API, 앱별 파이프라인/스키마</td></tr>
+    <tr><td>외부 연동</td><td>키디키디(이랜드몰) 상품 검색 프록시</td><td><code>/api/kidikidi/search</code> → elandmall</td></tr>
+    <tr><td>동기화</td><td>가족코드 단위 <code>family_data</code> 전체 JSON</td><td>기기 간 공유·재배포 보존</td></tr>
+  </table>
+  <div class="note">📌 데이터는 <b>가족코드(초대코드)</b> 하나로 묶인다. 같은 코드를 쓰는 기기끼리 일기·위시·선물·캔디가 모두 공유된다.</div>
+</section>
+
+<!-- 3 -->
+<section id="surfaces">
+  <h2><span class="n">3</span> 3개 화면(서피스)</h2>
+  <div class="grid">
+    <div class="fcard"><div class="ico">📱</div><b><span class="surface-tag s-user">사용자</span>index.html</b><span>부모(회원) 앱. 일기·피드, 위시리스트/선반, 캔디, AI 게임, 설정. 카카오 로그인 + 온보딩.</span></div>
+    <div class="fcard"><div class="ico">🔗</div><b><span class="surface-tag s-share">공유</span>share.html</b><span>지인이 카톡 링크로 진입하는 페이지. 일기 먼저, 하단 플로팅으로 선물(위시·받은 선반)·방명록. 로그인 불필요.</span></div>
+    <div class="fcard"><div class="ico">🛠️</div><b><span class="surface-tag s-admin">운영자</span>admin.html</b><span>관리자 키 게이트. 쿠폰 지급 대기열, 회원/상세, 지인 전환 펀넬, 게임 탭 배너 편집.</span></div>
+  </div>
+  <p class="lead">+ AI 미니앱 8종은 각각 <code>apps/&lt;slug&gt;/index.html</code> 로 사용자 앱 안에서 iframe으로 열린다.</p>
+</section>
+
+<!-- 4 -->
+<section id="features">
+  <h2><span class="n">4</span> 핵심 기능 상세</h2>
+
+  <h3>① 온보딩 <span class="surface-tag s-user">사용자</span></h3>
+  <ul>
+    <li>카카오로 시작 → <b>부모</b> / <b>초대받음(지인·배우자)</b> 분기</li>
+    <li>역할(엄마·아빠·가족) → 아기 이름(<b>태명/“아직 안 정했어요”</b> 지원) → 키디키디 연동(선택) → 완료</li>
+    <li>초대받음은 6자리 가족코드로 기존 가족 공간에 합류(게스트 모드)</li>
+  </ul>
+
+  <h3>② 일기 · 피드 <span class="surface-tag s-user">사용자</span></h3>
+  <ul>
+    <li>사진/글 기록(인스타식 컴포저), 월령 연령 탭, 좋아요·댓글</li>
+    <li>댓글 시트(밝은 흰색 테마)</li>
+    <li>성장 저니(스케치 정원) — 여정 노드·퀘스트, raid 펀딩(유모차 성문 등)</li>
+  </ul>
+
+  <h3>③ 위시리스트 · 받은 선물 선반 <span class="surface-tag s-user">사용자</span> <span class="surface-tag s-share">공유</span></h3>
+  <ul>
+    <li>임신 시기/월령별 스테이지(<code>s1~s8</code>), 우선순위 <b>필수·권장·선택</b>, 대상 mom·baby</li>
+    <li>위시 카드 <b>탭 한 번 → 통합 시트</b>(공유 위시 공개 · 받음 기록 · 인사말 · 상품 선택 · 삭제)</li>
+    <li><b>받은 선물 선반</b>: 선물받으면 준 사람과 함께 선반에 채워짐. 탭하면 <b>준 사람이 남긴 인사말</b> 표시(공유 페이지 “축하 한마디” guestbook 연동)</li>
+    <li>달성률: “받고 싶은 선물 N/M개 도착” + “선물마다 +50🍬”</li>
+    <li>키디키디 추천 상품(7초 타임아웃 + 폴백 링크로 무한로딩 방지)</li>
+  </ul>
+
+  <h3>④ 오늘의 미션 <span class="surface-tag s-user">사용자</span></h3>
+  <p class="lead">사진·공유·AI 활동으로 9칸을 채우면 <b>+100🍬 보너스</b>(하루 1회). 날짜가 바뀌면 새 판. <em>※ 선물 레지스트리의 ‘선물 퍼즐’과는 별개의 데일리 캔디 미션.</em></p>
+
+  <h3>⑤ 공유 · 바이럴 <span class="surface-tag s-share">공유</span></h3>
+  <ul>
+    <li>카카오톡 공유: Kakao JS SDK <code>Kakao.Share.sendDefault</code>(피드 카드) → Web Share → 링크복사 폴백</li>
+    <li>공유 링크 <code>/share/&lt;가족코드&gt;</code> 에 <b>OG 메타(제목·이미지) 서버 주입</b> → 카톡 미리보기 카드</li>
+    <li>지인이 선물 완료 시 관계·이름·축하 메시지를 방명록(guestbook)에 남김 → 부모 선반/운영자에 반영</li>
+    <li>“나도 우리 아이 기록 시작하기” 2차 바이럴 CTA</li>
+  </ul>
+
+  <h3>⑥ 운영자 대시보드 <span class="surface-tag s-admin">운영자</span></h3>
+  <ul>
+    <li>KPI: 회원 수 · 지급 대기 쿠폰 · 발급 완료 · 누적 기록 · 지인 선물 완료</li>
+    <li><b>쿠폰 지급 대기열</b>: 캔디 교환 완료 회원에게 키디키디 쿠폰 발급 체크(키디 아이디 없음 경고)</li>
+    <li>회원 목록/검색 + 상세(위시·받은선물·선물해준 사람·관계·메시지)</li>
+    <li>지인 유입 전환 펀넬: 조회 → 선물클릭 → 완료 / 하트·댓글·미니앱</li>
+    <li>게임 탭 상단 배너 편집(다중·이미지·아이콘·링크, 기본 배너 항상 유지)</li>
+  </ul>
+</section>
+
+<!-- 5 -->
+<section id="candy">
+  <h2><span class="n">5</span> 캔디(🍬) 리워드 경제</h2>
+  <p class="lead">하나의 재화(캔디)로 <b>모으기 → 쓰기 → 교환</b> 루프를 묶는다. (<code>js/points.js</code>)</p>
+  <div class="cols2">
+    <div>
+      <h3>모으기</h3>
+      <table>
+        <tr><th>행동</th><th>적립</th></tr>
+        <tr><td>아이 기록(일기)</td><td>+20</td></tr>
+        <tr><td>사진첩/링크 공유</td><td>+30</td></tr>
+        <tr><td>선물 받음(준 사람 기록)</td><td>+50</td></tr>
+        <tr><td>좋아요 200개마다</td><td>+10</td></tr>
+        <tr><td>오늘의 미션 완성</td><td>+100</td></tr>
+      </table>
+    </div>
+    <div>
+      <h3>쓰기 · 교환</h3>
+      <table>
+        <tr><th>용도</th><th>비용/교환</th></tr>
+        <tr><td>AI 결과 보기(앱별)</td><td>−10 ~ −30</td></tr>
+        <tr><td><b>첫 AI 결과</b></td><td><b>무료 체험 1회</b></td></tr>
+        <tr><td>쿠폰 교환</td><td>100🍬 → 3,000원 키디 상품권</td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="note">무료/저토큰 AI앱(작명·기질·당번)은 0캔디. 이미지·영상 등 고토큰 앱(스튜디오·브이로그·낙서)은 높게. 생성 실패 시 자동 환불.</div>
+</section>
+
+<!-- 6 -->
+<section id="ai">
+  <h2><span class="n">6</span> AI 미니앱 (8종)</h2>
+  <p class="lead"><code>apps/&lt;slug&gt;/</code> — 사용자 앱 게임 탭에서 iframe으로 열림. 결과를 일기에 담고 카톡 공유. (Gemini)</p>
+  <div class="grid">
+    <div class="fcard"><div class="ico">✏️</div><b>naming · 글로벌 작명소</b><span>무료 · 저토큰 텍스트</span></div>
+    <div class="fcard"><div class="ico">🧭</div><b>temperament · 기질 분석</b><span>무료 · 텍스트</span></div>
+    <div class="fcard"><div class="ico">🩺</div><b>health · 건강 체크</b><span>−10 · 텍스트</span></div>
+    <div class="fcard"><div class="ico">🔮</div><b>pastlife · 전생 인연</b><span>−10 · 텍스트</span></div>
+    <div class="fcard"><div class="ico">🎨</div><b>doodle · 낙서 심리</b><span>−20 · 이미지 입력</span></div>
+    <div class="fcard"><div class="ico">🎬</div><b>vlog · 브이로그</b><span>−20 · 영상 합성(ffmpeg)</span></div>
+    <div class="fcard"><div class="ico">🖼️</div><b>studio · 컨셉 스튜디오</b><span>−30 · 이미지 생성</span></div>
+    <div class="fcard"><div class="ico">🧹</div><b>chores · 집안일 당번</b><span>무료 · 무-LLM</span></div>
+  </div>
+</section>
+
+<!-- 7 -->
+<section id="files">
+  <h2><span class="n">7</span> 파일 구조 · JS 모듈</h2>
+  <pre><span class="c"># 진입 페이지</span>
+index.html        <span class="c">사용자 앱(SPA) · 모든 뷰/모달</span>
+share.html        <span class="c">지인 공유 페이지(+OG 메타 주입)</span>
+admin.html        <span class="c">운영자 대시보드</span>
+
+<span class="c"># 백엔드(Python 표준 라이브러리)</span>
+server.py         <span class="c">HTTP 서버 · 라우팅 · 키디 프록시 · 공유 OG</span>
+db.py             <span class="c">SQLite 데이터 계층</span>
+kakao_auth.py     <span class="c">카카오 OAuth</span>
+ai_backend.py     <span class="c">AI 미니앱 공통 백엔드(Gemini)</span>
+apps/&lt;slug&gt;/      <span class="c">미니앱 8종(backend/ + index.html + app.js)</span>
+
+<span class="c"># 프론트 JS 모듈</span>
+js/app.js             <span class="c">메인 컨트롤러(뷰·피드·위시·선반·캔디·AI게이트)</span>
+js/onboarding.js      <span class="c">온보딩 플로우</span>
+js/family-data.js     <span class="c">가족 데이터 서버 동기화(pack/apply)</span>
+js/kakao-auth.js      <span class="c">카카오 로그인/세션</span>
+js/kidikidi.js        <span class="c">키디키디 상품 검색(타임아웃 포함)</span>
+js/points.js          <span class="c">캔디 경제(적립/차감/쿠폰)</span>
+js/puzzle-mission.js  <span class="c">오늘의 미션(데일리 보너스)</span>
+js/minigame.js        <span class="c">게임 탭</span>
+js/share.js           <span class="c">공유 페이지 렌더·선물·방명록</span>
+js/feed-data.js       <span class="c">데모/펀딩·여정 데이터</span>
+js/wishlist-data.js   <span class="c">위시리스트 기본 데이터(시기별 품목)</span>
+js/photo-storage.js · photo-quest-detect.js</pre>
+</section>
+
+<!-- 8 -->
+<section id="api">
+  <h2><span class="n">8</span> API 엔드포인트</h2>
+  <table>
+    <tr><th>메서드</th><th>경로</th><th>설명</th></tr>
+    <tr><td>GET</td><td><code>/api/config</code></td><td>스토리지·카카오 사용 여부</td></tr>
+    <tr><td>GET</td><td><code>/api/photos?family=CODE</code></td><td>가족 사진 목록</td></tr>
+    <tr><td>POST</td><td><code>/api/photos/upload</code></td><td>사진 업로드(multipart)</td></tr>
+    <tr><td>DELETE</td><td><code>/api/photos/&lt;id&gt;</code></td><td>사진 삭제</td></tr>
+    <tr><td>GET/PUT</td><td><code>/api/family-data?family=CODE</code></td><td>가족 앱 상태 조회/저장(전체 JSON)</td></tr>
+    <tr><td>GET</td><td><code>/api/kidikidi/search?q=</code></td><td>키디키디 상품 검색 프록시</td></tr>
+    <tr><td>GET</td><td><code>/api/auth/me</code></td><td>로그인 사용자</td></tr>
+    <tr><td>GET</td><td><code>/auth/kakao/login</code> · <code>/callback</code></td><td>카카오 OAuth</td></tr>
+    <tr><td>POST</td><td><code>/api/auth/logout</code></td><td>로그아웃</td></tr>
+    <tr><td>POST</td><td><code>/api/track</code></td><td>이벤트 적치(전환 펀넬)</td></tr>
+    <tr><td>GET</td><td><code>/api/banner</code></td><td>게임 탭 배너</td></tr>
+    <tr><td>GET</td><td><code>/share/&lt;code&gt;</code></td><td>공유 페이지(OG 주입)</td></tr>
+    <tr><td>—</td><td><code>/api/admin/stats · members · member · coupons · coupon/fulfill · banner</code></td><td>운영자(키 인증)</td></tr>
+    <tr><td>—</td><td><code>/api/run</code> · <code>/api/records</code> · <code>/api/meta</code></td><td>AI 미니앱 백엔드</td></tr>
+  </table>
+</section>
+
+<!-- 9 -->
+<section id="data">
+  <h2><span class="n">9</span> 데이터 모델 · 동기화</h2>
+  <p class="lead"><code>family-data.js</code>의 <code>packFamilyState()</code>가 아래 상태를 가족코드 단위로 서버에 PUT, <code>applyFamilyState()</code>로 복원. 재배포·재접속에도 보존.</p>
+  <pre>friends · inbox · profile · wishlist
+owned        <span class="c">보유/받음 표시</span>
+published    <span class="c">공유 위시 공개 여부</span>
+giftedBy     <span class="c">선물 준 사람 이름</span>
+giftedMsg    <span class="c">받은 선물 인사말(부모 입력)</span>
+guestbook    <span class="c">지인이 남긴 축하 한마디</span>
+itemProducts · funding · fundingGauge · gaugePuzzles
+collectQuests · contributors · journeyGifts · journeyMemories
+parentQuestPhotos · points(캔디) · coupons · posts · likeAwarded · inviteCode</pre>
+  <div class="note">로컬 캐시(localStorage)와 서버를 함께 사용. 저장 시 600ms 디바운스로 서버 PUT. 게스트는 동기화 수신 후에만 되돌려 씀(부모 데이터 보호).</div>
+</section>
+
+<!-- 10 -->
+<section id="deploy">
+  <h2><span class="n">10</span> 배포 · 운영 규칙</h2>
+  <ul>
+    <li>저장소 <code>github.com/chelseadoer-bot/BEBEBOX</code> · <code>render.yaml</code>(Docker, 싱가포르 리전, 영구 디스크 <code>/data</code>)</li>
+    <li><b>main 브랜치는 보호됨 → PR로만 머지.</b> 머지 시 <code>autoDeploy</code>로 <code>bebebox.onrender.com</code> 자동 재배포</li>
+    <li><b>캐시버스팅 필수:</b> js/css 수정 시 <code>index.html</code>/<code>share.html</code>의 <code>?v=N</code>을 반드시 올린다</li>
+    <li>로컬 실행: <code>python server.py</code> (포트 8080). <code>python -m http.server</code>는 API 미동작</li>
+  </ul>
+</section>
+
+<!-- 11 -->
+<section id="changelog">
+  <h2><span class="n">11</span> 최근 작업 이력 (브랜치 <code>claude/shelf-gift-message</code>)</h2>
+  <table>
+    <tr><th>커밋</th><th>내용</th></tr>
+    <tr><td><code>53b4a10</code></td><td>선반 받은선물 인사말 보기 + 위시 카드 탭 통합 시트 <span class="badge b-fix">index.html 충돌마커 수정</span></td></tr>
+    <tr><td><code>8ae0acd</code></td><td>홈 흐름 가이드 + 선물 달성률 의미 명확화 <span class="badge b-new">신규</span> + 인사말 시트 가독성</td></tr>
+    <tr><td><code>ce1c21d</code></td><td>온보딩(태명·가치카피) + 키디키디 7초 타임아웃·폴백 <span class="badge b-del">선물 퍼즐 제거</span></td></tr>
+    <tr><td><code>70b4c45</code></td><td>AI 첫 결과 무료 체험 <span class="badge b-new">신규</span> + 공유 선물버튼 발견성(펄스)</td></tr>
+    <tr><td><code>5557733</code></td><td><b>운영자 대시보드 작동불능 버그 수정</b> <span class="badge b-fix">admin.html 충돌마커</span></td></tr>
+    <tr><td><code>e4065af</code></td><td>죽은 표현 정리(공유 선물시트) + favicon 추가 <span class="badge b-ok">위생</span></td></tr>
+    <tr><td><code>5a96dc9</code></td><td>댓글 시트 흰색 테마 + 죽은 ⓘ 버튼 제거</td></tr>
+  </table>
+  <div class="note">여정 점검 결과: 로그인→부모/지인 온보딩→홈/위시/설정/게임·AI(8종)·공유까지 정상. 병합 충돌 마커 잔존 0 · 콘솔 에러 0 · 네트워크 404 0 · 카카오 공유 준비 완료.</div>
+  <h3>보류(별도 논의)</h3>
+  <ul>
+    <li>외부(키디키디) 결제 후 <b>수동 복귀 인증</b> → 자동 인증 동선(펀넬 최대 누수)</li>
+    <li>운영자 <b>쿠폰 외부 수기 발급</b> · admin 키 URL 노출 · 데이터 export(server.py 영역)</li>
+    <li>여정 raid 펀딩(‘조각’ 표현) 정리 여부</li>
+    <li>임산부 전용 콘텐츠(태교/태명 우선 노출) · 진짜 ‘둘러보기’ 게스트 데모</li>
+  </ul>
+</section>
+
+<footer>BEBEBOX 개발 문서 · 자동 생성 · 2026-06-26</footer>
+
+</div>
+</body>
+</html>

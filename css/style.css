@@ -630,6 +630,23 @@ body.is-guest .guest-only{display:block!important}
 .comment-emoji-btn{position:absolute;right:10px;background:none;border:none;color:#aaa;font-size:18px;cursor:pointer;padding:2px}
 .comment-send-btn{width:32px;height:32px;border-radius:50%;background:#3897f0;border:none;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;opacity:.45;transition:opacity .15s}
 .comment-send-btn.active{opacity:1}
+/* 사용자 앱 댓글 시트: 공유 페이지처럼 밝은 흰색 테마 */
+#comment-sheet .comment-panel{background:#fff}
+#comment-sheet .comment-handle{background:#e0e0e0}
+#comment-sheet .comment-header h3{color:#191919}
+#comment-sheet .comment-empty{color:#999}
+#comment-sheet .comment-item-avatar{background:#eee}
+#comment-sheet .comment-item-author{color:#191919}
+#comment-sheet .comment-item-text{color:#333}
+#comment-sheet .comment-item-time{color:#aaa}
+#comment-sheet .comment-reply-link{color:#3897f0}
+#comment-sheet .comment-item.reply::before{color:#bbb}
+#comment-sheet .comment-reply-bar{background:#f5f5f5;color:#777;border-top:1px solid #eee}
+#comment-sheet .comment-reply-bar b{color:#191919}
+#comment-sheet .comment-input-bar{background:#fff;border-top:1px solid #eee}
+#comment-sheet .comment-input-wrap input{background:#f2f2f2;color:#191919}
+#comment-sheet .comment-input-wrap input::placeholder{color:#999}
+#comment-sheet .comment-emoji-btn{color:#888}
 #game-tab-view.active{display:flex;flex-direction:column;height:calc(100vh - 56px - env(safe-area-inset-bottom,0px));max-height:calc(100vh - 56px - env(safe-area-inset-bottom,0px));background:#f5f6f8;position:relative;overflow:hidden}
 #game-tab-view .ig-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px 16px 24px}
 .ig-banner{position:relative;background:#efe4d4;border:none;border-radius:16px;min-height:128px;margin-bottom:20px;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,.08)}
