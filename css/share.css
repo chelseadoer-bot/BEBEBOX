@@ -194,7 +194,8 @@ img{display:block;max-width:100%}
 .s-wl-item.have .s-wl-status{color:var(--muted)}
 
 /* 플로팅 선물 버튼 */
-.s-fab{position:fixed;right:max(16px,calc((100vw - var(--maxw))/2 + 16px));bottom:22px;z-index:40;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;width:72px;height:72px;border-radius:50%;border:none;background:var(--accent);color:#fff;font-size:29px;cursor:pointer;box-shadow:0 8px 24px rgba(255,87,34,.5)}
+.s-fab{position:fixed;right:max(16px,calc((100vw - var(--maxw))/2 + 16px));bottom:22px;z-index:40;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;width:72px;height:72px;border-radius:50%;border:none;background:var(--accent);color:#fff;font-size:29px;cursor:pointer;box-shadow:0 8px 24px rgba(255,87,34,.5);animation:sFabPulse 2.4s ease-in-out infinite}
+@keyframes sFabPulse{0%,100%{box-shadow:0 8px 24px rgba(255,87,34,.5)}50%{box-shadow:0 8px 24px rgba(255,87,34,.5),0 0 0 12px rgba(255,87,34,.16)}}
 .s-fab-label{font-size:11px;font-weight:800}
 .s-fab:active{transform:scale(.95)}
 

@@ -2211,6 +2211,12 @@ function handleMiniAppGate(data){
       {type:"kidikidi-gate-reply",requestId:data.requestId,allow:!!allow},"*");}catch(_){}
   };
   if(!cost){_lastCharge=0;reply(true);return;}           // 무료 앱 → 통과
+  // 첫 유료 AI 결과는 무료 체험(1회). 실제 생성 성공 시에만 소진한다.
+  if(!localStorage.getItem("bbx_ai_free_used")){
+    _lastCharge=0;_pendingFree=true;
+    if(typeof showToast==="function")showToast("첫 AI 결과는 무료예요 🎁");
+    reply(true);return;
+  }
   openRevealGate(cost,(confirmed)=>{
     if(confirmed&&typeof spendPoints==="function"&&spendPoints(cost,"miniapp_reveal")){
       _lastCharge=cost;                                  // 실패 시 환불 대비
@@ -2224,6 +2230,7 @@ function handleMiniAppGate(data){
   });
 }
 let _lastCharge=0;   // 직전 결제(차감) 금액 — 생성 실패 시 환불용
+let _pendingFree=false;   // 첫 무료 체험 진행 중 — 생성 성공 시에만 소진
 function handleMiniAppEvent(data){
   const app=_activeMiniApp||{slug:(data&&data.app)||"miniapp",label:"AI 앱"};
   const ev=data&&data.event;
@@ -2232,6 +2239,7 @@ function handleMiniAppEvent(data){
     return;
   }
   if(ev==="failed"){
+    _pendingFree=false;   // 실패하면 무료 체험은 그대로 남겨둔다
     // 생성 실패 → 게이트에서 차감한 포인트 환불
     if(_lastCharge>0){
       if(typeof addPoints==="function")addPoints(_lastCharge,"miniapp_refund");
@@ -2243,6 +2251,7 @@ function handleMiniAppEvent(data){
   }
   if(ev==="generated"){
     if(data&&data.from_cache){_lastCharge=0;return;}
+    if(_pendingFree){localStorage.setItem("bbx_ai_free_used","1");_pendingFree=false;}  // 첫 무료 체험 소진
     _lastCharge=0;   // 결제 확정
     // 결제는 게이트에서 끝났고, 여기선 달성조건(오늘의 미션) 1조각 반영 + 동기화
     // (생성 자체는 서버 ai_backend 가 miniapp_generate 로 고객 DB에 적치)
