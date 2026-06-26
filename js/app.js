@@ -147,7 +147,7 @@ function reorderItemProducts(itemId,from,to){
 }
 function fmtPrice(n){return n.toLocaleString("ko-KR")+"원";}
 function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
-let state={photos:[],friends:[],inbox:[],profile:{...DEFAULT_PROFILE},wishlist:{},owned:{},hidden:{},itemProducts:{},funding:{},fundingGauge:{},gaugePuzzles:{},collectQuests:{},contributors:{},journeyGifts:{},journeyMemories:{},parentQuestPhotos:{},points:0,coupons:[],posts:[],giftPuzzles:[],published:{},giftedBy:{},likeAwarded:0,journeyJustCleared:null,viewingPostId:null,currentStage:0,currentAgeTab:"all",pendingGift:null,viewingPhotoId:null,pendingFunding:null,pendingContribute:null,pendingJourneyNode:null,pendingRaidNode:null,pendingJourneyEditNode:null};
+let state={photos:[],friends:[],inbox:[],profile:{...DEFAULT_PROFILE},wishlist:{},owned:{},hidden:{},itemProducts:{},funding:{},fundingGauge:{},gaugePuzzles:{},collectQuests:{},contributors:{},journeyGifts:{},journeyMemories:{},parentQuestPhotos:{},points:0,coupons:[],posts:[],published:{},giftedBy:{},likeAwarded:0,journeyJustCleared:null,viewingPostId:null,currentStage:0,currentAgeTab:"all",pendingGift:null,viewingPhotoId:null,pendingFunding:null,pendingContribute:null,pendingJourneyNode:null,pendingRaidNode:null,pendingJourneyEditNode:null};
 function isGuest(){return new URLSearchParams(location.search).has("guest");}
 function babyName(){return state.profile.babyName||state.profile.name.replace(/의 일기$/,"")||"다엘이";}
 function hasItem(id){return!!state.owned[id];}
@@ -361,7 +361,6 @@ function load(){
   state.points=sp?(parseInt(sp,10)||0):0;
   try{const cp=JSON.parse(localStorage.getItem("photoShare_coupons")||"[]");state.coupons=Array.isArray(cp)?cp:[];}catch(_){state.coupons=[];}
   try{const ps=JSON.parse(localStorage.getItem("photoShare_posts")||"[]");state.posts=Array.isArray(ps)?ps.map(ensurePostMeta):[];}catch(_){state.posts=[];}
-  try{const gp=JSON.parse(localStorage.getItem("photoShare_giftpuzzles")||"[]");state.giftPuzzles=Array.isArray(gp)?gp:[];}catch(_){state.giftPuzzles=[];}
   const wl=localStorage.getItem(STORAGE_KEYS.wishlist);
   const wlVer=localStorage.getItem(STORAGE_KEYS.wishlist+"_ver");
   if(wlVer!==String(WISHLIST_VERSION)||!wl){
@@ -427,7 +426,6 @@ function saveLocalCache(){
   localStorage.setItem("photoShare_points",String(state.points||0));
   localStorage.setItem("photoShare_coupons",JSON.stringify(state.coupons||[]));
   localStorage.setItem("photoShare_posts",JSON.stringify(state.posts||[]));
-  localStorage.setItem("photoShare_giftpuzzles",JSON.stringify(state.giftPuzzles||[]));
 }
 function save(){
   saveLocalCache();
@@ -777,7 +775,6 @@ function renderGiftProgress(){
   const pub=state.published||{},owned=state.owned||{};
   let total=0,done=0;
   Object.keys(pub).forEach(id=>{if(pub[id]){total++;if(owned[id])done++;}});
-  (state.giftPuzzles||[]).forEach(g=>{total++;if((g.pieces||[]).length>=(g.total||9))done++;});
   if(!total){el.classList.add("hidden");el.innerHTML="";return;}
   el.classList.remove("hidden");
   const pct=Math.round(done/total*100);
@@ -1337,13 +1334,6 @@ function collectReceivedGifts(){
       out.push({id:it.id,emoji:it.emoji||"🎁",name:it.name,giver:state.giftedBy[it.id]||""});
     }
   }));
-  (state.giftPuzzles||[]).forEach(g=>{
-    const filled=(g.pieces||[]).length,total=g.total||9;
-    if(filled>=total){
-      const givers=[...new Set((g.pieces||[]).map(p=>p&&p.from).filter(Boolean))];
-      out.push({emoji:"🎁",image:g.image,name:g.productName||"선물",giver:givers.join(", ")});
-    }
-  });
   return out;
 }
 function giftShelfHtml(gifts,emptyMsg){
@@ -1683,7 +1673,6 @@ function submitWishAdd(){
 function openWishlist(){
   const t=$(".wishlist-title");if(t)t.textContent=`${babyName()} 옷장`;
   const ca=$("#closet-avatar");if(ca){ca.src=state.profile.avatar;ca.alt=babyName();}
-  if(typeof renderGiftPuzzles==="function")renderGiftPuzzles();
   renderStageNav();renderWishlistGrid();showView("#wishlist-view");
 }
 function getGuideAge(){
@@ -2536,14 +2525,12 @@ function bindEvents(){
   $("#btn-app-delete")?.addEventListener("click",appDeleteAccount);
   $("#btn-copy-invite-code")?.addEventListener("click",copyInviteCode);
   if(typeof bindMinigameEvents==="function")bindMinigameEvents();
-  if(typeof bindGiftPuzzleEvents==="function")bindGiftPuzzleEvents();
   $("#btn-share")?.classList.remove("active");
   $("#btn-gift").onclick=openWishlist;
   $("#gift-progress")?.addEventListener("click",openWishlist);
   $("#btn-back-guide")?.addEventListener("click",()=>switchMainTab("home"));
-  // 성장 저니 상단: 선물하기/선물 퍼즐 바로가기
+  // 성장 저니 상단: 선물하기 바로가기
   $("#btn-journey-gift-shortcut")?.addEventListener("click",openWishlist);
-  $("#btn-journey-puzzle-shortcut")?.addEventListener("click",()=>{openWishlist();setTimeout(()=>$("#btn-new-gift-puzzle")?.scrollIntoView({behavior:"smooth",block:"center"}),200);});
   $("#btn-add-feed-photo").onclick=openComposer;
   // 글쓰기(인스타식) 모달
   $("#btn-composer-cancel")?.addEventListener("click",closeComposer);
@@ -2703,7 +2690,6 @@ async function bootApp(){
   const _bp=new URLSearchParams(location.search);
   const _fam=_bp.get("family");
   if(_fam)localStorage.setItem(STORAGE_KEYS.inviteCode,_fam.trim().toUpperCase());
-  const _giftId=_bp.get("giftpuzzle");
   if(typeof initKakaoAuth==="function")await initKakaoAuth();
   if(typeof syncFamilyDataFromServer==="function"){
     const synced=await syncFamilyDataFromServer();
@@ -2719,12 +2705,6 @@ async function bootApp(){
   migratePuzzleMissionImage();
   migratePhotoQuestLinks();
   bindEvents();
-  // 선물 퍼즐 링크로 들어오면 온보딩을 건너뛰고 바로 채우기 화면을 연다.
-  if(_giftId){
-    enterMainApp();
-    if(typeof openGiftPuzzleFill==="function")requestAnimationFrame(()=>openGiftPuzzleFill(_giftId));
-    return;
-  }
   const needsOnboarding=typeof initOnboarding==="function"&&initOnboarding();
   if(needsOnboarding)hideTabBar();
   else enterMainApp();

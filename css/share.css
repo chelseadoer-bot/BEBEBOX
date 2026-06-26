@@ -100,6 +100,8 @@ img{display:block;max-width:100%}
 .bb-prod-img{width:100%;aspect-ratio:1;border-radius:8px;background:#f5efe7 center/cover no-repeat;display:flex;align-items:center;justify-content:center;font-size:24px}
 .bb-prod-name{font-size:10.5px;font-weight:700;color:#5a4a3a;line-height:1.3;height:27px;overflow:hidden;text-align:left}
 .bb-prod-price{font-size:11px;font-weight:800;color:#ff6b3d;text-align:left}
+.bb-prods-fallback{display:block;text-decoration:none;font-size:12.5px;font-weight:700;color:#c2511e;background:#fff4ef;border:1px solid #ffd9c6;border-radius:10px;padding:10px 12px;text-align:left;line-height:1.4}
+.bb-prods-fallback:active{opacity:.8}
 .bb-board{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:6px 0 4px}
 .bb-tile{aspect-ratio:1;border-radius:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden}
 .bb-tile.empty{background:repeating-linear-gradient(135deg,#f3ece1,#f3ece1 8px,#efe6d8 8px,#efe6d8 16px)}

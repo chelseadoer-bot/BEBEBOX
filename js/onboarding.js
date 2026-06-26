@@ -262,8 +262,14 @@ function bindOnboarding(){
   $("#btn-ob-back-baby")?.addEventListener("click",()=>openRoleView());
   $("#btn-ob-baby-next")?.addEventListener("click",()=>{
     const name=$("#ob-baby-name")?.value.trim();
-    if(!name){if(typeof showToast==="function")showToast("아이 이름을 입력해 주세요");return;}
+    if(!name){if(typeof showToast==="function")showToast("이름이나 태명을 적어 주세요 (안 정했으면 아래 버튼!)");return;}
     onboarding.babyName=name;
+    showKidikidiScreen("#onboarding-baby-view");
+  });
+  // 출생 전이라 아직 이름/태명이 없으면 '우리 아기'로 시작하고 나중에 바꿀 수 있게 한다.
+  $("#btn-ob-baby-undecided")?.addEventListener("click",()=>{
+    onboarding.babyName="우리 아기";
+    if(typeof showToast==="function")showToast("'우리 아기'로 시작할게요 · 나중에 언제든 바꿀 수 있어요");
     showKidikidiScreen("#onboarding-baby-view");
   });
   $("#btn-ob-back-kidikidi")?.addEventListener("click",()=>obShow(onboarding.kidikidiBackView||"#onboarding-baby-view"));
