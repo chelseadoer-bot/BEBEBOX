@@ -99,6 +99,41 @@ body{display:flex;justify-content:center;min-height:100vh}
 .td-tx span{font-size:12.5px;color:var(--color-text-secondary)}
 .td-go{color:var(--color-text-tertiary);font-size:19px;font-weight:700}
 #my-view .home-flow,#my-view .gift-progress{margin-left:16px;margin-right:16px;width:calc(100% - 32px)}
+.my-help{display:flex;align-items:center;justify-content:center;gap:6px;width:calc(100% - 32px);margin:18px 16px 0;padding:13px;border:1px dashed var(--color-border);border-radius:14px;background:var(--color-bg-subtle);color:var(--color-text-secondary);font-size:13.5px;font-weight:700;cursor:pointer;font-family:var(--font)}
+.my-help:active{background:var(--color-bg-muted)}
+.my-help span{font-size:16px}
+/* 공통 공유/모달 버튼 */
+.btn-share-go{display:block;width:100%;padding:14px;border-radius:var(--radius-md);font-size:14.5px;font-weight:800;cursor:pointer;font-family:var(--font);margin-top:10px;border:none}
+.btn-share-go.kakao{background:var(--kakao-yellow,#fee500);color:#3c1e1e}
+.btn-share-go.line{background:#fff;border:1.5px solid var(--color-border);color:var(--color-text)}
+.btn-share-go.ghost{background:none;color:var(--color-text-tertiary)}
+.btn-share-go:active{opacity:.85}
+/* 공유 미리보기 */
+.sp-content{text-align:center}
+.sp-eyebrow{font-size:12px;font-weight:800;color:var(--color-text-secondary);margin-bottom:12px}
+.sp-card{display:flex;flex-direction:column;text-align:left;border:1px solid var(--color-border);border-radius:14px;overflow:hidden;background:#fff;box-shadow:var(--shadow-sm)}
+.sp-thumb{height:130px;display:flex;align-items:center;justify-content:center;font-size:54px;background:linear-gradient(135deg,#ffd9c2,#ff9e7a);background-size:cover;background-position:center;color:#fff}
+.sp-cardbody{padding:13px 15px}
+.sp-title{font-size:15px;font-weight:800;color:#191919}
+.sp-desc{font-size:12.5px;color:#666;margin-top:4px;line-height:1.45}
+.sp-cta{margin-top:11px;padding:11px;border-radius:10px;background:#f2f2f4;text-align:center;font-size:13.5px;font-weight:800;color:#3c1e1e}
+.sp-hint{font-size:11.5px;color:var(--color-text-tertiary);margin:12px 4px 4px;line-height:1.5}
+/* 시작 축하 */
+.wc-content{text-align:center}
+.wc-emoji{font-size:52px;animation:wcPop .5s ease}
+@keyframes wcPop{0%{transform:scale(.4);opacity:0}60%{transform:scale(1.15)}100%{transform:scale(1)}}
+.wc-content h3{margin-top:8px}
+.wc-candy{font-size:20px;font-weight:800;color:#9a6b07;background:#fff4dc;border-radius:999px;padding:8px 16px;display:inline-block;margin:12px 0}
+.wc-candy b{font-size:24px}
+/* 도움말 */
+.help-content{text-align:left}
+.help-content h3{text-align:center;margin-bottom:14px}
+.help-steps{display:flex;flex-direction:column;gap:14px}
+.help-step{display:flex;gap:12px;align-items:flex-start}
+.hs-em{font-size:24px;flex:0 0 auto;width:40px;height:40px;border-radius:12px;background:var(--color-accent-soft);display:flex;align-items:center;justify-content:center}
+.help-step b{font-size:14px;font-weight:800}
+.help-step p{font-size:12.5px;color:var(--color-text-secondary);line-height:1.5;margin-top:2px}
+.hs-rw{font-size:11px;font-weight:800;color:#e8830c;background:#fff3e6;border-radius:6px;padding:1px 6px;white-space:nowrap}
 .tab-page-header{padding:52px 20px 16px;background:var(--color-bg);border-bottom:1px solid var(--color-border-light)}
 .tab-page-header h2{font-size:20px;font-weight:800;letter-spacing:-.03em}
 .tab-page-header p{font-size:13px;color:var(--color-text-tertiary);margin-top:4px;font-weight:500}
