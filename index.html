@@ -6,7 +6,7 @@
 <title>베베박스</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍼</text></svg>"/>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css"/>
-<link rel="stylesheet" href="css/style.css?v=55"/>
+<link rel="stylesheet" href="css/style.css?v=56"/>
 <link rel="stylesheet" href="css/onboarding.css?v=6"/>
 <link rel="stylesheet" href="css/theme.css?v=4"/>
 </head>
@@ -217,6 +217,7 @@
 <div class="home-flow owner-only" id="home-flow"></div>
 <div class="my-todos" id="my-todos"></div>
 <button type="button" class="gift-progress owner-only hidden" id="gift-progress"></button>
+<button type="button" class="my-help" id="btn-my-help"><span>❔</span> 베베박스, 어떻게 쓰나요?</button>
 </div>
 </div>
 <div id="puzzle-tab-view" class="view tab-view">
@@ -580,6 +581,51 @@
 <button class="modal-btn primary" id="btn-copy-link">링크 복사</button>
 </div>
 </div>
+<!-- 공유 미리보기 -->
+<div class="modal hidden" id="share-preview-modal">
+<div class="modal-backdrop" id="sp-backdrop"></div>
+<div class="modal-content sp-content">
+<p class="sp-eyebrow">📱 이렇게 공유돼요 · 미리보기</p>
+<div class="sp-card">
+<div class="sp-thumb" id="sp-thumb">🍼</div>
+<div class="sp-cardbody">
+<div class="sp-title" id="sp-title">다엘이의 일기</div>
+<div class="sp-desc" id="sp-desc">다엘이에게 선물하고 키디키디 쿠폰도 받아가세요 🎁</div>
+<div class="sp-cta">🎁 선물하러 가기</div>
+</div>
+</div>
+<p class="sp-hint">카카오톡 대화방에 위 카드로 보여요. 지인이 카드를 누르면 일기·선물 페이지로 들어와요.</p>
+<button class="btn-share-go kakao" id="sp-kakao">💬 카카오톡으로 공유 · +30🍬</button>
+<button class="btn-share-go line" id="sp-copy">🔗 링크 복사</button>
+<button class="btn-share-go ghost" id="sp-close">닫기</button>
+</div>
+</div>
+<!-- 시작 축하 -->
+<div class="modal hidden" id="welcome-modal">
+<div class="modal-backdrop"></div>
+<div class="modal-content wc-content">
+<div class="wc-emoji">🎉</div>
+<h3>베베박스 시작을 축하해요!</h3>
+<p class="wc-candy">🍬 <b id="wc-amount">100</b> 캔디를 드렸어요</p>
+<p class="modal-desc">기록·공유·선물로 캔디를 모아<br/>AI 놀이와 키디키디 상품권으로 바꿔요.</p>
+<button class="btn-share-go kakao" id="wc-ok">시작하기 🚀</button>
+</div>
+</div>
+<!-- 사용법 도움말 -->
+<div class="modal hidden" id="help-modal">
+<div class="modal-backdrop" id="help-backdrop"></div>
+<div class="modal-content help-content">
+<h3>베베박스, 이렇게 써요</h3>
+<div class="help-steps">
+<div class="help-step"><span class="hs-em">✍️</span><div><b>1. 일기를 기록해요</b><p>가운데 동그란 <b>기록</b> 버튼으로 오늘의 아이를 남겨요. <span class="hs-rw">+20🍬</span></p></div></div>
+<div class="help-step"><span class="hs-em">📤</span><div><b>2. 가족·지인에게 공유해요</b><p>공유하면 지인이 일기를 보러 와요. <span class="hs-rw">+30🍬</span></p></div></div>
+<div class="help-step"><span class="hs-em">🎁</span><div><b>3. 선물을 받아요</b><p>받고 싶은 선물을 <b>선물</b> 탭에 공개하면, 지인이 선물해 선반에 채워져요. <span class="hs-rw">+50🍬</span></p></div></div>
+<div class="help-step"><span class="hs-em">🍬</span><div><b>4. 캔디로 즐겨요</b><p>모은 캔디로 <b>AI 놀이</b>를 하고, 100캔디는 3,000원 키디 상품권으로 바꿔요.</p></div></div>
+<div class="help-step"><span class="hs-em">🏠</span><div><b>마이 탭</b><p>왼쪽 <b>마이</b>에서 오늘 할 일·캔디·달성률을 한눈에 봐요.</p></div></div>
+</div>
+<button class="btn-share-go kakao" id="help-close">알겠어요</button>
+</div>
+</div>
 </div>
 <div class="photo-detail hidden" id="photo-detail">
 <button class="detail-back" id="btn-close-viewer" type="button" aria-label="이전 화면">←</button>
@@ -770,6 +816,6 @@
 <script src="js/family-data.js?v=6"></script>
 <script src="js/kakao-auth.js?v=1"></script>
 <script src="js/onboarding.js?v=10"></script>
-<script src="js/app.js?v=84"></script>
+<script src="js/app.js?v=85"></script>
 </body>
 </html>

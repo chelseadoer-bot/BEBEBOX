@@ -842,7 +842,7 @@ function renderMyTodos(){
   const R=(typeof POINT_RULES!=="undefined")?POINT_RULES:{photo:20,share:30,giftReceived:50};
   const todos=[
     {em:"✍️",b:"오늘 일기 쓰기",s:`기록하면 +${R.photo}🍬`,go:()=>{if(typeof openComposer==="function")openComposer();}},
-    {em:"📤",b:"가족에게 공유하기",s:`공유하면 +${R.share}🍬`,go:()=>{if(typeof shareProfileLink==="function")shareProfileLink();}},
+    {em:"📤",b:"가족에게 공유하기",s:`공유하면 +${R.share}🍬`,go:()=>{if(typeof openSharePreview==="function")openSharePreview();}},
     {em:"🎁",b:"받고 싶은 선물 정하기",s:`받을 때마다 +${R.giftReceived}🍬`,go:()=>{if(typeof openWishlist==="function")openWishlist();}},
   ];
   el.innerHTML=`<p class="my-sec-title">오늘 할 일</p>`+todos.map((t,i)=>`<button type="button" class="my-todo" data-td="${i}"><span class="td-em">${t.em}</span><span class="td-tx"><b>${t.b}</b><span>${t.s}</span></span><span class="td-go">›</span></button>`).join("");
@@ -2465,6 +2465,20 @@ function openShareLinkModal(url){
   if(d)d.textContent=`${state.profile.name} 프로필 전체 링크예요. 복사해서 친구에게 보내세요.`;
   $("#share-modal").classList.remove("hidden");
 }
+// 공유 전, 카카오톡에 어떻게 보이는지 카드 미리보기를 띄운다.
+async function openSharePreview(){
+  const m=$("#share-preview-modal");if(!m)return;
+  $("#sp-title").textContent=`${babyName()}의 일기`;
+  $("#sp-desc").textContent=`${babyName()}에게 선물하고 키디키디 쿠폰도 받아가세요 🎁`;
+  const thumb=$("#sp-thumb");
+  if(thumb){thumb.style.backgroundImage="";thumb.textContent="🍼";}
+  m.classList.remove("hidden");
+  try{
+    const img=state.profile.shareImage||await buildAndSaveShareImage();
+    if(img&&thumb){thumb.style.backgroundImage=`url("${img}")`;thumb.textContent="";}
+  }catch(_){}
+}
+window.openSharePreview=openSharePreview;
 async function shareProfileLink(){
   const url=getShareUrl();
   track("share");
@@ -2681,10 +2695,19 @@ function bindEvents(){
     if(!open)$("#add-product-name").focus();
   };
   $("#btn-add-product").onclick=addProduct;
-  $("#btn-share").onclick=shareProfileLink;
+  $("#btn-share").onclick=openSharePreview;
   $("#btn-cancel-share").onclick=()=>$("#share-modal").classList.add("hidden");
   $("#share-modal-backdrop").onclick=()=>$("#share-modal").classList.add("hidden");
   $("#btn-copy-link").onclick=()=>copyShareLinkWithReward();
+  // 공유 미리보기 / 시작 축하 / 사용법 도움말
+  $("#sp-kakao")?.addEventListener("click",()=>{$("#share-preview-modal").classList.add("hidden");shareProfileLink();});
+  $("#sp-copy")?.addEventListener("click",()=>{$("#share-preview-modal").classList.add("hidden");copyShareLinkWithReward();});
+  $("#sp-close")?.addEventListener("click",()=>$("#share-preview-modal").classList.add("hidden"));
+  $("#sp-backdrop")?.addEventListener("click",()=>$("#share-preview-modal").classList.add("hidden"));
+  $("#wc-ok")?.addEventListener("click",()=>$("#welcome-modal").classList.add("hidden"));
+  $("#btn-my-help")?.addEventListener("click",()=>$("#help-modal").classList.remove("hidden"));
+  $("#help-close")?.addEventListener("click",()=>$("#help-modal").classList.add("hidden"));
+  $("#help-backdrop")?.addEventListener("click",()=>$("#help-modal").classList.add("hidden"));
   $("#btn-close-viewer").onclick=closePhotoDetail;
   document.addEventListener("keydown",e=>{
     if(e.key==="Escape"&&!$("#photo-detail").classList.contains("hidden"))closePhotoDetail();
@@ -2711,6 +2734,17 @@ function enterMainApp(){
   renderAgeQuestBadge();
   renderPointsUI();
   switchMainTab("home");
+  maybeWelcomeBonus();
+}
+// 첫 시작 시: 축하 팝업 + 시작 캔디 100개 충전(1회).
+function maybeWelcomeBonus(){
+  if(localStorage.getItem("bb_welcome_v1"))return;
+  localStorage.setItem("bb_welcome_v1","1");
+  const amt=100;
+  if(typeof addPoints==="function")addPoints(amt,"welcome");
+  const a=$("#wc-amount");if(a)a.textContent=amt;
+  if(typeof renderPointsUI==="function")renderPointsUI();
+  setTimeout(()=>$("#welcome-modal")?.classList.remove("hidden"),400);
 }
 window.enterMainApp=enterMainApp;
 window.state=state;
