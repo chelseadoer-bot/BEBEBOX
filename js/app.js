@@ -463,7 +463,7 @@ async function loadJourneyStats(){
         guests.map(g=>`<div class="jr-guest"><b>${esc(g.name)}</b><span>${g.gift_done?`🎁${g.gift_done} `:""}${g.heart?`❤️${g.heart} `:""}${g.comment?`💬${g.comment}`:""}</span></div>`).join("")+`</div>`:`<p class="jr-empty">공유 링크를 보내면 지인 반응이 여기에 쌓여요</p>`);
   }catch(_){el.innerHTML='<p class="jr-empty">성과를 불러올 수 없어요</p>';}
 }
-const TAB_VIEWS={home:"#profile-view",puzzle:"#puzzle-tab-view",game:"#game-tab-view",settings:"#settings-tab-view"};
+const TAB_VIEWS={my:"#my-view",home:"#profile-view",puzzle:"#puzzle-tab-view",game:"#game-tab-view",settings:"#settings-tab-view"};
 let currentMainTab="home";
 function showTabBar(){
   $("#bottom-tab-bar")?.classList.remove("hidden");
@@ -483,6 +483,7 @@ function switchMainTab(tab,{animate=false}={}){
   $(TAB_VIEWS[tab]).classList.add("active");
   updateTabBarUI();
   showTabBar();
+  if(tab==="my")renderMyDashboard();
   if(tab==="home"){renderProfile();renderFeed();}
   if(tab==="puzzle")renderPuzzleTab({animate});
   if(tab==="settings")renderSettingsTab();
@@ -827,9 +828,34 @@ function renderHomeFlow(){
     };
   });
 }
+// 마이(대시보드) 탭: 프로필·캔디 + 흐름 가이드 + 오늘 할 일 + 선물 달성률
+function renderMyProfile(){
+  const el=$("#my-profile");if(!el)return;
+  const code=(typeof getInviteCode==="function"&&getInviteCode())||state.profile.inviteCode||"-";
+  el.innerHTML=`<img class="myp-av" src="${state.profile.avatar}" alt=""/>`+
+    `<span class="myp-tx"><b>${esc(babyName())}</b><span>${esc(state.profile.status||"우리 가족 공간")} · 코드 ${esc(code)}</span></span>`+
+    `<span class="myp-go">⚙️</span>`;
+  el.onclick=()=>switchMainTab("settings");
+}
+function renderMyTodos(){
+  const el=$("#my-todos");if(!el)return;
+  const R=(typeof POINT_RULES!=="undefined")?POINT_RULES:{photo:20,share:30,giftReceived:50};
+  const todos=[
+    {em:"✍️",b:"오늘 일기 쓰기",s:`기록하면 +${R.photo}🍬`,go:()=>{if(typeof openComposer==="function")openComposer();}},
+    {em:"📤",b:"가족에게 공유하기",s:`공유하면 +${R.share}🍬`,go:()=>{if(typeof shareProfileLink==="function")shareProfileLink();}},
+    {em:"🎁",b:"받고 싶은 선물 정하기",s:`받을 때마다 +${R.giftReceived}🍬`,go:()=>{if(typeof openWishlist==="function")openWishlist();}},
+  ];
+  el.innerHTML=`<p class="my-sec-title">오늘 할 일</p>`+todos.map((t,i)=>`<button type="button" class="my-todo" data-td="${i}"><span class="td-em">${t.em}</span><span class="td-tx"><b>${t.b}</b><span>${t.s}</span></span><span class="td-go">›</span></button>`).join("");
+  el.querySelectorAll("[data-td]").forEach(b=>b.onclick=()=>todos[+b.dataset.td].go());
+}
+function renderMyDashboard(){
+  renderMyProfile();
+  if(typeof renderHomeFlow==="function")renderHomeFlow();
+  renderMyTodos();
+  if(typeof renderGiftProgress==="function")renderGiftProgress();
+  if(typeof renderPointsUI==="function")renderPointsUI();
+}
 function renderFeed(){
-  renderHomeFlow();
-  renderGiftProgress();
   const feed=$("#photo-feed");
   if(!feed)return;
   const list=filterPostsByAge();
