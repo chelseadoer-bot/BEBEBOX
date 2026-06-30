@@ -2747,34 +2747,44 @@ function maybeWelcomeBonus(){
   if(typeof renderPointsUI==="function")renderPointsUI();
   setTimeout(()=>$("#welcome-modal")?.classList.remove("hidden"),450);
 }
-// 가입 정보(이름·개월, 있으면 성별/생일)로 '우리 아기 환영 카드'를 만든다.
+// 가입 정보로 '환영 증명서' 카드(테디베어 + 컬러 별·점 컨페티)를 만든다.
 function makeWelcomeCardSVG(){
   const name=babyName();
-  const age=ageLabel(state.profile.currentAge??9);
   const g=state.profile.gender, birth=state.profile.birthday;
+  const favs=(state.profile.favs&&state.profile.favs.length)?state.profile.favs:[];
   const d=new Date();
   const today=`${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,"0")}.${String(d.getDate()).padStart(2,"0")}`;
-  const babyEmoji=g==="girl"?"👧":g==="boy"?"👦":"👶";
-  const favs=(state.profile.favs&&state.profile.favs.length)?state.profile.favs:["✨","💕","🌙","⭐","🎈"];
-  const spots=[[150,230,72],[870,300,66],[170,1190,64],[860,1130,72],[300,1150,56],[770,255,56]];
-  const deco=spots.map((s,i)=>`<text x='${s[0]}' y='${s[1]}' font-size='${s[2]}'>${esc(favs[i%favs.length])}</text>`).join("");
-  const extra=[];
-  if(birth)extra.push(`🎂 ${birth}`);
-  if(g)extra.push(g==="girl"?"🎀 공주님":"⭐ 왕자님");
-  const extraLine=extra.length?`<text x='540' y='1015' font-size='42' text-anchor='middle' fill='#9a6b07' font-family='sans-serif' font-weight='700'>${esc(extra.join("   ·   "))}</text>`:"";
-  const dateY=extra.length?1100:1040;
-  const svg=`<svg xmlns='http://www.w3.org/2000/svg' width='1080' height='1350' viewBox='0 0 1080 1350'>`+
-    `<defs><linearGradient id='bg' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='#fff2e8'/><stop offset='.55' stop-color='#ffe7ef'/><stop offset='1' stop-color='#f0ecff'/></linearGradient></defs>`+
-    `<rect width='1080' height='1350' fill='url(#bg)'/>`+
-    deco+
-    `<text x='540' y='195' font-size='58' text-anchor='middle'>🎉</text>`+
-    `<circle cx='540' cy='470' r='205' fill='#ffffff' opacity='.92'/>`+
-    `<text x='540' y='548' font-size='225' text-anchor='middle'>${babyEmoji}</text>`+
-    `<text x='540' y='800' font-size='48' text-anchor='middle' fill='#c2511e' font-family='sans-serif' font-weight='700'>우리 아기 환영해요</text>`+
-    `<text x='540' y='910' font-size='112' text-anchor='middle' fill='#2b2622' font-family='sans-serif' font-weight='800'>${esc(name)}</text>`+
-    extraLine+
-    `<text x='540' y='${dateY}' font-size='42' text-anchor='middle' fill='#7a7167' font-family='sans-serif'>${esc(age)} · 함께한 첫 날 ${today}</text>`+
-    `<text x='540' y='1295' font-size='36' text-anchor='middle' fill='#c4a99a' font-family='sans-serif' font-weight='700'>🍼 BEBEBOX</text>`+
+  const W=1080,H=1350,cx=W/2;
+  const pal=["#ef5350","#42a5f5","#66bb6a","#ffca28","#ff8a65","#ab47bc","#26c6da"];
+  const star=(x,y,s,c)=>`<text x='${x}' y='${y}' font-size='${s}' fill='${c}' text-anchor='middle' font-family='sans-serif'>★</text>`;
+  const dot=(x,y,r,c)=>`<circle cx='${x}' cy='${y}' r='${r}' fill='${c}'/>`;
+  const cpos=[[110,95],[250,70],[430,95],[650,75],[835,100],[965,80],
+    [80,300],[1000,270],[70,470],[1010,460],[80,650],[1000,640],
+    [70,830],[1010,820],[85,1010],[1000,1000],
+    [130,1285],[300,1258],[520,1288],[760,1262],[940,1288],[992,1180]];
+  let conf="";
+  cpos.forEach((p,i)=>{ const c=pal[i%pal.length]; conf += (i%2===0)?star(p[0],p[1]+12,34+(i%3)*8,c):dot(p[0],p[1],10+(i%3)*4,c); });
+  const fpos=[[150,255],[930,360],[160,1085],[915,1045]];
+  favs.slice(0,4).forEach((e,i)=>{ conf += `<text x='${fpos[i][0]}' y='${fpos[i][1]}' font-size='62' text-anchor='middle'>${esc(e)}</text>`; });
+  const teddies=`<text x='66' y='212' font-size='150'>🧸</text><text x='1012' y='1300' font-size='150' text-anchor='end'>🧸</text>`;
+  const genderTxt=g==="girl"?"여아 🎀":g==="boy"?"남아 👦":"비공개 🤍";
+  const verse=["작은 천사가 우리에게 왔어요,","오늘부터 평생 사랑할 거예요.","반짝이는 모든 순간을 함께 담을게요 💕"];
+  const verseSvg=verse.map((l,i)=>`<text x='${cx}' y='${560+i*50}' font-size='33' fill='#8a7c6b' text-anchor='middle' font-family='sans-serif'>${esc(l)}</text>`).join("");
+  const fields=[["이름",name],["생일",birth||"미정"],["성별",genderTxt],["좋아하는 것",(favs.slice(0,5).join(" ")||"앞으로 알아가요")]];
+  const fieldSvg=fields.map((f,i)=>{const y=778+i*82;
+    return `<text x='185' y='${y}' font-size='38' fill='#3b4cc0' font-family='sans-serif' font-weight='700'>${esc(f[0])}</text>`+
+      `<text x='430' y='${y}' font-size='38' fill='#2b2622' font-family='sans-serif' font-weight='700'>${esc(f[1])}</text>`+
+      `<line x1='185' y1='${y+15}' x2='895' y2='${y+15}' stroke='#efe6d4' stroke-width='2'/>`;
+  }).join("");
+  const svg=`<svg xmlns='http://www.w3.org/2000/svg' width='${W}' height='${H}' viewBox='0 0 ${W} ${H}'>`+
+    `<rect width='${W}' height='${H}' fill='#fffdf6'/>`+
+    `<rect x='38' y='38' width='${W-76}' height='${H-76}' rx='32' fill='none' stroke='#ffe0b2' stroke-width='4'/>`+
+    conf+teddies+
+    `<text x='${cx}' y='332' font-size='42' text-anchor='middle'>🎉</text>`+
+    `<text x='${cx}' y='446' font-size='90' fill='#3b4cc0' text-anchor='middle' font-family='sans-serif' font-weight='800'>환영 증명서</text>`+
+    `<text x='${cx}' y='498' font-size='29' fill='#ff7aa0' text-anchor='middle' font-family='sans-serif' font-weight='700'>우리 아기가 우리에게 왔어요</text>`+
+    verseSvg+fieldSvg+
+    `<text x='${cx}' y='1180' font-size='33' fill='#bfa98f' text-anchor='middle' font-family='sans-serif' font-weight='700'>🍼 BEBEBOX · 함께한 첫 날 ${today}</text>`+
   `</svg>`;
   return "data:image/svg+xml,"+encodeURIComponent(svg);
 }
