@@ -24,6 +24,8 @@ const onboarding={
   roleCustom:"",
   babyName:"",
   photo:"",
+  gender:"",
+  birthday:"",
   favs:[],
   kidikidiId:"",
   kidikidiBackView:"#onboarding-favs-view",
@@ -129,9 +131,15 @@ function showKidikidiScreen(backView){
 function obBabyName(){return onboarding.babyName||"우리 아기";}
 function goPhotoStep(){
   const t=document.getElementById("ob-photo-title");
-  if(t)t.textContent=`${obBabyName()} 사진을 등록해요`;
+  if(t)t.textContent=`${obBabyName()} 정보를 알려주세요`;
   applyOnboardingPhotoPreview();
+  document.querySelectorAll("#onboarding-photo-view .ob-gender-btn").forEach(b=>b.classList.toggle("on",(b.dataset.gender||"")===(onboarding.gender||"")));
+  const bd=document.getElementById("ob-birthday");if(bd)bd.value=onboarding.birthday||"";
   obShow("#onboarding-photo-view");
+}
+function formatBirthday(v){
+  const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(v||"");
+  return m?`${m[1]}.${m[2]}.${m[3]}`:(v||"");
 }
 function applyOnboardingPhotoPreview(){
   const pv=document.getElementById("ob-photo-preview");
@@ -196,6 +204,8 @@ function finishOnboarding(asGuest){
       window.state.profile.name=`${baby}의 일기`;
       window.state.profile.kidikidiId=onboarding.kidikidiId||window.state.profile.kidikidiId||"";
       if(onboarding.photo){window.state.profile.avatar=onboarding.photo;window.state.profile.background=window.state.profile.background||onboarding.photo;}
+      if(onboarding.gender)window.state.profile.gender=onboarding.gender;
+      if(onboarding.birthday)window.state.profile.birthday=formatBirthday(onboarding.birthday);
       if(onboarding.favs&&onboarding.favs.length)window.state.profile.favs=onboarding.favs.slice();
       if(typeof window.save==="function")window.save();
     }
@@ -342,6 +352,11 @@ function bindOnboarding(){
     applyOnboardingPhotoPreview();
     e.target.value="";
   });
+  document.querySelectorAll("#onboarding-photo-view .ob-gender-btn").forEach(b=>b.addEventListener("click",()=>{
+    onboarding.gender=b.dataset.gender||"";
+    document.querySelectorAll("#onboarding-photo-view .ob-gender-btn").forEach(x=>x.classList.toggle("on",x===b));
+  }));
+  $("#ob-birthday")?.addEventListener("change",e=>{onboarding.birthday=e.target.value||"";});
   $("#btn-ob-photo-next")?.addEventListener("click",()=>goFavsStep());
   $("#btn-ob-photo-skip")?.addEventListener("click",()=>goFavsStep());
   // 좋아하는 것 단계

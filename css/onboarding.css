@@ -166,8 +166,13 @@
 .ob-undecided{display:block;width:100%;padding:11px;margin-top:10px;border:1px solid var(--color-border, #ebebeb);border-radius:12px;background:none;color:var(--color-text-secondary, #6b6b6b);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font)}
 .ob-undecided:active{opacity:.7;background:var(--color-bg-subtle, #f7f7f8)}
 /* 프로필 사진 단계 */
-.ob-photo-pick{display:flex;flex-direction:column;align-items:center;gap:12px;width:100%;margin:18px 0 24px;background:none;border:none;cursor:pointer;font-family:var(--font)}
-.ob-photo-preview{width:140px;height:140px;border-radius:50%;background:#f4f1ec center/cover no-repeat;border:2px dashed #d9d2c7;display:flex;align-items:center;justify-content:center;font-size:48px;color:#bbb;overflow:hidden}
+.ob-photo-pick{display:flex;flex-direction:column;align-items:center;gap:9px;width:100%;margin:16px 0 6px;background:none;border:none;cursor:pointer;font-family:var(--font)}
+.ob-photo-preview{width:112px;height:112px;border-radius:50%;background:#f4f1ec center/cover no-repeat;border:2px dashed #d9d2c7;display:flex;align-items:center;justify-content:center;font-size:40px;color:#bbb;overflow:hidden}
+.ob-field-label{display:block;font-size:12.5px;font-weight:700;color:var(--color-text-secondary,#6b6b6b);margin:16px 0 8px;text-align:left}
+.ob-gender{display:flex;gap:8px}
+.ob-gender-btn{flex:1;padding:13px 4px;border:1.5px solid var(--color-border,#ebebeb);border-radius:12px;background:#fff;font-size:13.5px;font-weight:700;color:var(--color-text-secondary,#6b6b6b);cursor:pointer;font-family:var(--font)}
+.ob-gender-btn.on{border-color:var(--color-accent,#ff6b3d);background:var(--color-accent-soft,#fff4ef);color:var(--color-accent,#ff6b3d)}
+.ob-date{width:100%;color:var(--color-text,#191919)}
 .ob-photo-preview.has{border-style:solid;border-color:var(--color-accent, #ff6b3d)}
 .ob-photo-hint{font-size:13.5px;font-weight:700;color:var(--color-accent, #ff6b3d)}
 /* 좋아하는 것 단계 */
