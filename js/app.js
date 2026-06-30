@@ -2729,22 +2729,60 @@ function saveNotifySettings(){
   }));
 }
 function enterMainApp(){
+  maybeWelcomeBonus();
   renderProfile();
   renderFeed();
   renderAgeQuestBadge();
   renderPointsUI();
   switchMainTab("home");
-  maybeWelcomeBonus();
 }
-// 첫 시작 시: 축하 팝업 + 시작 캔디 100개 충전(1회).
+// 첫 시작 시: 시작 캔디 100개 충전 + 환영 카드 첫 기록 + 축하 팝업(1회).
 function maybeWelcomeBonus(){
   if(localStorage.getItem("bb_welcome_v1"))return;
   localStorage.setItem("bb_welcome_v1","1");
   const amt=100;
   if(typeof addPoints==="function")addPoints(amt,"welcome");
   const a=$("#wc-amount");if(a)a.textContent=amt;
+  seedWelcomePost();
   if(typeof renderPointsUI==="function")renderPointsUI();
-  setTimeout(()=>$("#welcome-modal")?.classList.remove("hidden"),400);
+  setTimeout(()=>$("#welcome-modal")?.classList.remove("hidden"),450);
+}
+// 가입 정보(이름·개월, 있으면 성별/생일)로 '우리 아기 환영 카드'를 만든다.
+function makeWelcomeCardSVG(){
+  const name=babyName();
+  const age=ageLabel(state.profile.currentAge??9);
+  const g=state.profile.gender, birth=state.profile.birthday;
+  const d=new Date();
+  const today=`${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,"0")}.${String(d.getDate()).padStart(2,"0")}`;
+  const babyEmoji=g==="girl"?"👧":g==="boy"?"👦":"👶";
+  const extra=[];
+  if(birth)extra.push(`🎂 ${birth}`);
+  if(g)extra.push(g==="girl"?"🎀 공주님":"⭐ 왕자님");
+  const extraLine=extra.length?`<text x='540' y='1015' font-size='42' text-anchor='middle' fill='#9a6b07' font-family='sans-serif' font-weight='700'>${esc(extra.join("   ·   "))}</text>`:"";
+  const dateY=extra.length?1100:1040;
+  const svg=`<svg xmlns='http://www.w3.org/2000/svg' width='1080' height='1350' viewBox='0 0 1080 1350'>`+
+    `<defs><linearGradient id='bg' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='#fff2e8'/><stop offset='.55' stop-color='#ffe7ef'/><stop offset='1' stop-color='#f0ecff'/></linearGradient></defs>`+
+    `<rect width='1080' height='1350' fill='url(#bg)'/>`+
+    `<text x='150' y='230' font-size='72'>✨</text><text x='870' y='300' font-size='66'>💕</text><text x='170' y='1190' font-size='64'>🌙</text><text x='860' y='1130' font-size='72'>⭐</text>`+
+    `<text x='540' y='195' font-size='58' text-anchor='middle'>🎉</text>`+
+    `<circle cx='540' cy='470' r='205' fill='#ffffff' opacity='.92'/>`+
+    `<text x='540' y='548' font-size='225' text-anchor='middle'>${babyEmoji}</text>`+
+    `<text x='540' y='800' font-size='48' text-anchor='middle' fill='#c2511e' font-family='sans-serif' font-weight='700'>우리 아기 환영해요</text>`+
+    `<text x='540' y='910' font-size='112' text-anchor='middle' fill='#2b2622' font-family='sans-serif' font-weight='800'>${esc(name)}</text>`+
+    extraLine+
+    `<text x='540' y='${dateY}' font-size='42' text-anchor='middle' fill='#7a7167' font-family='sans-serif'>${esc(age)} · 함께한 첫 날 ${today}</text>`+
+    `<text x='540' y='1295' font-size='36' text-anchor='middle' fill='#c4a99a' font-family='sans-serif' font-weight='700'>🍼 BEBEBOX</text>`+
+  `</svg>`;
+  return "data:image/svg+xml,"+encodeURIComponent(svg);
+}
+function seedWelcomePost(){
+  if(localStorage.getItem("bb_welcome_post_v1"))return;
+  localStorage.setItem("bb_welcome_post_v1","1");
+  const name=babyName();
+  const text=`🎉 우리 ${name}, 베베박스에 온 걸 환영해!\n오늘부터 ${name}의 반짝이는 순간들을 여기 차곡차곡 담아둘게. 건강하고 행복하게, 사랑 가득 자라자 💕`;
+  const post=ensurePostMeta({id:"welcome"+Date.now(),text,photos:[makeWelcomeCardSVG()],ageMonth:state.profile.currentAge??9,createdAt:Date.now(),gauge:0,comments:[],visibility:"all"});
+  state.posts.unshift(post);
+  if(typeof save==="function")save();
 }
 window.enterMainApp=enterMainApp;
 window.state=state;
