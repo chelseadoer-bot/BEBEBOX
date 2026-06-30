@@ -23,10 +23,16 @@ const onboarding={
   roleGroup:"parent",
   roleCustom:"",
   babyName:"",
+  photo:"",
+  gender:"",
+  birthday:"",
+  favs:[],
   kidikidiId:"",
-  kidikidiBackView:"#onboarding-baby-view",
+  kidikidiBackView:"#onboarding-favs-view",
   codeContext:null
 };
+// 좋아하는 것 이모지 후보
+const FAV_EMOJIS=["🧸","🍼","🐻","🐰","🦊","🐥","🐶","🐱","🦕","🌙","⭐","🌈","🎈","🍓","🍌","🚗","⚽","🎵","📚","🍪"];
 
 function isOnboarded(){
   return localStorage.getItem(OB_KEY)==="1";
@@ -122,6 +128,66 @@ function showKidikidiScreen(backView){
   obShow("#onboarding-kidikidi-view");
   setTimeout(()=>input?.focus(),200);
 }
+function obBabyName(){return onboarding.babyName||"우리 아기";}
+function goPhotoStep(){
+  const t=document.getElementById("ob-photo-title");
+  if(t)t.textContent=`${obBabyName()} 정보를 알려주세요`;
+  applyOnboardingPhotoPreview();
+  document.querySelectorAll("#onboarding-photo-view .ob-gender-btn").forEach(b=>b.classList.toggle("on",(b.dataset.gender||"")===(onboarding.gender||"")));
+  const bd=document.getElementById("ob-birthday");if(bd)bd.value=onboarding.birthday||"";
+  obShow("#onboarding-photo-view");
+}
+function formatBirthday(v){
+  const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(v||"");
+  return m?`${m[1]}.${m[2]}.${m[3]}`:(v||"");
+}
+function applyOnboardingPhotoPreview(){
+  const pv=document.getElementById("ob-photo-preview");
+  const hint=document.getElementById("ob-photo-hint");
+  if(onboarding.photo){
+    if(pv){pv.style.backgroundImage=`url("${onboarding.photo}")`;pv.textContent="";pv.classList.add("has");}
+    if(hint)hint.textContent="다른 사진으로 바꾸기";
+  }else{
+    if(pv){pv.style.backgroundImage="";pv.textContent="📷";pv.classList.remove("has");}
+    if(hint)hint.textContent="사진 선택하기";
+  }
+}
+// 파일을 600px로 줄여 data-URI로(저장·동기화 용량 절약)
+function readPhotoDownscaled(file){
+  return new Promise(res=>{
+    const fr=new FileReader();
+    fr.onload=()=>{
+      const im=new Image();
+      im.onload=()=>{
+        const max=600,scale=Math.min(1,max/Math.max(im.width,im.height));
+        const w=Math.round(im.width*scale),h=Math.round(im.height*scale);
+        const cv=document.createElement("canvas");cv.width=w;cv.height=h;
+        cv.getContext("2d").drawImage(im,0,0,w,h);
+        try{res(cv.toDataURL("image/jpeg",0.85));}catch(_){res(fr.result);}
+      };
+      im.onerror=()=>res(fr.result);
+      im.src=fr.result;
+    };
+    fr.onerror=()=>res("");
+    fr.readAsDataURL(file);
+  });
+}
+function goFavsStep(){
+  const t=document.getElementById("ob-favs-title");
+  if(t)t.textContent=`${obBabyName()}가 좋아하는 걸 눌러주세요`;
+  renderFavsGrid();
+  obShow("#onboarding-favs-view");
+}
+function renderFavsGrid(){
+  const g=document.getElementById("ob-favs-grid");if(!g)return;
+  g.innerHTML=FAV_EMOJIS.map(e=>`<button type="button" class="ob-fav${onboarding.favs.includes(e)?" on":""}" data-fav="${e}">${e}</button>`).join("");
+  g.querySelectorAll("[data-fav]").forEach(b=>b.addEventListener("click",()=>{
+    const e=b.dataset.fav,i=onboarding.favs.indexOf(e);
+    if(i>=0)onboarding.favs.splice(i,1);
+    else{if(onboarding.favs.length>=8){if(typeof showToast==="function")showToast("최대 8개까지 고를 수 있어요");return;}onboarding.favs.push(e);}
+    b.classList.toggle("on",onboarding.favs.includes(e));
+  }));
+}
 function saveKidikidiIdFromInput(){
   const input=document.getElementById("ob-kidikidi-id");
   onboarding.kidikidiId=normalizeKidikidiId(input?.value);
@@ -137,6 +203,10 @@ function finishOnboarding(asGuest){
       window.state.profile.babyName=baby;
       window.state.profile.name=`${baby}의 일기`;
       window.state.profile.kidikidiId=onboarding.kidikidiId||window.state.profile.kidikidiId||"";
+      if(onboarding.photo){window.state.profile.avatar=onboarding.photo;window.state.profile.background=window.state.profile.background||onboarding.photo;}
+      if(onboarding.gender)window.state.profile.gender=onboarding.gender;
+      if(onboarding.birthday)window.state.profile.birthday=formatBirthday(onboarding.birthday);
+      if(onboarding.favs&&onboarding.favs.length)window.state.profile.favs=onboarding.favs.slice();
       if(typeof window.save==="function")window.save();
     }
     if(typeof window.ensureInviteCode==="function")window.ensureInviteCode(true);
@@ -264,15 +334,35 @@ function bindOnboarding(){
     const name=$("#ob-baby-name")?.value.trim();
     if(!name){if(typeof showToast==="function")showToast("이름이나 태명을 적어 주세요 (안 정했으면 아래 버튼!)");return;}
     onboarding.babyName=name;
-    showKidikidiScreen("#onboarding-baby-view");
+    goPhotoStep();
   });
   // 출생 전이라 아직 이름/태명이 없으면 '우리 아기'로 시작하고 나중에 바꿀 수 있게 한다.
   $("#btn-ob-baby-undecided")?.addEventListener("click",()=>{
     onboarding.babyName="우리 아기";
     if(typeof showToast==="function")showToast("'우리 아기'로 시작할게요 · 나중에 언제든 바꿀 수 있어요");
-    showKidikidiScreen("#onboarding-baby-view");
+    goPhotoStep();
   });
-  $("#btn-ob-back-kidikidi")?.addEventListener("click",()=>obShow(onboarding.kidikidiBackView||"#onboarding-baby-view"));
+  // 프로필 사진 단계
+  $("#btn-ob-back-photo")?.addEventListener("click",()=>obShow("#onboarding-baby-view"));
+  $("#ob-photo-pick")?.addEventListener("click",()=>$("#ob-photo-input")?.click());
+  $("#ob-photo-input")?.addEventListener("change",async e=>{
+    const f=e.target.files&&e.target.files[0];if(!f)return;
+    if(typeof showToast==="function")showToast("사진을 준비하는 중...");
+    onboarding.photo=await readPhotoDownscaled(f);
+    applyOnboardingPhotoPreview();
+    e.target.value="";
+  });
+  document.querySelectorAll("#onboarding-photo-view .ob-gender-btn").forEach(b=>b.addEventListener("click",()=>{
+    onboarding.gender=b.dataset.gender||"";
+    document.querySelectorAll("#onboarding-photo-view .ob-gender-btn").forEach(x=>x.classList.toggle("on",x===b));
+  }));
+  $("#ob-birthday")?.addEventListener("change",e=>{onboarding.birthday=e.target.value||"";});
+  $("#btn-ob-photo-next")?.addEventListener("click",()=>goFavsStep());
+  $("#btn-ob-photo-skip")?.addEventListener("click",()=>goFavsStep());
+  // 좋아하는 것 단계
+  $("#btn-ob-back-favs")?.addEventListener("click",()=>goPhotoStep());
+  $("#btn-ob-favs-next")?.addEventListener("click",()=>showKidikidiScreen("#onboarding-favs-view"));
+  $("#btn-ob-back-kidikidi")?.addEventListener("click",()=>obShow(onboarding.kidikidiBackView||"#onboarding-favs-view"));
   $("#btn-ob-kidikidi-next")?.addEventListener("click",()=>{
     const note=(m)=>{ if(typeof showToast==="function")showToast(m); else try{alert(m);}catch(_){} };
     const id=normalizeKidikidiId($("#ob-kidikidi-id")?.value);
