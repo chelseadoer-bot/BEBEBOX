@@ -2755,6 +2755,9 @@ function makeWelcomeCardSVG(){
   const d=new Date();
   const today=`${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,"0")}.${String(d.getDate()).padStart(2,"0")}`;
   const babyEmoji=g==="girl"?"👧":g==="boy"?"👦":"👶";
+  const favs=(state.profile.favs&&state.profile.favs.length)?state.profile.favs:["✨","💕","🌙","⭐","🎈"];
+  const spots=[[150,230,72],[870,300,66],[170,1190,64],[860,1130,72],[300,1150,56],[770,255,56]];
+  const deco=spots.map((s,i)=>`<text x='${s[0]}' y='${s[1]}' font-size='${s[2]}'>${esc(favs[i%favs.length])}</text>`).join("");
   const extra=[];
   if(birth)extra.push(`🎂 ${birth}`);
   if(g)extra.push(g==="girl"?"🎀 공주님":"⭐ 왕자님");
@@ -2763,7 +2766,7 @@ function makeWelcomeCardSVG(){
   const svg=`<svg xmlns='http://www.w3.org/2000/svg' width='1080' height='1350' viewBox='0 0 1080 1350'>`+
     `<defs><linearGradient id='bg' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='#fff2e8'/><stop offset='.55' stop-color='#ffe7ef'/><stop offset='1' stop-color='#f0ecff'/></linearGradient></defs>`+
     `<rect width='1080' height='1350' fill='url(#bg)'/>`+
-    `<text x='150' y='230' font-size='72'>✨</text><text x='870' y='300' font-size='66'>💕</text><text x='170' y='1190' font-size='64'>🌙</text><text x='860' y='1130' font-size='72'>⭐</text>`+
+    deco+
     `<text x='540' y='195' font-size='58' text-anchor='middle'>🎉</text>`+
     `<circle cx='540' cy='470' r='205' fill='#ffffff' opacity='.92'/>`+
     `<text x='540' y='548' font-size='225' text-anchor='middle'>${babyEmoji}</text>`+
@@ -2780,7 +2783,10 @@ function seedWelcomePost(){
   localStorage.setItem("bb_welcome_post_v1","1");
   const name=babyName();
   const text=`🎉 우리 ${name}, 베베박스에 온 걸 환영해!\n오늘부터 ${name}의 반짝이는 순간들을 여기 차곡차곡 담아둘게. 건강하고 행복하게, 사랑 가득 자라자 💕`;
-  const post=ensurePostMeta({id:"welcome"+Date.now(),text,photos:[makeWelcomeCardSVG()],ageMonth:state.profile.currentAge??9,createdAt:Date.now(),gauge:0,comments:[],visibility:"all"});
+  const photos=[makeWelcomeCardSVG()];
+  const av=state.profile.avatar;
+  if(av&&(/^data:/.test(av)||/\/uploads\//.test(av)))photos.push(av);
+  const post=ensurePostMeta({id:"welcome"+Date.now(),text,photos,ageMonth:state.profile.currentAge??9,createdAt:Date.now(),gauge:0,comments:[],visibility:"all"});
   state.posts.unshift(post);
   if(typeof save==="function")save();
 }
