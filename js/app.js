@@ -2886,7 +2886,14 @@ function _obLoadImg(src){
   });
 }
 function _rrect(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
-// 프로필 사진을 넣은 '환영 증명서' 카드를 캔버스로 합성한다(사진 굽기).
+// 한글 조사 과/와 (받침 있으면 '과', 없으면 '와'). 영문·숫자 등은 '와'.
+function _gwaParticle(w){
+  const s=(w||"").trim();if(!s)return "와";
+  const c=s.charCodeAt(s.length-1);
+  if(c>=0xAC00&&c<=0xD7A3)return ((c-0xAC00)%28)?"과":"와";
+  return "와";
+}
+// 프로필 사진을 넣은 'Certificate' 카드를 캔버스로 합성한다(사진 굽기).
 async function makeWelcomeCard(){
   const name=babyName();
   const g=state.profile.gender, birth=state.profile.birthday;
@@ -2910,7 +2917,7 @@ async function makeWelcomeCard(){
   ctx.font="150px sans-serif";ctx.textAlign="left";ctx.fillText("🧸",58,210);
   ctx.textAlign="right";ctx.fillText("🧸",1022,1300);ctx.textAlign="center";
   ctx.fillStyle="#000";ctx.font="42px sans-serif";ctx.fillText("🎉",CX,318);
-  ctx.fillStyle="#3b4cc0";ctx.font="bold 82px sans-serif";ctx.fillText("환영 증명서",CX,420);
+  ctx.fillStyle="#3b4cc0";ctx.font="bold 92px serif";ctx.fillText("Certificate",CX,424);
   const cy=600,r=120;
   ctx.beginPath();ctx.arc(CX,cy,r+9,0,7);ctx.fillStyle="#ffd7c2";ctx.fill();
   let im=null;const av=state.profile.avatar;
@@ -2920,7 +2927,7 @@ async function makeWelcomeCard(){
     ctx.drawImage(im,CX-iw/2,cy-ih/2,iw,ih);ctx.restore();}
   else{ctx.beginPath();ctx.arc(CX,cy,r,0,7);ctx.fillStyle="#fff";ctx.fill();
     ctx.font="140px sans-serif";ctx.fillText(babyEmoji,CX,cy+52);}
-  ctx.fillStyle="#ff7aa0";ctx.font="bold 30px sans-serif";ctx.fillText("우리 아기가 우리에게 왔어요 💕",CX,800);
+  ctx.fillStyle="#ff7aa0";ctx.font="bold 28px sans-serif";ctx.fillText(`${name}${_gwaParticle(name)} 함께 하루하루의 기록을 채워나가요 💕`,CX,800);
   const genderTxt=g==="girl"?"여아 🎀":g==="boy"?"남아 👦":"비공개 🤍";
   const fields=[["이름",name],["생일",birth||"미정"],["성별",genderTxt],["좋아하는 것",(favs.slice(0,5).join(" ")||"앞으로 알아가요")]];
   ctx.textAlign="left";
@@ -2965,8 +2972,8 @@ function makeWelcomeCardSVG(){
     `<rect x='38' y='38' width='${W-76}' height='${H-76}' rx='32' fill='none' stroke='#ffe0b2' stroke-width='4'/>`+
     conf+teddies+
     `<text x='${cx}' y='332' font-size='42' text-anchor='middle'>🎉</text>`+
-    `<text x='${cx}' y='446' font-size='90' fill='#3b4cc0' text-anchor='middle' font-family='sans-serif' font-weight='800'>환영 증명서</text>`+
-    `<text x='${cx}' y='498' font-size='29' fill='#ff7aa0' text-anchor='middle' font-family='sans-serif' font-weight='700'>우리 아기가 우리에게 왔어요</text>`+
+    `<text x='${cx}' y='450' font-size='100' fill='#3b4cc0' text-anchor='middle' font-family='serif' font-weight='800'>Certificate</text>`+
+    `<text x='${cx}' y='500' font-size='28' fill='#ff7aa0' text-anchor='middle' font-family='sans-serif' font-weight='700'>${esc(name)}${_gwaParticle(name)} 함께 하루하루의 기록을 채워나가요</text>`+
     verseSvg+fieldSvg+
     `<text x='${cx}' y='1180' font-size='33' fill='#bfa98f' text-anchor='middle' font-family='sans-serif' font-weight='700'>🍼 BEBEBOX · 함께한 첫 날 ${today}</text>`+
   `</svg>`;
