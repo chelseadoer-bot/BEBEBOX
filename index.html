@@ -6,8 +6,8 @@
 <title>베베박스</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍼</text></svg>"/>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css"/>
-<link rel="stylesheet" href="css/style.css?v=56"/>
-<link rel="stylesheet" href="css/onboarding.css?v=8"/>
+<link rel="stylesheet" href="css/style.css?v=58"/>
+<link rel="stylesheet" href="css/onboarding.css?v=9"/>
 <link rel="stylesheet" href="css/theme.css?v=4"/>
 </head>
 <body>
@@ -188,6 +188,10 @@
 <p class="ob-desc">위시리스트 선물·상품권을 키디키디 계정으로 바로 쓸 수 있어요</p>
 <input type="text" class="ob-input ob-input-kidikidi" id="ob-kidikidi-id" placeholder="키디키디 로그인 아이디" maxlength="50" autocapitalize="off" autocomplete="username"/>
 <p class="ob-kd-hint">키디키디 앱 <strong>마이페이지</strong>에서 아이디를 확인할 수 있어요</p>
+<div class="ob-referral">
+<label class="ob-referral-label" for="ob-referral-code">🎁 추천인코드 <span>(선택 · 있으면 캔디 선물!)</span></label>
+<input type="text" class="ob-input" id="ob-referral-code" placeholder="추천인코드를 입력하면 캔디를 더 드려요" maxlength="20" autocapitalize="characters" autocomplete="off"/>
+</div>
 <button type="button" class="ob-primary" id="btn-ob-kidikidi-next">연결하고 완료하기</button>
 <button type="button" class="ob-secondary" id="btn-ob-kidikidi-skip">나중에 할게요</button>
 </div>
@@ -316,9 +320,9 @@
 <section class="ig-section">
 <h2 class="ig-section-title">AI 컨셉스튜디오</h2>
 <div class="ig-concepts">
-<button class="ig-concept-card" type="button" data-concept="flower"><img src="public/photos/ai-02.jpg" alt="봄꽃 컨셉"/><span>봄꽃 컨셉</span></button>
-<button class="ig-concept-card" type="button" data-concept="hanbok"><img src="public/photos/ai-04.jpg" alt="한복 컨셉"/><span>한복 컨셉</span></button>
-<button class="ig-concept-card" type="button" data-concept="beach"><img src="public/photos/ai-03.jpg" alt="바닷가 컨셉"/><span>바닷가 컨셉</span></button>
+<button class="ig-concept-card" type="button" data-concept="flower"><img src="public/photos/c-spring.jpg" alt="봄꽃 컨셉" onerror="this.onerror=null;this.src='public/photos/ai-02.jpg'"/><span>봄꽃 컨셉</span></button>
+<button class="ig-concept-card" type="button" data-concept="watermelon"><img src="public/photos/c-watermelon.jpg" alt="수박 컨셉" onerror="this.onerror=null;this.src='public/photos/ai-03.jpg'"/><span>수박 컨셉</span></button>
+<button class="ig-concept-card" type="button" data-concept="beach"><img src="public/photos/c-beach.jpg" alt="바닷가 컨셉" onerror="this.onerror=null;this.src='public/photos/ai-03.jpg'"/><span>바닷가 컨셉</span></button>
 </div>
 <button class="ig-cta-black" type="button" id="btn-ig-studio" data-app="studio">더 만들러가기</button>
 </section>
@@ -661,6 +665,23 @@
 <button class="btn-share-go kakao" id="help-close">알겠어요</button>
 </div>
 </div>
+<!-- 추천인코드 캔디 선물 팝업 -->
+<div class="modal hidden" id="referral-modal">
+<div class="modal-backdrop" id="rf-backdrop"></div>
+<div class="modal-content wc-content">
+<div class="wc-emoji">🎁</div>
+<h3>추천 선물이 도착했어요!</h3>
+<p class="wc-candy">🍬 <b id="rf-amount">0</b> 캔디를 선물로 받았어요</p>
+<div class="rf-howto">
+<p class="rf-howto-h">캔디, 이렇게 써요</p>
+<div class="rf-howto-row"><span class="rf-em">✍️</span><span>일기·공유·선물로 캔디를 <b>더 모아요</b></span></div>
+<div class="rf-howto-row"><span class="rf-em">🎨</span><span>모은 캔디로 <b>AI 놀이</b>(컨셉 사진·작명 등)를 즐겨요</span></div>
+<div class="rf-howto-row"><span class="rf-em">🎟️</span><span>100캔디 → <b>3,000원 키디 상품권</b>으로 교환</span></div>
+</div>
+<button class="btn-share-go kakao" id="rf-ok">캔디 쓰러 가기 🍬</button>
+<button type="button" class="rf-help-link" id="rf-help">자세한 사용법 보기</button>
+</div>
+</div>
 </div>
 <div class="photo-detail hidden" id="photo-detail">
 <button class="detail-back" id="btn-close-viewer" type="button" aria-label="이전 화면">←</button>
@@ -806,6 +827,15 @@
 <h2 class="concept-title" id="concept-title"></h2>
 <p class="concept-desc" id="concept-desc"></p>
 <div class="concept-sample"><img id="concept-sample-img" src="" alt="컨셉 샘플"/></div>
+<div class="concept-make">
+<p class="concept-make-h">우리 아이 사진으로 만들기</p>
+<button type="button" class="concept-photo" id="concept-photo-btn"><img id="concept-photo-thumb" alt="" hidden/><span id="concept-photo-ph">＋ 아이 사진 올리기</span></button>
+<input type="file" id="concept-photo-file" accept="image/*" hidden/>
+<div class="concept-result" id="concept-result" hidden>
+<img id="concept-result-img" alt="생성 결과"/>
+<button type="button" class="concept-save" id="concept-save-diary">이 사진 일기에 저장 📔</button>
+</div>
+</div>
 </div>
 <div class="concept-foot">
 <label class="concept-consent"><input type="checkbox" id="concept-consent"/><span><strong>[필수]</strong> 개인정보 수집·이용 및 AI 이미지 서비스 이용에 동의합니다. <a href="#" id="concept-terms">약관 전문 보기</a></span></label>
@@ -850,7 +880,7 @@
 <script src="js/photo-storage.js?v=2"></script>
 <script src="js/family-data.js?v=6"></script>
 <script src="js/kakao-auth.js?v=1"></script>
-<script src="js/onboarding.js?v=12"></script>
-<script src="js/app.js?v=87"></script>
+<script src="js/onboarding.js?v=13"></script>
+<script src="js/app.js?v=91"></script>
 </body>
 </html>

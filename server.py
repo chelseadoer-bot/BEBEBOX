@@ -355,6 +355,8 @@ class H(SimpleHTTPRequestHandler):
                 return json_response(self, 200, db.member_detail(norm_family(self._query("family"))))
             if path == "/api/admin/coupons":
                 return json_response(self, 200, {"coupons": db.coupon_queue()})
+            if path == "/api/admin/referrals":
+                return json_response(self, 200, {"referrals": db.list_referrals()})
             return json_response(self, 404, {"error": "not_found"})
         if path == "/api/auth/me":
             session, _ = current_session(self)
@@ -418,6 +420,15 @@ class H(SimpleHTTPRequestHandler):
                 user_id=(body.get("user_id") or None),
             )
             return json_response(self, 200, {"ok": True})
+        if path == "/api/referral/redeem":
+            # 가입 시 입력한 추천인코드 → 가족당 1회 캔디 지급(서버가 중복 방지)
+            try:
+                body = read_json_body(self)
+            except json.JSONDecodeError:
+                return json_response(self, 400, {"error": "invalid_json"})
+            res = db.redeem_referral(norm_family(body.get("family")),
+                                     (body.get("code") or ""))
+            return json_response(self, 200, res)
         if path == "/api/family/delete":
             fam = norm_family(self._query("family"))
             stored = db.delete_family(fam)
@@ -470,6 +481,28 @@ class H(SimpleHTTPRequestHandler):
             enabled = bool(body.get("enabled", True)) and len(items) > 0
             db.set_config("game_banner", {"enabled": enabled, "items": items})
             return json_response(self, 200, {"ok": True, "count": len(items)})
+        if path == "/api/admin/referral/save":
+            if (self._query("key") or "") != ADMIN_KEY:
+                return json_response(self, 401, {"error": "unauthorized"})
+            try:
+                body = read_json_body(self)
+            except json.JSONDecodeError:
+                return json_response(self, 400, {"error": "invalid_json"})
+            ok = db.save_referral(
+                (body.get("code") or ""), body.get("candy"),
+                bool(body.get("active", True)), (body.get("note") or ""),
+            )
+            return json_response(self, 200 if ok else 400,
+                                 {"ok": ok, "referrals": db.list_referrals()})
+        if path == "/api/admin/referral/delete":
+            if (self._query("key") or "") != ADMIN_KEY:
+                return json_response(self, 401, {"error": "unauthorized"})
+            try:
+                body = read_json_body(self)
+            except json.JSONDecodeError:
+                return json_response(self, 400, {"error": "invalid_json"})
+            db.delete_referral((body.get("code") or ""))
+            return json_response(self, 200, {"ok": True, "referrals": db.list_referrals()})
         # AI 그라운드 미니앱 실행: POST /apps/<slug>/api/run
         m = re.match(r"^/apps/([^/]+)/api/(.*)$", path)
         if m:
@@ -615,6 +648,43 @@ class H(SimpleHTTPRequestHandler):
             else:
                 verdict = ("❌ AI 호출 실패",
                            "아래 상세 오류를 확인해 주세요.")
+
+        # 이미지 생성 모델도 점검 (컨셉 스튜디오/그림 결과가 안 뜰 때 원인 확인)
+        if key:
+            img_model = os.environ.get("GEMINI_IMAGE_MODEL", "gemini-2.5-flash-image")
+            iurl = ("https://generativelanguage.googleapis.com/v1beta/models/"
+                    + urllib.parse.quote(img_model) + ":generateContent?key=" + urllib.parse.quote(key))
+            ipayload = json.dumps({
+                "contents": [{"role": "user", "parts": [{"text": "a tiny simple red dot"}]}],
+                "generationConfig": {"responseModalities": ["IMAGE", "TEXT"]},
+            }).encode("utf-8")
+            ireq = urllib.request.Request(iurl, data=ipayload,
+                   headers={"Content-Type": "application/json"}, method="POST")
+            iok = False
+            try:
+                with urllib.request.urlopen(ireq, timeout=60) as r:
+                    jr = json.loads(r.read().decode("utf-8", "ignore"))
+                    c0 = (jr.get("candidates") or [{}])[0]
+                    parts = (c0.get("content", {}) or {}).get("parts") or []
+                    iok = any((p.get("inlineData") or p.get("inline_data")) for p in parts)
+                    istat = ("✅ 이미지 생성 정상" if iok
+                             else "⚠️ 이미지 파트 없음 (사유=%s)" % (c0.get("finishReason") or "unknown"))
+            except urllib.error.HTTPError as e:
+                b = e.read().decode("utf-8", "ignore")
+                try:
+                    im = json.loads(b).get("error", {}).get("message", b)
+                except Exception:
+                    im = b
+                istat = "❌ 이미지 모델 오류 %s: %s" % (e.code, (im or "")[:240])
+            except Exception as e:
+                istat = "❌ 이미지 모델 호출 실패: %s" % e
+            detail = (detail or "") + "<br><br><b>🖼️ 이미지 모델</b> (%s)<br>%s" % (
+                img_model, istat.replace("<", "&lt;"))
+            if ok and not iok:
+                verdict = ("⚠️ 텍스트는 정상, 이미지 생성이 막혀요",
+                           "작명·기질 같은 텍스트 AI는 되는데 <b>컨셉 스튜디오·그림 결과</b>가 이 이유로 안 떠요. "
+                           "아래 이미지 모델 오류를 확인하세요. (무료 키는 이미지 생성이 제한될 수 있어요 — "
+                           "Google AI Studio에서 이미지 생성 지원 키/결제 연결이 필요할 수 있어요.)")
 
         masked = (key[:6] + "…" + key[-4:]) if len(key) > 12 else ("(" + str(len(key)) + "자)" if key else "(없음)")
         html = (

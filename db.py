@@ -532,6 +532,123 @@ def set_config(key, value):
     return True
 
 
+# ------------------------------------------------ 추천인코드(리퍼럴) 캔디 지급
+# 운영자가 코드→지급 캔디를 등록(site_config['referrals'])하고, 회원이 가입 시
+# 코드를 입력하면 1가족당 1회 교환(events type='referral_redeem')해 캔디를 준다.
+_REFERRAL_KEY = "referrals"
+
+
+def _norm_code(code):
+    return (code or "").strip().upper()
+
+
+def _referral_counts():
+    """코드별 교환 횟수 {CODE: n}."""
+    with _conn() as conn:
+        rows = conn.execute(
+            "SELECT item_id, COUNT(*) AS n FROM events "
+            "WHERE type='referral_redeem' GROUP BY item_id"
+        ).fetchall()
+    return {_norm_code(r["item_id"]): r["n"] for r in rows}
+
+
+def list_referrals():
+    """등록된 추천인코드 목록 + 각 코드 교환 횟수(운영자 대시보드용)."""
+    raw = get_config(_REFERRAL_KEY, []) or []
+    counts = _referral_counts()
+    out = []
+    for it in raw:
+        if not isinstance(it, dict):
+            continue
+        code = _norm_code(it.get("code"))
+        if not code:
+            continue
+        out.append({
+            "code": code,
+            "candy": int(it.get("candy") or 0),
+            "active": bool(it.get("active", True)),
+            "note": (it.get("note") or "")[:60],
+            "redeemed": counts.get(code, 0),
+        })
+    out.sort(key=lambda x: -x["redeemed"])
+    return out
+
+
+def save_referral(code, candy, active=True, note=""):
+    """추천인코드 추가/수정(같은 코드면 덮어씀)."""
+    code = _norm_code(code)
+    if not code:
+        return False
+    candy = max(0, int(candy or 0))
+    lst = get_config(_REFERRAL_KEY, []) or []
+    if not isinstance(lst, list):
+        lst = []
+    found = False
+    for it in lst:
+        if isinstance(it, dict) and _norm_code(it.get("code")) == code:
+            it["candy"] = candy
+            it["active"] = bool(active)
+            it["note"] = (note or "")[:60]
+            found = True
+            break
+    if not found:
+        lst.append({"code": code, "candy": candy,
+                    "active": bool(active), "note": (note or "")[:60]})
+    set_config(_REFERRAL_KEY, lst)
+    return True
+
+
+def delete_referral(code):
+    code = _norm_code(code)
+    lst = get_config(_REFERRAL_KEY, []) or []
+    if not isinstance(lst, list):
+        lst = []
+    lst = [it for it in lst
+           if isinstance(it, dict) and _norm_code(it.get("code")) != code]
+    set_config(_REFERRAL_KEY, lst)
+    return True
+
+
+def get_active_referral(code):
+    """활성 코드면 {code, candy} 반환, 아니면 None."""
+    code = _norm_code(code)
+    for it in (get_config(_REFERRAL_KEY, []) or []):
+        if (isinstance(it, dict) and _norm_code(it.get("code")) == code
+                and bool(it.get("active", True))):
+            return {"code": code, "candy": int(it.get("candy") or 0)}
+    return None
+
+
+def has_referral_redemption(family_id):
+    fam = (family_id or "").strip().upper()
+    if not fam:
+        return False
+    with _conn() as conn:
+        r = conn.execute(
+            "SELECT COUNT(*) AS n FROM events "
+            "WHERE family_id=? AND type='referral_redeem'",
+            (fam,),
+        ).fetchone()
+    return bool(r and r["n"])
+
+
+def redeem_referral(family_id, code):
+    """가족이 추천인코드를 1회 교환한다.
+       성공: {ok:True, code, candy}, 실패: {ok:False, reason}."""
+    fam = (family_id or "").strip().upper()
+    code = _norm_code(code)
+    if not fam or len(fam) < 3 or not code:
+        return {"ok": False, "reason": "invalid"}
+    ref = get_active_referral(code)
+    if not ref:
+        return {"ok": False, "reason": "not_found"}
+    if has_referral_redemption(fam):
+        return {"ok": False, "reason": "already"}
+    insert_event(fam, "referral_redeem", actor="parent", item_id=code,
+                 meta={"code": code, "candy": ref["candy"]}, user_id=fam)
+    return {"ok": True, "code": code, "candy": ref["candy"]}
+
+
 def delete_family(family_id):
     """회원 탈퇴: 가족 데이터·사진·이벤트·쿠폰발급기록 전부 삭제. 사진 파일명 목록 반환."""
     fam = (family_id or "").strip().upper()

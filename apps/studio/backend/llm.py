@@ -174,9 +174,10 @@ def generate_image(prompt, images=None, model=None, temperature=0.9):
     """이미지 생성. data URL(str) 반환."""
     models = ([model] if model else
               [config.GEMINI_IMAGE_MODEL, config.GEMINI_IMAGE_FALLBACK,
-               "gemini-2.5-flash-image-preview", "gemini-2.0-flash-preview-image-generation"])
+               "gemini-2.5-flash-image-preview"])
     seen = set()
     last_err = None
+    real_err = None  # 은퇴 모델(404)이 아닌 '진짜' 원인을 보존해 폴백 404로 가려지지 않게
     for m in models:
         if not m or m in seen:
             continue
@@ -189,6 +190,9 @@ def generate_image(prompt, images=None, model=None, temperature=0.9):
             resp = _call(m, payload)
         except LLMError as e:
             last_err = e
+            low = str(e).lower()
+            if not ("404" in low or "not found" in low):
+                real_err = real_err or e
             continue
         cand = (resp.get("candidates") or [{}])[0]
         for p in (cand.get("content", {}).get("parts") or []):
@@ -196,5 +200,7 @@ def generate_image(prompt, images=None, model=None, temperature=0.9):
             if d and d.get("data"):
                 mime = d.get("mimeType") or d.get("mime_type") or "image/png"
                 return "data:%s;base64,%s" % (mime, d["data"])
-        last_err = LLMError("이미지가 생성되지 않았습니다.")
-    raise last_err or LLMError("이미지 생성 실패")
+        # 이미지 파트가 없으면(텍스트만 왔거나 안전필터로 차단) 그 사유를 남긴다.
+        fr = cand.get("finishReason") or ((resp.get("promptFeedback") or {}).get("blockReason"))
+        real_err = real_err or LLMError("이미지가 생성되지 않았어요 (사유=%s)" % (fr or "unknown"))
+    raise real_err or last_err or LLMError("이미지 생성 실패")
