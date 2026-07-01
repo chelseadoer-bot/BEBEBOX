@@ -50,7 +50,7 @@ function fallbackCopyInvite(code){
 }
 const PHOTO_DIR="public/photos/";
 const AI_PHOTOS=["ai-01.jpg","ai-02.jpg","ai-03.jpg","ai-04.jpg","ai-05.jpg"].map(f=>PHOTO_DIR+f);
-const AVATAR=AI_PHOTOS[0];
+const AVATAR=PHOTO_DIR+"default-profile.png";
 const BACKGROUND=AI_PHOTOS[1];
 const DEFAULT_PHOTOS=Array.from({length:18},(_,i)=>AI_PHOTOS[i%AI_PHOTOS.length]);
 const DEFAULT_FRIENDS=[{id:"f1",name:"민지"},{id:"f2",name:"준호"},{id:"f3",name:"수연"}];
@@ -2564,7 +2564,7 @@ async function shareProfileLink(){
       Kakao.Share.sendDefault({
         objectType:"feed",
         content:{title,description:text,
-          imageUrl:(grid?location.origin+grid:location.origin+"/public/photos/ai-01.jpg"),
+          imageUrl:(grid?location.origin+grid:location.origin+"/public/photos/default-profile.png"),
           link:{mobileWebUrl:url,webUrl:url}},
         buttons:[{title:"선물하러 가기",link:{mobileWebUrl:url,webUrl:url}}],
       });

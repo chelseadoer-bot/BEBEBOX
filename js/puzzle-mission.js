@@ -67,7 +67,7 @@ function getDiaryPhotoSources() {
 function pickRandomDiaryPhoto() {
   const sources = getDiaryPhotoSources();
   if (!sources.length) {
-    return (typeof state !== "undefined" && state.profile?.avatar) || "public/photos/ai-01.jpg";
+    return (typeof state !== "undefined" && state.profile?.avatar) || "public/photos/default-profile.png";
   }
   return sources[0];
 }
