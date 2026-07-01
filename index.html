@@ -6,7 +6,7 @@
 <title>베베박스</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍼</text></svg>"/>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css"/>
-<link rel="stylesheet" href="css/style.css?v=59"/>
+<link rel="stylesheet" href="css/style.css?v=60"/>
 <link rel="stylesheet" href="css/onboarding.css?v=9"/>
 <link rel="stylesheet" href="css/theme.css?v=4"/>
 </head>
@@ -262,16 +262,11 @@
 <div id="puzzle-tab-view" class="view tab-view">
 <header class="tab-page-header">
 <h2>리워드</h2>
-<p>기록하고 공유해서 캔디를 모으고, 쿠폰으로 바꿔요</p>
+<p>기록하고 공유해서 캔디를 모아보세요</p>
 </header>
 <div class="candy-card">
 <div class="candy-card-label">내 캔디</div>
 <div class="candy-card-amt"><span class="candy-emoji">🍬</span><strong class="js-point-balance">0</strong><span class="candy-unit">개</span></div>
-<div class="candy-progress">
-<div class="candy-progress-bar"><div class="candy-progress-fill" id="candy-progress-fill"></div></div>
-<p class="candy-progress-text" id="candy-progress-text">상품권까지 100캔디</p>
-</div>
-<button type="button" class="candy-exchange-btn" id="btn-claim-coupon">🎟️ 100캔디 → 3,000원 상품권 받기</button>
 </div>
 <div class="point-guide">
 <p class="point-guide-title">🍬 캔디 모으기 · 쓰기 안내</p>
@@ -284,7 +279,6 @@
 <li><span>🧩 오늘의 미션 완성</span><b>+100캔디</b></li>
 <li class="spend"><span>🤖 AI 콘텐츠·게임 1회 이용</span><b>-10캔디</b></li>
 </ul>
-<p class="point-guide-foot">모은 캔디는 <b>100캔디 → 키디키디 3,000원 상품권</b>으로 바꿔요</p>
 </div>
 <div class="mission-puzzle-wrap">
 <p class="mission-board-title">오늘의 미션 달성판</p>
@@ -396,9 +390,8 @@
 <div class="candy-chip">
 <span class="candy-chip-emoji">🍬</span>
 <span class="candy-chip-amt"><strong class="js-point-balance">0</strong> 캔디</span>
-<button type="button" class="candy-chip-btn" id="btn-settings-exchange">100캔디 → 3,000원 상품권</button>
 </div>
-<p class="settings-hint">기록 +20 · 공유 +30 · 선물 받으면 +50 · 좋아요 200개마다 +10 캔디를 모아, <b>100캔디면 키디키디 3,000원 상품권</b>으로 바꿔요</p>
+<p class="candy-earn-hint">📷 기록 <b>+20</b> · 🔗 공유 <b>+30</b> · 🎁 선물 받으면 <b>+50</b> · ❤️ 좋아요 200개마다 <b>+10</b><br/>이렇게 캔디를 모아보세요!</p>
 </section>
 <section class="settings-section">
 <h3>📈 공유 성과</h3>
@@ -661,7 +654,7 @@
 <div class="help-step"><span class="hs-em">✍️</span><div><b>1. 일기를 기록해요</b><p>가운데 동그란 <b>기록</b> 버튼으로 오늘의 아이를 남겨요. <span class="hs-rw">+20🍬</span></p></div></div>
 <div class="help-step"><span class="hs-em">📤</span><div><b>2. 가족·지인에게 공유해요</b><p>공유하면 지인이 일기를 보러 와요. <span class="hs-rw">+30🍬</span></p></div></div>
 <div class="help-step"><span class="hs-em">🎁</span><div><b>3. 선물을 받아요</b><p>받고 싶은 선물을 <b>선물</b> 탭에 공개하면, 지인이 선물해 선반에 채워져요. <span class="hs-rw">+50🍬</span></p></div></div>
-<div class="help-step"><span class="hs-em">🍬</span><div><b>4. 캔디로 즐겨요</b><p>모은 캔디로 <b>AI 놀이</b>를 즐기고(1회 <b>-10캔디</b>), 100캔디는 3,000원 키디 상품권으로 바꿔요.</p></div></div>
+<div class="help-step"><span class="hs-em">🍬</span><div><b>4. 캔디로 즐겨요</b><p>모은 캔디로 <b>AI 놀이</b>(낙서 심리분석·컨셉 사진 등)를 즐겨요. 1회 <b>-10캔디</b>.</p></div></div>
 <div class="help-step"><span class="hs-em">🏠</span><div><b>마이 탭</b><p>왼쪽 <b>마이</b>에서 오늘 할 일·캔디·달성률을 한눈에 봐요.</p></div></div>
 </div>
 <button class="btn-share-go kakao" id="help-close">알겠어요</button>
@@ -678,7 +671,7 @@
 <p class="rf-howto-h">캔디, 이렇게 써요</p>
 <div class="rf-howto-row"><span class="rf-em">✍️</span><span>일기·공유·선물로 캔디를 <b>더 모아요</b></span></div>
 <div class="rf-howto-row"><span class="rf-em">🎨</span><span>모은 캔디로 <b>AI 놀이</b>(컨셉 사진·작명 등)를 즐겨요</span></div>
-<div class="rf-howto-row"><span class="rf-em">🎟️</span><span>100캔디 → <b>3,000원 키디 상품권</b>으로 교환</span></div>
+<div class="rf-howto-row"><span class="rf-em">📷</span><span>기록·공유로 캔디를 모을수록 <b>혜택이 커져요</b></span></div>
 </div>
 <button class="btn-share-go kakao" id="rf-ok">캔디 쓰러 가기 🍬</button>
 <button type="button" class="rf-help-link" id="rf-help">자세한 사용법 보기</button>
