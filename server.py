@@ -746,7 +746,7 @@ class H(SimpleHTTPRequestHandler):
                     img = photos[0]
                     break
         if not img:
-            img = profile.get("avatar") or "/public/photos/ai-01.jpg"
+            img = profile.get("avatar") or "/public/photos/default-profile.png"
         origin = self._origin()
         og_img = (origin + img) if img.startswith("/") else img
         repl = {

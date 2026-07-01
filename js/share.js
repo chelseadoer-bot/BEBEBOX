@@ -108,7 +108,7 @@
   // 부모 화면과 동일한 게시물(post-card) 형태 + 하트 게이지 + 댓글
   function renderRecords(posts, profile, baby) {
     if (!posts.length) return '<p class="s-photo-empty">아직 올라온 기록이 없어요</p>';
-    var avatar = profile.avatar || "/public/photos/ai-01.jpg";
+    var avatar = profile.avatar || "/public/photos/default-profile.png";
     var name = profile.name || (baby + "의 일기");
     return posts.map(function (p) {
       var multi = (p.photos || []).length > 1;
@@ -223,7 +223,7 @@
     var profile = data.profile || {};
     var baby = profile.babyName || (profile.name || "").replace("의 일기", "") || "우리 아기";
     CUR_BABY = baby;
-    var avatar = profile.avatar || "/public/photos/ai-01.jpg";
+    var avatar = profile.avatar || "/public/photos/default-profile.png";
     // 사용자가 설정에서 지정한 배경(담벼락)을 최우선으로. (shareImage 는 카카오 공유용
     // 자동 합성 이미지라서 사용자가 지정한 배경과 달라 보이던 문제 수정)
     var hero = profile.background || collectPhotos(data)[0] || profile.shareImage || avatar;
