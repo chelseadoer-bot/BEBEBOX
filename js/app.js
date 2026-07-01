@@ -2208,15 +2208,16 @@ function closeAppFrame(){
  */
 /* 앱별 결과 보기 비용(캔디). 작명·당번 등 저토큰/무-LLM 앱은 0(무료),
  * 이미지·영상 등 토큰이 많이 드는 앱은 높게. 한 곳에서 조정한다. */
+// 정책: 'AI 콘텐츠/게임 1회 이용 -10포인트'로 전부 통일한다.
 const MINIAPP_COST={
-  naming:0,        // 글로벌 작명소 (저토큰) — 무료
-  chores:0,        // 집안일 당번 (무-LLM) — 무료
-  temperament:0,   // 성향·기질 (저토큰 텍스트) — 무료
-  health:10,       // 아이 건강 체크 (텍스트)
-  pastlife:10,     // 전생 인연 (텍스트)
-  doodle:20,       // 낙서 심리 (이미지 입력)
-  vlog:20,         // 브이로그 (영상 합성)
-  studio:30,       // AI 컨셉스튜디오 (이미지 생성, 최고토큰)
+  naming:10,       // 글로벌 작명소
+  chores:10,       // 집안일 당번
+  temperament:10,  // 성향·기질
+  health:10,       // 아이 건강 체크
+  pastlife:10,     // 전생 인연
+  doodle:10,       // 낙서 심리
+  vlog:10,         // 브이로그
+  studio:10,       // AI 컨셉스튜디오
 };
 const MINIAPP_RULES={
   shareReward:POINT_RULES.share||30,      // 결과 공유 시 적립(캔디)
@@ -2237,12 +2238,6 @@ function handleMiniAppGate(data){
       {type:"kidikidi-gate-reply",requestId:data.requestId,allow:!!allow},"*");}catch(_){}
   };
   if(!cost){_lastCharge=0;reply(true);return;}           // 무료 앱 → 통과
-  // 첫 유료 AI 결과는 무료 체험(1회). 실제 생성 성공 시에만 소진한다.
-  if(!localStorage.getItem("bbx_ai_free_used")){
-    _lastCharge=0;_pendingFree=true;
-    if(typeof showToast==="function")showToast("첫 AI 결과는 무료예요 🎁");
-    reply(true);return;
-  }
   openRevealGate(cost,(confirmed)=>{
     if(confirmed&&typeof spendPoints==="function"&&spendPoints(cost,"miniapp_reveal")){
       _lastCharge=cost;                                  // 실패 시 환불 대비
@@ -2256,7 +2251,6 @@ function handleMiniAppGate(data){
   });
 }
 let _lastCharge=0;   // 직전 결제(차감) 금액 — 생성 실패 시 환불용
-let _pendingFree=false;   // 첫 무료 체험 진행 중 — 생성 성공 시에만 소진
 function handleMiniAppEvent(data){
   const app=_activeMiniApp||{slug:(data&&data.app)||"miniapp",label:"AI 앱"};
   const ev=data&&data.event;
@@ -2265,7 +2259,6 @@ function handleMiniAppEvent(data){
     return;
   }
   if(ev==="failed"){
-    _pendingFree=false;   // 실패하면 무료 체험은 그대로 남겨둔다
     // 생성 실패 → 게이트에서 차감한 포인트 환불
     if(_lastCharge>0){
       if(typeof addPoints==="function")addPoints(_lastCharge,"miniapp_refund");
@@ -2277,7 +2270,6 @@ function handleMiniAppEvent(data){
   }
   if(ev==="generated"){
     if(data&&data.from_cache){_lastCharge=0;return;}
-    if(_pendingFree){localStorage.setItem("bbx_ai_free_used","1");_pendingFree=false;}  // 첫 무료 체험 소진
     _lastCharge=0;   // 결제 확정
     // 결제는 게이트에서 끝났고, 여기선 달성조건(오늘의 미션) 1조각 반영 + 동기화
     // (생성 자체는 서버 ai_backend 가 miniapp_generate 로 고객 DB에 적치)
@@ -2435,7 +2427,7 @@ async function runConceptInline(){
   if(!($("#concept-consent")&&$("#concept-consent").checked)){showToast("약관에 동의해주세요");return;}
   if(!_conceptPhoto){showToast("아이 사진을 먼저 올려주세요");return;}
   const cost=(typeof miniAppCost==="function")?miniAppCost("studio"):30;
-  let charged=0,useFree=false;
+  let charged=0;
   const proceed=async()=>{
     _conceptBusy=true;
     const cta=$("#btn-concept-make");if(cta){cta.disabled=true;cta.classList.remove("on");cta.textContent="만드는 중… ✨";}
@@ -2450,7 +2442,6 @@ async function runConceptInline(){
       const rimg=$("#concept-result-img");if(rimg)rimg.src=url;
       const rbox=$("#concept-result");if(rbox)rbox.hidden=false;
       _lastConceptResult={url:url,label:(out.concept_label||c.label)};
-      if(useFree)localStorage.setItem("bbx_ai_free_used","1");
       if(typeof addPuzzlePieces==="function")addPuzzlePieces(1,"concept");
       if(typeof _syncProfileChange==="function")_syncProfileChange();
       showToast("완성됐어요 ✨ 아래에서 확인하세요");
@@ -2465,7 +2456,6 @@ async function runConceptInline(){
     }
   };
   if(!cost){await proceed();return;}
-  if(!localStorage.getItem("bbx_ai_free_used")){useFree=true;showToast("첫 AI 결과는 무료예요 🎁");await proceed();return;}
   if(typeof openRevealGate==="function"){
     openRevealGate(cost,(ok)=>{
       if(ok&&typeof spendPoints==="function"&&spendPoints(cost,"concept_reveal")){charged=cost;if(typeof _syncProfileChange==="function")_syncProfileChange();proceed();}
@@ -2787,10 +2777,13 @@ function bindEvents(){
   $("#sp-copy")?.addEventListener("click",()=>{$("#share-preview-modal").classList.add("hidden");copyShareLinkWithReward();});
   $("#sp-close")?.addEventListener("click",()=>$("#share-preview-modal").classList.add("hidden"));
   $("#sp-backdrop")?.addEventListener("click",()=>$("#share-preview-modal").classList.add("hidden"));
-  $("#wc-ok")?.addEventListener("click",()=>{$("#welcome-modal").classList.add("hidden");_welcomeActive=false;showReferralEarnedPopup();});
-  $("#rf-ok")?.addEventListener("click",()=>$("#referral-modal").classList.add("hidden"));
-  $("#rf-backdrop")?.addEventListener("click",()=>$("#referral-modal").classList.add("hidden"));
+  $("#wc-ok")?.addEventListener("click",()=>{$("#welcome-modal").classList.add("hidden");_welcomeActive=false;advanceOnboardingPopups();});
+  $("#rf-ok")?.addEventListener("click",()=>{$("#referral-modal").classList.add("hidden");advanceOnboardingPopups();});
+  $("#rf-backdrop")?.addEventListener("click",()=>{$("#referral-modal").classList.add("hidden");advanceOnboardingPopups();});
   $("#rf-help")?.addEventListener("click",()=>{$("#referral-modal").classList.add("hidden");$("#help-modal").classList.remove("hidden");});
+  $("#fr2-doodle")?.addEventListener("click",()=>{$("#firstrec-modal").classList.add("hidden");openAiApp("doodle","우리 아이 낙서 심리분석");});
+  $("#fr2-skip")?.addEventListener("click",()=>$("#firstrec-modal").classList.add("hidden"));
+  $("#fr2-backdrop")?.addEventListener("click",()=>$("#firstrec-modal").classList.add("hidden"));
   $("#btn-my-help")?.addEventListener("click",()=>$("#help-modal").classList.remove("hidden"));
   $("#help-close")?.addEventListener("click",()=>$("#help-modal").classList.add("hidden"));
   $("#help-backdrop")?.addEventListener("click",()=>$("#help-modal").classList.add("hidden"));
@@ -2823,7 +2816,8 @@ function enterMainApp(){
   renderPointsUI();
   switchMainTab("home");
 }
-let _welcomeActive=false;      // 환영 팝업 표시 중 — 추천 팝업은 그 뒤에 띄운다
+let _welcomeActive=false;      // 환영 팝업 표시 중 — 뒤 팝업은 그다음에 띄운다
+let _firstRecReady=false;      // 이번 세션에 첫 기록 카드가 막 생성됨(축하 팝업 대상)
 // 첫 시작 시: 시작 캔디 100개 충전 + 환영 카드 첫 기록 + 축하 팝업(1회).
 function maybeWelcomeBonus(){
   if(localStorage.getItem("bb_welcome_v1"))return;
@@ -2832,6 +2826,7 @@ function maybeWelcomeBonus(){
   if(typeof addPoints==="function")addPoints(amt,"welcome");
   const a=$("#wc-amount");if(a)a.textContent=amt;
   seedWelcomePost();
+  _firstRecReady=true;         // 첫 기록 자동 생성 → 축하 팝업 대상
   if(typeof renderPointsUI==="function")renderPointsUI();
   _welcomeActive=true;
   setTimeout(()=>$("#welcome-modal")?.classList.remove("hidden"),450);
@@ -2865,17 +2860,37 @@ async function maybeReferralBonus(){
       }catch(e){ /* 네트워크 실패 → pending 유지 */ }
     }
   }
-  showReferralEarnedPopup();   // 지급됐는데 아직 축하 못 한 게 있으면 표시
+  advanceOnboardingPopups();   // 추천 캔디 → 첫 기록 축하 순으로 안내
 }
-// 지급된 추천 캔디를 축하 팝업으로 1회 안내. 환영 팝업이 떠 있으면 그 뒤로 미룬다.
+// 온보딩 축하 팝업 순차 표시: (환영 →) 추천 캔디 → 첫 기록 축하.
+// 환영 팝업이 떠 있으면 그것이 닫힐 때(wc-ok) 다시 호출된다.
+function advanceOnboardingPopups(){
+  if(_welcomeActive)return;
+  if(showReferralEarnedPopup())return;      // 추천 팝업을 띄웠으면 여기서 멈춤(닫으면 재호출)
+  showFirstRecordPopup();
+}
+// 지급된 추천 캔디를 축하 팝업으로 1회 안내. 띄웠으면 true.
 function showReferralEarnedPopup(){
-  if(_welcomeActive)return;                 // 환영 팝업 닫힌 뒤 wc-ok 에서 재호출
+  if(_welcomeActive)return false;
   let data=null;
   try{data=JSON.parse(localStorage.getItem("bbx_referral_earned")||"null");}catch(_){}
-  if(!data||!(Number(data.amt)>0))return;
+  if(!data||!(Number(data.amt)>0))return false;
   const a=$("#rf-amount");if(a)a.textContent=Number(data.amt);
   $("#referral-modal")?.classList.remove("hidden");
   try{localStorage.removeItem("bbx_referral_earned");}catch(_){}   // 한 번만
+  return true;
+}
+// 첫 기록(환영 카드)이 자동 등록되면 1회 축하 팝업 + 첫 AI 놀이(낙서 심리분석 10캔디) 유도.
+function showFirstRecordPopup(){
+  if(_welcomeActive)return false;
+  if(!_firstRecReady)return false;                       // 이번 세션 신규 가입만
+  if(localStorage.getItem("bbx_firstrec_v1"))return false;
+  localStorage.setItem("bbx_firstrec_v1","1");
+  _firstRecReady=false;
+  const n=$("#firstrec-baby");
+  if(n)n.textContent=(typeof babyName==="function"?babyName():"우리 아기");
+  $("#firstrec-modal")?.classList.remove("hidden");
+  return true;
 }
 function _obLoadImg(src){
   return new Promise(res=>{

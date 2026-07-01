@@ -6,7 +6,7 @@
 <title>베베박스</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍼</text></svg>"/>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css"/>
-<link rel="stylesheet" href="css/style.css?v=58"/>
+<link rel="stylesheet" href="css/style.css?v=59"/>
 <link rel="stylesheet" href="css/onboarding.css?v=9"/>
 <link rel="stylesheet" href="css/theme.css?v=4"/>
 </head>
@@ -276,12 +276,13 @@
 <div class="point-guide">
 <p class="point-guide-title">🍬 캔디 모으기 · 쓰기 안내</p>
 <ul class="point-guide-list">
+<li><span>🎉 인스타(핀핀) 이벤트 참여</span><b>+100캔디</b></li>
 <li><span>📷 아이 기록하기</span><b>+20캔디</b></li>
 <li><span>🔗 공유하기</span><b>+30캔디</b></li>
 <li><span>🎁 선물 받으면(준 사람 기록)</span><b>+50캔디</b></li>
 <li><span>❤️ 좋아요 200개마다</span><b>+10캔디</b></li>
 <li><span>🧩 오늘의 미션 완성</span><b>+100캔디</b></li>
-<li class="spend"><span>🤖 AI 결과 보기</span><b>-10~30캔디</b></li>
+<li class="spend"><span>🤖 AI 콘텐츠·게임 1회 이용</span><b>-10캔디</b></li>
 </ul>
 <p class="point-guide-foot">모은 캔디는 <b>100캔디 → 키디키디 3,000원 상품권</b>으로 바꿔요</p>
 </div>
@@ -492,8 +493,8 @@
 <div id="game-result-screen" class="game-screen hidden">
 <p class="game-result-label">게임 종료!</p>
 <div id="game-result-locked">
-<p class="game-result-hint">🍬 <span id="game-reveal-cost">20</span>캔디를 쓰고 결과를 확인하세요</p>
-<button type="button" class="journey-gift-btn" id="btn-game-reveal">🍬 <span>20</span>캔디 쓰고 결과 보기</button>
+<p class="game-result-hint">🍬 <span id="game-reveal-cost">10</span>캔디를 쓰고 결과를 확인하세요</p>
+<button type="button" class="journey-gift-btn" id="btn-game-reveal">🍬 <span>10</span>캔디 쓰고 결과 보기</button>
 </div>
 <div id="game-result-unlocked" class="hidden">
 <p class="game-result-score"><span id="game-final-score">0</span>점</p>
@@ -659,7 +660,7 @@
 <div class="help-step"><span class="hs-em">✍️</span><div><b>1. 일기를 기록해요</b><p>가운데 동그란 <b>기록</b> 버튼으로 오늘의 아이를 남겨요. <span class="hs-rw">+20🍬</span></p></div></div>
 <div class="help-step"><span class="hs-em">📤</span><div><b>2. 가족·지인에게 공유해요</b><p>공유하면 지인이 일기를 보러 와요. <span class="hs-rw">+30🍬</span></p></div></div>
 <div class="help-step"><span class="hs-em">🎁</span><div><b>3. 선물을 받아요</b><p>받고 싶은 선물을 <b>선물</b> 탭에 공개하면, 지인이 선물해 선반에 채워져요. <span class="hs-rw">+50🍬</span></p></div></div>
-<div class="help-step"><span class="hs-em">🍬</span><div><b>4. 캔디로 즐겨요</b><p>모은 캔디로 <b>AI 놀이</b>를 하고, 100캔디는 3,000원 키디 상품권으로 바꿔요.</p></div></div>
+<div class="help-step"><span class="hs-em">🍬</span><div><b>4. 캔디로 즐겨요</b><p>모은 캔디로 <b>AI 놀이</b>를 즐기고(1회 <b>-10캔디</b>), 100캔디는 3,000원 키디 상품권으로 바꿔요.</p></div></div>
 <div class="help-step"><span class="hs-em">🏠</span><div><b>마이 탭</b><p>왼쪽 <b>마이</b>에서 오늘 할 일·캔디·달성률을 한눈에 봐요.</p></div></div>
 </div>
 <button class="btn-share-go kakao" id="help-close">알겠어요</button>
@@ -680,6 +681,20 @@
 </div>
 <button class="btn-share-go kakao" id="rf-ok">캔디 쓰러 가기 🍬</button>
 <button type="button" class="rf-help-link" id="rf-help">자세한 사용법 보기</button>
+</div>
+</div>
+<!-- 첫 기록 자동 완성 축하 팝업 -->
+<div class="modal hidden" id="firstrec-modal">
+<div class="modal-backdrop" id="fr2-backdrop"></div>
+<div class="modal-content wc-content">
+<div class="wc-emoji">📖</div>
+<h3>첫 기록이 완성됐어요!</h3>
+<p class="modal-desc">가입 정보로 <b id="firstrec-baby">우리 아기</b>의 첫 기록을 자동으로 남겨뒀어요.<br/>오늘부터 소중한 순간을 하루하루 채워가요 🎉</p>
+<div class="fr2-cta">
+<p class="fr2-cta-h">🍬 10캔디로 첫 AI 놀이 해볼까요?</p>
+<button class="btn-share-go kakao" id="fr2-doodle">🎨 우리 아이 낙서 심리분석하기</button>
+<button type="button" class="fr2-skip" id="fr2-skip">나중에 볼게요</button>
+</div>
 </div>
 </div>
 </div>
@@ -873,7 +888,7 @@
 <script src="js/wishlist-data.js"></script>
 <script src="js/feed-data.js?v=7"></script>
 <script src="js/kidikidi.js?v=5"></script>
-<script src="js/points.js?v=4"></script>
+<script src="js/points.js?v=5"></script>
 <script src="js/puzzle-mission.js?v=5"></script>
 <script src="js/minigame.js?v=4"></script>
 <script src="js/photo-quest-detect.js?v=1"></script>
@@ -881,6 +896,6 @@
 <script src="js/family-data.js?v=6"></script>
 <script src="js/kakao-auth.js?v=1"></script>
 <script src="js/onboarding.js?v=14"></script>
-<script src="js/app.js?v=93"></script>
+<script src="js/app.js?v=94"></script>
 </body>
 </html>
