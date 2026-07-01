@@ -641,7 +641,7 @@ function renderCouponBox(){
   const list=$("#coupon-list");
   if(!list)return;
   if(!coupons.length){
-    list.innerHTML=`<div class="coupon-empty">아직 받은 쿠폰이 없어요.<br/>100캔디를 모으면 키디키디 3,000원 상품권으로 바꿀 수 있어요!</div>`;
+    list.innerHTML=`<div class="coupon-empty">아직 받은 쿠폰이 없어요.</div>`;
     return;
   }
   const sorted=[...coupons].sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
@@ -811,7 +811,7 @@ function renderHomeFlow(){
          <span class="hf-arrow">›</span>
          <div class="hf-step hf-step--use" data-go="game"><span class="hf-ic">✨</span><span class="hf-lb">AI·게임·꾸미기</span></div>
        </div>
-       <p class="hf-foot">모은 캔디 🍬는 AI 분석·게임에 쓰고, ${R.couponCost}개면 ${R.couponAmount.toLocaleString("ko-KR")}원 상품권으로도 바꿔요</p>
+       <p class="hf-foot">모은 캔디 🍬로 AI 분석·게임을 즐겁게 해봐요</p>
      </div>`;
   $("#hf-toggle").onclick=()=>{
     const now=!el.classList.contains("collapsed");
