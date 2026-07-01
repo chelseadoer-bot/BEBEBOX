@@ -197,6 +197,12 @@ function saveKidikidiIdFromInput(){
   }
 }
 function finishOnboarding(asGuest){
+  // 가입 때 입력한 추천인코드를 저장해 두면, 앱 첫 입장에서 캔디를 지급한다.
+  try{
+    const refEl=document.getElementById("ob-referral-code");
+    const ref=(refEl&&refEl.value?refEl.value:(onboarding.referral||"")).trim().toUpperCase();
+    if(ref)localStorage.setItem("bbx_pending_referral",ref);
+  }catch(_){}
   const baby=onboarding.babyName||"다엘이";
   if(!asGuest&&onboarding.userType==="parent"&&onboarding.path==="new"){
     if(window.state){
@@ -408,6 +414,9 @@ function bindOnboarding(){
     if(e.key==="Enter")$("#btn-ob-kidikidi-next")?.click();
   });
   $("#ob-invite-code")?.addEventListener("input",e=>{
+    e.target.value=e.target.value.replace(/[^a-zA-Z0-9]/g,"").toUpperCase();
+  });
+  $("#ob-referral-code")?.addEventListener("input",e=>{
     e.target.value=e.target.value.replace(/[^a-zA-Z0-9]/g,"").toUpperCase();
   });
 }

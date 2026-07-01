@@ -6,8 +6,8 @@
 <title>베베박스</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍼</text></svg>"/>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css"/>
-<link rel="stylesheet" href="css/style.css?v=57"/>
-<link rel="stylesheet" href="css/onboarding.css?v=8"/>
+<link rel="stylesheet" href="css/style.css?v=58"/>
+<link rel="stylesheet" href="css/onboarding.css?v=9"/>
 <link rel="stylesheet" href="css/theme.css?v=4"/>
 </head>
 <body>
@@ -188,6 +188,10 @@
 <p class="ob-desc">위시리스트 선물·상품권을 키디키디 계정으로 바로 쓸 수 있어요</p>
 <input type="text" class="ob-input ob-input-kidikidi" id="ob-kidikidi-id" placeholder="키디키디 로그인 아이디" maxlength="50" autocapitalize="off" autocomplete="username"/>
 <p class="ob-kd-hint">키디키디 앱 <strong>마이페이지</strong>에서 아이디를 확인할 수 있어요</p>
+<div class="ob-referral">
+<label class="ob-referral-label" for="ob-referral-code">🎁 추천인코드 <span>(선택 · 있으면 캔디 선물!)</span></label>
+<input type="text" class="ob-input" id="ob-referral-code" placeholder="추천인코드를 입력하면 캔디를 더 드려요" maxlength="20" autocapitalize="characters" autocomplete="off"/>
+</div>
 <button type="button" class="ob-primary" id="btn-ob-kidikidi-next">연결하고 완료하기</button>
 <button type="button" class="ob-secondary" id="btn-ob-kidikidi-skip">나중에 할게요</button>
 </div>
@@ -661,6 +665,23 @@
 <button class="btn-share-go kakao" id="help-close">알겠어요</button>
 </div>
 </div>
+<!-- 추천인코드 캔디 선물 팝업 -->
+<div class="modal hidden" id="referral-modal">
+<div class="modal-backdrop" id="rf-backdrop"></div>
+<div class="modal-content wc-content">
+<div class="wc-emoji">🎁</div>
+<h3>추천 선물이 도착했어요!</h3>
+<p class="wc-candy">🍬 <b id="rf-amount">0</b> 캔디를 선물로 받았어요</p>
+<div class="rf-howto">
+<p class="rf-howto-h">캔디, 이렇게 써요</p>
+<div class="rf-howto-row"><span class="rf-em">✍️</span><span>일기·공유·선물로 캔디를 <b>더 모아요</b></span></div>
+<div class="rf-howto-row"><span class="rf-em">🎨</span><span>모은 캔디로 <b>AI 놀이</b>(컨셉 사진·작명 등)를 즐겨요</span></div>
+<div class="rf-howto-row"><span class="rf-em">🎟️</span><span>100캔디 → <b>3,000원 키디 상품권</b>으로 교환</span></div>
+</div>
+<button class="btn-share-go kakao" id="rf-ok">캔디 쓰러 가기 🍬</button>
+<button type="button" class="rf-help-link" id="rf-help">자세한 사용법 보기</button>
+</div>
+</div>
 </div>
 <div class="photo-detail hidden" id="photo-detail">
 <button class="detail-back" id="btn-close-viewer" type="button" aria-label="이전 화면">←</button>
@@ -859,7 +880,7 @@
 <script src="js/photo-storage.js?v=2"></script>
 <script src="js/family-data.js?v=6"></script>
 <script src="js/kakao-auth.js?v=1"></script>
-<script src="js/onboarding.js?v=12"></script>
-<script src="js/app.js?v=90"></script>
+<script src="js/onboarding.js?v=13"></script>
+<script src="js/app.js?v=91"></script>
 </body>
 </html>

@@ -2787,7 +2787,10 @@ function bindEvents(){
   $("#sp-copy")?.addEventListener("click",()=>{$("#share-preview-modal").classList.add("hidden");copyShareLinkWithReward();});
   $("#sp-close")?.addEventListener("click",()=>$("#share-preview-modal").classList.add("hidden"));
   $("#sp-backdrop")?.addEventListener("click",()=>$("#share-preview-modal").classList.add("hidden"));
-  $("#wc-ok")?.addEventListener("click",()=>$("#welcome-modal").classList.add("hidden"));
+  $("#wc-ok")?.addEventListener("click",()=>{$("#welcome-modal").classList.add("hidden");_welcomeActive=false;flushReferralModal();});
+  $("#rf-ok")?.addEventListener("click",()=>$("#referral-modal").classList.add("hidden"));
+  $("#rf-backdrop")?.addEventListener("click",()=>$("#referral-modal").classList.add("hidden"));
+  $("#rf-help")?.addEventListener("click",()=>{$("#referral-modal").classList.add("hidden");$("#help-modal").classList.remove("hidden");});
   $("#btn-my-help")?.addEventListener("click",()=>$("#help-modal").classList.remove("hidden"));
   $("#help-close")?.addEventListener("click",()=>$("#help-modal").classList.add("hidden"));
   $("#help-backdrop")?.addEventListener("click",()=>$("#help-modal").classList.add("hidden"));
@@ -2813,12 +2816,15 @@ function saveNotifySettings(){
 }
 function enterMainApp(){
   maybeWelcomeBonus();
+  maybeReferralBonus();        // 가입 때 넣은 추천인코드 → 캔디 지급(비동기)
   renderProfile();
   renderFeed();
   renderAgeQuestBadge();
   renderPointsUI();
   switchMainTab("home");
 }
+let _welcomeActive=false;      // 환영 팝업 표시 중 — 추천 팝업은 그 뒤에 띄운다
+let _pendingReferralAmt=0;     // 지급된 추천 캔디(환영 팝업 닫힌 뒤 안내)
 // 첫 시작 시: 시작 캔디 100개 충전 + 환영 카드 첫 기록 + 축하 팝업(1회).
 function maybeWelcomeBonus(){
   if(localStorage.getItem("bb_welcome_v1"))return;
@@ -2828,7 +2834,39 @@ function maybeWelcomeBonus(){
   const a=$("#wc-amount");if(a)a.textContent=amt;
   seedWelcomePost();
   if(typeof renderPointsUI==="function")renderPointsUI();
+  _welcomeActive=true;
   setTimeout(()=>$("#welcome-modal")?.classList.remove("hidden"),450);
+}
+// 추천인코드 지급: 서버가 코드 유효성·중복(가족당 1회)을 검증하고 캔디액을 회신.
+async function maybeReferralBonus(){
+  let code="";
+  try{code=(localStorage.getItem("bbx_pending_referral")||"").trim().toUpperCase();}catch(_){}
+  if(!code)return;
+  let fam="";
+  try{fam=((typeof ensureInviteCode==="function"&&ensureInviteCode(true))
+        ||(typeof getInviteCode==="function"&&getInviteCode())||"").toString().toUpperCase();}catch(_){}
+  if(!fam||fam.length<3)return;   // 가족코드 아직 없으면 다음 입장에 재시도
+  try{
+    const r=await fetch("/api/referral/redeem",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({family:fam,code:code})});
+    const j=await r.json().catch(()=>({}));
+    try{localStorage.removeItem("bbx_pending_referral");}catch(_){}  // 서버 응답 = 재시도 종료
+    if(j&&j.ok&&j.candy>0){
+      if(typeof addPoints==="function")addPoints(j.candy,"referral");
+      if(typeof renderPointsUI==="function")renderPointsUI();
+      if(typeof _syncProfileChange==="function")_syncProfileChange();
+      _pendingReferralAmt=j.candy;
+      flushReferralModal();
+    }
+  }catch(e){ /* 네트워크 실패 → pending 유지, 다음 입장에 재시도 */ }
+}
+// 환영 팝업이 떠 있으면 그게 닫힌 뒤에, 아니면 바로 추천 캔디 팝업을 띄운다.
+function flushReferralModal(){
+  if(_pendingReferralAmt<=0)return;
+  if(_welcomeActive)return;
+  const amt=_pendingReferralAmt;_pendingReferralAmt=0;
+  const a=$("#rf-amount");if(a)a.textContent=amt;
+  $("#referral-modal")?.classList.remove("hidden");
 }
 function _obLoadImg(src){
   return new Promise(res=>{

@@ -135,6 +135,27 @@ th{color:var(--sub);font-weight:700;font-size:12px;background:#faf7f3;white-spac
 </div>
 </div>
 
+<!-- 추천인코드 캔디 지급 -->
+<div class="card">
+<div class="card-h"><span>🎁 추천인코드 캔디</span><span class="muted">가입 시 코드를 입력한 회원에게 첫 입장 때 자동 지급</span></div>
+<div style="padding:16px">
+<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;margin-bottom:14px">
+<div style="flex:1;min-width:120px"><label class="muted" style="font-size:11px;display:block;margin-bottom:4px">추천인코드</label><input class="search" id="rf-code" placeholder="예: INSTA" maxlength="20" style="text-transform:uppercase"/></div>
+<div style="flex:0 0 110px"><label class="muted" style="font-size:11px;display:block;margin-bottom:4px">지급 캔디 🍬</label><input class="search" id="rf-candy" type="number" min="0" placeholder="100"/></div>
+<div style="flex:1;min-width:140px"><label class="muted" style="font-size:11px;display:block;margin-bottom:4px">메모(선택)</label><input class="search" id="rf-note" placeholder="예: 인스타 DM 캠페인" maxlength="60"/></div>
+<button class="btn" id="rf-add" style="flex:0 0 auto">추가/저장</button>
+</div>
+<div style="overflow:auto">
+<table>
+<thead><tr><th>코드</th><th class="num">지급 캔디</th><th class="num">사용 인원</th><th>상태</th><th>메모</th><th>관리</th></tr></thead>
+<tbody id="rf-list"></tbody>
+</table>
+</div>
+<span id="rf-status" class="muted"></span>
+<p class="legend" style="padding:10px 0 0">※ 회원이 가입 시 이 코드를 입력하면 첫 입장에서 캔디가 자동 지급되고 축하 팝업이 떠요. 한 가족당 1회만 지급됩니다. 같은 코드를 다시 저장하면 캔디·메모가 덮어써집니다.</p>
+</div>
+</div>
+
 <div class="topbar">
 <input class="search" id="search" placeholder="가족코드 · 아기 이름 · 키디 아이디로 검색"/>
 <button class="btn ghost" id="refresh">새로고침</button>
@@ -192,6 +213,7 @@ async function loadAll(){
       kpi(by.gift_done||0,"지인 선물 완료");
     await loadCoupons();
     await loadBanner();
+    await loadReferrals();
     await loadMembers("");
     showApp();
   }catch(e){ alert("키가 올바르지 않습니다."); }
@@ -391,6 +413,50 @@ document.getElementById("bn-reset").onclick=async function(){
   await saveBanners("추가 배너를 모두 비웠어요 ✓ (기본 배너만 표시)");
   clearBnForm();
 };
+/* 추천인코드 캔디 지급 */
+async function loadReferrals(){
+  try{ var j = await api("/api/admin/referrals"); renderReferrals(j.referrals||[]); }catch(e){}
+}
+function renderReferrals(list){
+  var tb=document.getElementById("rf-list");
+  if(!list||!list.length){tb.innerHTML='<tr><td colspan="6"><div class="empty">등록된 코드가 없어요</div></td></tr>';return;}
+  tb.innerHTML=list.map(function(r){
+    var st=r.active?'<span class="tag done">활성</span>':'<span class="tag nokid">중지</span>';
+    return '<tr>'+
+      '<td><span class="code">'+esc(r.code)+'</span></td>'+
+      '<td class="num"><b>'+al(r.candy)+'</b> 🍬</td>'+
+      '<td class="num">'+al(r.redeemed)+'</td>'+
+      '<td>'+st+'</td>'+
+      '<td class="muted" style="font-size:12px">'+esc(r.note||"")+'</td>'+
+      '<td style="white-space:nowrap">'+
+        '<button class="btn ghost sm" data-rf-edit data-code="'+esc(r.code)+'" data-candy="'+r.candy+'" data-note="'+esc(r.note||"")+'">수정</button> '+
+        '<button class="btn ghost sm" data-rf-toggle data-code="'+esc(r.code)+'" data-active="'+(r.active?1:0)+'" data-candy="'+r.candy+'" data-note="'+esc(r.note||"")+'">'+(r.active?"중지":"활성")+'</button> '+
+        '<button class="btn ghost sm" data-rf-del="'+esc(r.code)+'">삭제</button>'+
+      '</td></tr>';
+  }).join("");
+  tb.querySelectorAll("[data-rf-del]").forEach(function(b){b.onclick=function(){ if(confirm("코드 '"+b.dataset.rfDel+"' 를 삭제할까요?")) delReferral(b.dataset.rfDel); };});
+  tb.querySelectorAll("[data-rf-edit]").forEach(function(b){b.onclick=function(){ document.getElementById("rf-code").value=b.dataset.code; document.getElementById("rf-candy").value=b.dataset.candy; document.getElementById("rf-note").value=b.dataset.note||""; document.getElementById("rf-code").focus(); };});
+  tb.querySelectorAll("[data-rf-toggle]").forEach(function(b){b.onclick=function(){ saveReferral(b.dataset.code, +b.dataset.candy, b.dataset.active!=="1", b.dataset.note||""); };});
+}
+async function saveReferral(code,candy,active,note){
+  var r=await apiPost("/api/admin/referral/save",{code:code,candy:candy,active:active,note:note});
+  if(r&&r.ok){ document.getElementById("rf-status").textContent="저장됐어요 ✓ (앱에 반영)"; renderReferrals(r.referrals||[]); }
+  else document.getElementById("rf-status").textContent="저장 실패 — 코드/관리자 키를 확인해 주세요";
+}
+async function delReferral(code){
+  var r=await apiPost("/api/admin/referral/delete",{code:code});
+  if(r){ document.getElementById("rf-status").textContent="삭제됐어요 ✓"; renderReferrals(r.referrals||[]); }
+}
+document.getElementById("rf-add").onclick=function(){
+  var code=(document.getElementById("rf-code").value||"").trim().toUpperCase();
+  var candy=parseInt(document.getElementById("rf-candy").value,10)||0;
+  var note=(document.getElementById("rf-note").value||"").trim();
+  if(!code){ document.getElementById("rf-status").textContent="코드를 입력해 주세요"; return; }
+  if(candy<=0){ document.getElementById("rf-status").textContent="지급 캔디(1 이상)를 입력해 주세요"; return; }
+  saveReferral(code,candy,true,note);
+  document.getElementById("rf-code").value=""; document.getElementById("rf-candy").value=""; document.getElementById("rf-note").value="";
+};
+
 document.getElementById("gate-btn").onclick=function(){
   KEY=document.getElementById("key-input").value.trim();
   localStorage.setItem("bbx_admin_key",KEY);
