@@ -431,10 +431,12 @@ function renderReferrals(list){
       '<td style="white-space:nowrap">'+
         '<button class="btn ghost sm" data-rf-edit data-code="'+esc(r.code)+'" data-candy="'+r.candy+'" data-note="'+esc(r.note||"")+'">수정</button> '+
         '<button class="btn ghost sm" data-rf-toggle data-code="'+esc(r.code)+'" data-active="'+(r.active?1:0)+'" data-candy="'+r.candy+'" data-note="'+esc(r.note||"")+'">'+(r.active?"중지":"활성")+'</button> '+
+        '<button class="btn ghost sm" data-rf-reset="'+esc(r.code)+'">카운트 초기화</button> '+
         '<button class="btn ghost sm" data-rf-del="'+esc(r.code)+'">삭제</button>'+
       '</td></tr>';
   }).join("");
   tb.querySelectorAll("[data-rf-del]").forEach(function(b){b.onclick=function(){ if(confirm("코드 '"+b.dataset.rfDel+"' 를 삭제할까요?")) delReferral(b.dataset.rfDel); };});
+  tb.querySelectorAll("[data-rf-reset]").forEach(function(b){b.onclick=function(){ if(confirm("코드 '"+b.dataset.rfReset+"' 의 사용 인원(교환 기록)을 0으로 초기화할까요? (지급된 캔디 잔액은 그대로)")) resetReferral(b.dataset.rfReset); };});
   tb.querySelectorAll("[data-rf-edit]").forEach(function(b){b.onclick=function(){ document.getElementById("rf-code").value=b.dataset.code; document.getElementById("rf-candy").value=b.dataset.candy; document.getElementById("rf-note").value=b.dataset.note||""; document.getElementById("rf-code").focus(); };});
   tb.querySelectorAll("[data-rf-toggle]").forEach(function(b){b.onclick=function(){ saveReferral(b.dataset.code, +b.dataset.candy, b.dataset.active!=="1", b.dataset.note||""); };});
 }
@@ -446,6 +448,10 @@ async function saveReferral(code,candy,active,note){
 async function delReferral(code){
   var r=await apiPost("/api/admin/referral/delete",{code:code});
   if(r){ document.getElementById("rf-status").textContent="삭제됐어요 ✓"; renderReferrals(r.referrals||[]); }
+}
+async function resetReferral(code){
+  var r=await apiPost("/api/admin/referral/reset",{code:code});
+  if(r){ document.getElementById("rf-status").textContent="사용 인원을 초기화했어요 ✓ (삭제 "+(r.cleared||0)+"건)"; renderReferrals(r.referrals||[]); }
 }
 document.getElementById("rf-add").onclick=function(){
   var code=(document.getElementById("rf-code").value||"").trim().toUpperCase();

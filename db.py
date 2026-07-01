@@ -649,6 +649,20 @@ def redeem_referral(family_id, code):
     return {"ok": True, "code": code, "candy": ref["candy"]}
 
 
+def reset_referral_redemptions(code):
+    """해당 코드의 교환 기록(사용 인원 집계)을 모두 삭제. 테스트/캠페인 리셋용.
+       (이미 지급된 회원 캔디 잔액에는 영향 없음 — 카운트만 초기화)"""
+    code = _norm_code(code)
+    if not code:
+        return 0
+    with _conn() as conn:
+        n = conn.execute(
+            "DELETE FROM events WHERE type='referral_redeem' AND UPPER(item_id)=?",
+            (code,),
+        ).rowcount
+    return n
+
+
 def delete_family(family_id):
     """회원 탈퇴: 가족 데이터·사진·이벤트·쿠폰발급기록 전부 삭제. 사진 파일명 목록 반환."""
     fam = (family_id or "").strip().upper()
