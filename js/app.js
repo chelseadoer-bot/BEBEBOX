@@ -2137,9 +2137,10 @@ async function applyGameBanner(){
   if(applyGameBanner._t){clearInterval(applyGameBanner._t);applyGameBanner._t=null;}
   let cfg=null;
   try{const r=await fetch("/api/banner?_t="+Date.now());cfg=await r.json();}catch(_){}
-  // 기본 배너는 항상 첫 장. 운영자가 추가한 배너를 그 뒤에 더해 함께 회전.
-  const extra=(cfg&&Array.isArray(cfg.items))?cfg.items:[];
-  const items=[DEFAULT_GAME_BANNER,...extra];
+  // 운영자가 설정한 배너 목록을 그대로 사용(기본 배너도 삭제·순서변경 가능).
+  // 목록이 비어 있으면(미설정/전체삭제) 기본 배너로 폴백해 게임 탭이 비지 않게 한다.
+  const list=(cfg&&Array.isArray(cfg.items))?cfg.items.filter(b=>b&&(b.title||b.image||b.icon)):null;
+  const items=(list&&list.length)?list:[DEFAULT_GAME_BANNER];
   const dots=items.length>1?`<div class="ig-banner-dots">${items.map((_,i)=>`<span class="${i===0?"on":""}"></span>`).join("")}</div>`:"";
   banner.innerHTML=items.map(_bannerSlideHtml).join("")+dots;
   // 각 슬라이드 링크 클릭

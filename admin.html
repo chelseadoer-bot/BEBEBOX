@@ -126,7 +126,7 @@ th{color:var(--sub);font-weight:700;font-size:12px;background:#faf7f3;white-spac
 <input class="search" id="bn-subtitle" placeholder="설명 텍스트 (작게 들어가는 한 줄)" maxlength="60"/>
 <input class="search" id="bn-icon" placeholder="우측 아이콘 이모지 (예: 🎁 🍼 🧸)" maxlength="8"/>
 <input class="search" id="bn-link" placeholder="클릭 시 이동할 링크 URL (선택)"/>
-<div style="display:flex;gap:8px"><button class="btn" id="bn-add" style="flex:1">배너 추가하기</button><button class="btn ghost" id="bn-reset" style="flex:0 0 auto">전체 비우기</button></div>
+<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="bn-add" style="flex:1;min-width:130px">배너 추가하기</button><button class="btn ghost" id="bn-default" style="flex:0 0 auto">＋기본 배너</button><button class="btn ghost" id="bn-reset" style="flex:0 0 auto">기본으로 초기화</button></div>
 <span id="bn-status" class="muted"></span>
 </div>
 </div>
@@ -372,10 +372,11 @@ function moveBanner(i,dir){
 }
 function renderBannerList(){
   var m=document.getElementById("bn-mode");
-  if(m)m.innerHTML = "🟢 게임 탭에 <b>기본 배너 + 추가 "+BANNERS.length+"개</b>가 이 순서대로 번갈아 보여요. ▲▼로 순서를 바꾸세요. (기본 배너는 항상 맨 앞)";
+  if(m)m.innerHTML = "🟢 게임 탭에 <b>배너 "+BANNERS.length+"개</b>가 이 순서대로 번갈아 보여요. ▲▼ 순서변경·삭제 모두 가능해요. (모두 지우면 기본 배너가 표시돼요)";
   var box=document.getElementById("bn-list");
-  var html = bnRowHtml(BN_DEFAULT,{fixed:true});
-  html += BANNERS.map(function(b,i){ return bnRowHtml(b,{idx:i,total:BANNERS.length}); }).join("");
+  var html = BANNERS.length
+    ? BANNERS.map(function(b,i){ return bnRowHtml(b,{idx:i,total:BANNERS.length}); }).join("")
+    : '<div class="muted" style="padding:14px;text-align:center;font-size:13px">배너가 없어요. 아래에서 추가하거나 <b>＋기본 배너</b>를 눌러주세요.</div>';
   box.innerHTML = html;
   box.querySelectorAll("[data-bn-del]").forEach(function(btn){
     btn.onclick=function(){ var i=+btn.getAttribute("data-bn-del"); BANNERS.splice(i,1); saveBanners("삭제했어요 ✓"); };
@@ -396,7 +397,7 @@ async function saveBanners(okMsg){
 async function loadBanner(){
   var b={};
   try{ b = await (await fetch("/api/banner")).json(); }catch(e){}
-  BANNERS = Array.isArray(b.items) ? b.items.slice() : [];
+  BANNERS = (Array.isArray(b.items) && b.items.length) ? b.items.slice() : [Object.assign({},BN_DEFAULT)];
   renderBannerList();
 }
 document.getElementById("bn-upload").onclick=function(){document.getElementById("bn-file").click();};
@@ -431,10 +432,14 @@ document.getElementById("bn-add").onclick=async function(){
   clearBnForm();
 };
 document.getElementById("bn-reset").onclick=async function(){
-  if(!confirm("추가한 배너를 모두 지울까요? (기본 배너는 그대로 남아요)"))return;
+  if(!confirm("모든 배너를 지우고 기본 배너로 되돌릴까요?"))return;
   BANNERS=[];
-  await saveBanners("추가 배너를 모두 비웠어요 ✓ (기본 배너만 표시)");
+  await saveBanners("기본 배너로 되돌렸어요 ✓");
   clearBnForm();
+};
+document.getElementById("bn-default").onclick=async function(){
+  BANNERS.push(Object.assign({},BN_DEFAULT));
+  await saveBanners("기본 배너를 추가했어요 ✓ (순서·삭제 가능)");
 };
 /* 추천인코드 캔디 지급 */
 async function loadReferrals(){
