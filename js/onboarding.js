@@ -372,10 +372,11 @@ function bindOnboarding(){
   $("#btn-ob-kidikidi-next")?.addEventListener("click",()=>{
     const note=(m)=>{ if(typeof showToast==="function")showToast(m); else try{alert(m);}catch(_){} };
     const id=normalizeKidikidiId($("#ob-kidikidi-id")?.value);
-    if(!id){ note("키디키디 아이디를 입력해 주세요 (또는 '나중에 할게요')"); return; }
-    if(id.length<3){ note("아이디를 3자 이상 입력해 주세요"); return; }
+    // 키디키디 아이디는 선택 사항 → 비워도 완료로 넘어간다(추천인코드는 그대로 반영).
+    // 뭔가 입력했는데 너무 짧을 때만 안내한다.
+    if(id && id.length<3){ note("아이디를 3자 이상 입력해 주세요"); return; }
     onboarding.kidikidiId=id;
-    try{saveKidikidiIdFromInput();}catch(_){}
+    if(id){ try{saveKidikidiIdFromInput();}catch(_){} }
     try{showSuccessScreen();}
     catch(e){ try{finishOnboarding(onboarding.userType==="invited");}catch(_){ obShow("#onboarding-success-view"); } }
   });
