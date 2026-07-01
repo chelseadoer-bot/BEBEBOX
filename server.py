@@ -616,6 +616,43 @@ class H(SimpleHTTPRequestHandler):
                 verdict = ("❌ AI 호출 실패",
                            "아래 상세 오류를 확인해 주세요.")
 
+        # 이미지 생성 모델도 점검 (컨셉 스튜디오/그림 결과가 안 뜰 때 원인 확인)
+        if key:
+            img_model = os.environ.get("GEMINI_IMAGE_MODEL", "gemini-2.5-flash-image")
+            iurl = ("https://generativelanguage.googleapis.com/v1beta/models/"
+                    + urllib.parse.quote(img_model) + ":generateContent?key=" + urllib.parse.quote(key))
+            ipayload = json.dumps({
+                "contents": [{"role": "user", "parts": [{"text": "a tiny simple red dot"}]}],
+                "generationConfig": {"responseModalities": ["IMAGE", "TEXT"]},
+            }).encode("utf-8")
+            ireq = urllib.request.Request(iurl, data=ipayload,
+                   headers={"Content-Type": "application/json"}, method="POST")
+            iok = False
+            try:
+                with urllib.request.urlopen(ireq, timeout=60) as r:
+                    jr = json.loads(r.read().decode("utf-8", "ignore"))
+                    c0 = (jr.get("candidates") or [{}])[0]
+                    parts = (c0.get("content", {}) or {}).get("parts") or []
+                    iok = any((p.get("inlineData") or p.get("inline_data")) for p in parts)
+                    istat = ("✅ 이미지 생성 정상" if iok
+                             else "⚠️ 이미지 파트 없음 (사유=%s)" % (c0.get("finishReason") or "unknown"))
+            except urllib.error.HTTPError as e:
+                b = e.read().decode("utf-8", "ignore")
+                try:
+                    im = json.loads(b).get("error", {}).get("message", b)
+                except Exception:
+                    im = b
+                istat = "❌ 이미지 모델 오류 %s: %s" % (e.code, (im or "")[:240])
+            except Exception as e:
+                istat = "❌ 이미지 모델 호출 실패: %s" % e
+            detail = (detail or "") + "<br><br><b>🖼️ 이미지 모델</b> (%s)<br>%s" % (
+                img_model, istat.replace("<", "&lt;"))
+            if ok and not iok:
+                verdict = ("⚠️ 텍스트는 정상, 이미지 생성이 막혀요",
+                           "작명·기질 같은 텍스트 AI는 되는데 <b>컨셉 스튜디오·그림 결과</b>가 이 이유로 안 떠요. "
+                           "아래 이미지 모델 오류를 확인하세요. (무료 키는 이미지 생성이 제한될 수 있어요 — "
+                           "Google AI Studio에서 이미지 생성 지원 키/결제 연결이 필요할 수 있어요.)")
+
         masked = (key[:6] + "…" + key[-4:]) if len(key) > 12 else ("(" + str(len(key)) + "자)" if key else "(없음)")
         html = (
             "<!doctype html><html lang='ko'><head><meta charset='utf-8'>"
