@@ -2784,6 +2784,7 @@ function bindEvents(){
   $("#fr2-doodle")?.addEventListener("click",()=>{$("#firstrec-modal").classList.add("hidden");openAiApp("doodle","우리 아이 낙서 심리분석");});
   $("#fr2-skip")?.addEventListener("click",()=>$("#firstrec-modal").classList.add("hidden"));
   $("#fr2-backdrop")?.addEventListener("click",()=>$("#firstrec-modal").classList.add("hidden"));
+  $("#fr2-help")?.addEventListener("click",()=>{$("#firstrec-modal").classList.add("hidden");$("#help-modal").classList.remove("hidden");});
   $("#btn-my-help")?.addEventListener("click",()=>$("#help-modal").classList.remove("hidden"));
   $("#help-close")?.addEventListener("click",()=>$("#help-modal").classList.add("hidden"));
   $("#help-backdrop")?.addEventListener("click",()=>$("#help-modal").classList.add("hidden"));
@@ -2818,18 +2819,14 @@ function enterMainApp(){
 }
 let _welcomeActive=false;      // 환영 팝업 표시 중 — 뒤 팝업은 그다음에 띄운다
 let _firstRecReady=false;      // 이번 세션에 첫 기록 카드가 막 생성됨(축하 팝업 대상)
-// 첫 시작 시: 시작 캔디 100개 충전 + 환영 카드 첫 기록 + 축하 팝업(1회).
+// 첫 시작 시: (기본 지급 캔디 없음) 환영 카드 첫 기록 자동 생성.
+// 첫 기록 +20캔디는 seedWelcomePost 안에서 지급되고, 축하 팝업은 아래 체인에서 뜬다.
 function maybeWelcomeBonus(){
   if(localStorage.getItem("bb_welcome_v1"))return;
   localStorage.setItem("bb_welcome_v1","1");
-  const amt=100;
-  if(typeof addPoints==="function")addPoints(amt,"welcome");
-  const a=$("#wc-amount");if(a)a.textContent=amt;
-  seedWelcomePost();
-  _firstRecReady=true;         // 첫 기록 자동 생성 → 축하 팝업 대상
+  seedWelcomePost();           // 첫 기록(Certificate) 자동 생성 + 첫 기록 +20캔디
+  _firstRecReady=true;         // 첫 기록 축하 팝업 대상
   if(typeof renderPointsUI==="function")renderPointsUI();
-  _welcomeActive=true;
-  setTimeout(()=>$("#welcome-modal")?.classList.remove("hidden"),450);
 }
 // 추천인코드 지급: 서버가 코드 유효성·중복(가족당 1회)을 검증하고 캔디액을 회신.
 // 지급 성공 시 '축하할 금액'을 localStorage 에 남겨(새로고침·타이밍과 무관하게)
