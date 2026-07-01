@@ -3002,7 +3002,12 @@ async function seedWelcomePost(){
   let img; try{ img=await makeWelcomeCard(); }catch(_){ img=makeWelcomeCardSVG(); }
   const post=ensurePostMeta({id:"welcome"+Date.now(),text,photos:[img],ageMonth:state.profile.currentAge??9,createdAt:Date.now(),gauge:0,comments:[],visibility:"all"});
   state.posts.unshift(post);
+  // 첫 기록도 '기록하기' 리워드(+20캔디)를 지급한다.
+  const firstAmt=(typeof POINT_RULES!=="undefined")?POINT_RULES.photo:20;
+  if(typeof addPoints==="function")addPoints(firstAmt,"first_record");
+  if(typeof addPuzzlePieces==="function")addPuzzlePieces(1,"first_record");
   if(typeof save==="function")save();
+  if(typeof renderPointsUI==="function")renderPointsUI();
   if(typeof renderFeed==="function"&&currentMainTab==="home")renderFeed();
 }
 window.enterMainApp=enterMainApp;
