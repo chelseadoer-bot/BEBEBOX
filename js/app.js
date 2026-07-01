@@ -2747,7 +2747,61 @@ function maybeWelcomeBonus(){
   if(typeof renderPointsUI==="function")renderPointsUI();
   setTimeout(()=>$("#welcome-modal")?.classList.remove("hidden"),450);
 }
-// 가입 정보로 '환영 증명서' 카드(테디베어 + 컬러 별·점 컨페티)를 만든다.
+function _obLoadImg(src){
+  return new Promise(res=>{
+    const im=new Image();
+    im.onload=()=>res(im); im.onerror=()=>res(null);
+    if(!/^data:/.test(src))im.crossOrigin="anonymous";
+    im.src=src;
+  });
+}
+function _rrect(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+// 프로필 사진을 넣은 '환영 증명서' 카드를 캔버스로 합성한다(사진 굽기).
+async function makeWelcomeCard(){
+  const name=babyName();
+  const g=state.profile.gender, birth=state.profile.birthday;
+  const favs=(state.profile.favs&&state.profile.favs.length)?state.profile.favs:[];
+  const babyEmoji=g==="girl"?"👧":g==="boy"?"👦":"👶";
+  const d=new Date();
+  const today=`${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,"0")}.${String(d.getDate()).padStart(2,"0")}`;
+  const W=1080,H=1350,CX=540;
+  const cv=document.createElement("canvas");cv.width=W;cv.height=H;
+  const ctx=cv.getContext("2d");
+  ctx.fillStyle="#fffdf6";ctx.fillRect(0,0,W,H);
+  ctx.strokeStyle="#ffe0b2";ctx.lineWidth=5;_rrect(ctx,40,40,W-80,H-80,34);ctx.stroke();
+  const pal=["#ef5350","#42a5f5","#66bb6a","#ffca28","#ff8a65","#ab47bc","#26c6da"];
+  const cpos=[[110,95],[250,72],[430,100],[650,78],[835,105],[965,82],[80,320],[1000,280],[70,500],[1010,480],[80,700],[1000,680],[85,1040],[1000,1010],[130,1290],[300,1262],[520,1292],[760,1266],[940,1292],[992,1190]];
+  ctx.textAlign="center";ctx.textBaseline="alphabetic";
+  cpos.forEach((p,i)=>{ctx.fillStyle=pal[i%pal.length];
+    if(i%2===0){ctx.font=`${34+(i%3)*8}px sans-serif`;ctx.fillText("★",p[0],p[1]+12);}
+    else{ctx.beginPath();ctx.arc(p[0],p[1],10+(i%3)*4,0,7);ctx.fill();}});
+  const fpos=[[150,255],[930,360],[160,1090],[915,1050]];
+  ctx.font="60px sans-serif";favs.slice(0,4).forEach((e,i)=>ctx.fillText(e,fpos[i][0],fpos[i][1]));
+  ctx.font="150px sans-serif";ctx.textAlign="left";ctx.fillText("🧸",58,210);
+  ctx.textAlign="right";ctx.fillText("🧸",1022,1300);ctx.textAlign="center";
+  ctx.fillStyle="#000";ctx.font="42px sans-serif";ctx.fillText("🎉",CX,318);
+  ctx.fillStyle="#3b4cc0";ctx.font="bold 82px sans-serif";ctx.fillText("환영 증명서",CX,420);
+  const cy=600,r=120;
+  ctx.beginPath();ctx.arc(CX,cy,r+9,0,7);ctx.fillStyle="#ffd7c2";ctx.fill();
+  let im=null;const av=state.profile.avatar;
+  if(av){try{im=await _obLoadImg(av);}catch(_){}}
+  if(im){ctx.save();ctx.beginPath();ctx.arc(CX,cy,r,0,7);ctx.clip();
+    const s=Math.max((2*r)/im.width,(2*r)/im.height),iw=im.width*s,ih=im.height*s;
+    ctx.drawImage(im,CX-iw/2,cy-ih/2,iw,ih);ctx.restore();}
+  else{ctx.beginPath();ctx.arc(CX,cy,r,0,7);ctx.fillStyle="#fff";ctx.fill();
+    ctx.font="140px sans-serif";ctx.fillText(babyEmoji,CX,cy+52);}
+  ctx.fillStyle="#ff7aa0";ctx.font="bold 30px sans-serif";ctx.fillText("우리 아기가 우리에게 왔어요 💕",CX,800);
+  const genderTxt=g==="girl"?"여아 🎀":g==="boy"?"남아 👦":"비공개 🤍";
+  const fields=[["이름",name],["생일",birth||"미정"],["성별",genderTxt],["좋아하는 것",(favs.slice(0,5).join(" ")||"앞으로 알아가요")]];
+  ctx.textAlign="left";
+  fields.forEach((f,i)=>{const y=892+i*72;
+    ctx.fillStyle="#3b4cc0";ctx.font="bold 36px sans-serif";ctx.fillText(f[0],185,y);
+    ctx.fillStyle="#2b2622";ctx.font="bold 36px sans-serif";ctx.fillText(f[1],440,y);
+    ctx.strokeStyle="#efe6d4";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(185,y+14);ctx.lineTo(895,y+14);ctx.stroke();});
+  ctx.textAlign="center";ctx.fillStyle="#bfa98f";ctx.font="bold 32px sans-serif";ctx.fillText("🍼 BEBEBOX · 함께한 첫 날 "+today,CX,1205);
+  try{return cv.toDataURL("image/jpeg",0.86);}catch(_){return makeWelcomeCardSVG();}
+}
+// 가입 정보로 '환영 증명서' 카드(테디베어 + 컬러 별·점 컨페티)를 만든다.(폴백)
 function makeWelcomeCardSVG(){
   const name=babyName();
   const g=state.profile.gender, birth=state.profile.birthday;
@@ -2788,17 +2842,16 @@ function makeWelcomeCardSVG(){
   `</svg>`;
   return "data:image/svg+xml,"+encodeURIComponent(svg);
 }
-function seedWelcomePost(){
+async function seedWelcomePost(){
   if(localStorage.getItem("bb_welcome_post_v1"))return;
   localStorage.setItem("bb_welcome_post_v1","1");
   const name=babyName();
   const text=`🎉 우리 ${name}, 베베박스에 온 걸 환영해!\n오늘부터 ${name}의 반짝이는 순간들을 여기 차곡차곡 담아둘게. 건강하고 행복하게, 사랑 가득 자라자 💕`;
-  const photos=[makeWelcomeCardSVG()];
-  const av=state.profile.avatar;
-  if(av&&(/^data:/.test(av)||/\/uploads\//.test(av)))photos.push(av);
-  const post=ensurePostMeta({id:"welcome"+Date.now(),text,photos,ageMonth:state.profile.currentAge??9,createdAt:Date.now(),gauge:0,comments:[],visibility:"all"});
+  let img; try{ img=await makeWelcomeCard(); }catch(_){ img=makeWelcomeCardSVG(); }
+  const post=ensurePostMeta({id:"welcome"+Date.now(),text,photos:[img],ageMonth:state.profile.currentAge??9,createdAt:Date.now(),gauge:0,comments:[],visibility:"all"});
   state.posts.unshift(post);
   if(typeof save==="function")save();
+  if(typeof renderFeed==="function"&&currentMainTab==="home")renderFeed();
 }
 window.enterMainApp=enterMainApp;
 window.state=state;
