@@ -2787,7 +2787,7 @@ function bindEvents(){
   $("#sp-copy")?.addEventListener("click",()=>{$("#share-preview-modal").classList.add("hidden");copyShareLinkWithReward();});
   $("#sp-close")?.addEventListener("click",()=>$("#share-preview-modal").classList.add("hidden"));
   $("#sp-backdrop")?.addEventListener("click",()=>$("#share-preview-modal").classList.add("hidden"));
-  $("#wc-ok")?.addEventListener("click",()=>{$("#welcome-modal").classList.add("hidden");_welcomeActive=false;flushReferralModal();});
+  $("#wc-ok")?.addEventListener("click",()=>{$("#welcome-modal").classList.add("hidden");_welcomeActive=false;showReferralEarnedPopup();});
   $("#rf-ok")?.addEventListener("click",()=>$("#referral-modal").classList.add("hidden"));
   $("#rf-backdrop")?.addEventListener("click",()=>$("#referral-modal").classList.add("hidden"));
   $("#rf-help")?.addEventListener("click",()=>{$("#referral-modal").classList.add("hidden");$("#help-modal").classList.remove("hidden");});
@@ -2824,7 +2824,6 @@ function enterMainApp(){
   switchMainTab("home");
 }
 let _welcomeActive=false;      // 환영 팝업 표시 중 — 추천 팝업은 그 뒤에 띄운다
-let _pendingReferralAmt=0;     // 지급된 추천 캔디(환영 팝업 닫힌 뒤 안내)
 // 첫 시작 시: 시작 캔디 100개 충전 + 환영 카드 첫 기록 + 축하 팝업(1회).
 function maybeWelcomeBonus(){
   if(localStorage.getItem("bb_welcome_v1"))return;
@@ -2838,35 +2837,45 @@ function maybeWelcomeBonus(){
   setTimeout(()=>$("#welcome-modal")?.classList.remove("hidden"),450);
 }
 // 추천인코드 지급: 서버가 코드 유효성·중복(가족당 1회)을 검증하고 캔디액을 회신.
+// 지급 성공 시 '축하할 금액'을 localStorage 에 남겨(새로고침·타이밍과 무관하게)
+// 반드시 팝업이 뜨게 한다. 코드가 아직 미등록(not_found)이면 pending 을 유지해
+// 운영자가 나중에 코드를 등록해도 다음 입장에서 지급되도록 한다.
 async function maybeReferralBonus(){
   let code="";
   try{code=(localStorage.getItem("bbx_pending_referral")||"").trim().toUpperCase();}catch(_){}
-  if(!code)return;
-  let fam="";
-  try{fam=((typeof ensureInviteCode==="function"&&ensureInviteCode(true))
-        ||(typeof getInviteCode==="function"&&getInviteCode())||"").toString().toUpperCase();}catch(_){}
-  if(!fam||fam.length<3)return;   // 가족코드 아직 없으면 다음 입장에 재시도
-  try{
-    const r=await fetch("/api/referral/redeem",{method:"POST",headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({family:fam,code:code})});
-    const j=await r.json().catch(()=>({}));
-    try{localStorage.removeItem("bbx_pending_referral");}catch(_){}  // 서버 응답 = 재시도 종료
-    if(j&&j.ok&&j.candy>0){
-      if(typeof addPoints==="function")addPoints(j.candy,"referral");
-      if(typeof renderPointsUI==="function")renderPointsUI();
-      if(typeof _syncProfileChange==="function")_syncProfileChange();
-      _pendingReferralAmt=j.candy;
-      flushReferralModal();
+  if(code){
+    let fam="";
+    try{fam=((typeof ensureInviteCode==="function"&&ensureInviteCode(true))
+          ||(typeof getInviteCode==="function"&&getInviteCode())||"").toString().toUpperCase();}catch(_){}
+    if(fam&&fam.length>=3){
+      try{
+        const r=await fetch("/api/referral/redeem",{method:"POST",headers:{"Content-Type":"application/json"},
+          body:JSON.stringify({family:fam,code:code})});
+        const j=await r.json().catch(()=>({}));
+        if(j&&j.ok&&j.candy>0){
+          try{localStorage.removeItem("bbx_pending_referral");}catch(_){}
+          if(typeof addPoints==="function")addPoints(j.candy,"referral");
+          if(typeof renderPointsUI==="function")renderPointsUI();
+          if(typeof _syncProfileChange==="function")_syncProfileChange();
+          try{localStorage.setItem("bbx_referral_earned",JSON.stringify({amt:j.candy,code:j.code}));}catch(_){}
+        }else if(j&&(j.reason==="already"||j.reason==="invalid")){
+          try{localStorage.removeItem("bbx_pending_referral");}catch(_){}   // 재시도 무의미
+        }
+        // not_found(코드 미등록) / 네트워크오류 → pending 유지 → 다음 입장에 재시도
+      }catch(e){ /* 네트워크 실패 → pending 유지 */ }
     }
-  }catch(e){ /* 네트워크 실패 → pending 유지, 다음 입장에 재시도 */ }
+  }
+  showReferralEarnedPopup();   // 지급됐는데 아직 축하 못 한 게 있으면 표시
 }
-// 환영 팝업이 떠 있으면 그게 닫힌 뒤에, 아니면 바로 추천 캔디 팝업을 띄운다.
-function flushReferralModal(){
-  if(_pendingReferralAmt<=0)return;
-  if(_welcomeActive)return;
-  const amt=_pendingReferralAmt;_pendingReferralAmt=0;
-  const a=$("#rf-amount");if(a)a.textContent=amt;
+// 지급된 추천 캔디를 축하 팝업으로 1회 안내. 환영 팝업이 떠 있으면 그 뒤로 미룬다.
+function showReferralEarnedPopup(){
+  if(_welcomeActive)return;                 // 환영 팝업 닫힌 뒤 wc-ok 에서 재호출
+  let data=null;
+  try{data=JSON.parse(localStorage.getItem("bbx_referral_earned")||"null");}catch(_){}
+  if(!data||!(Number(data.amt)>0))return;
+  const a=$("#rf-amount");if(a)a.textContent=Number(data.amt);
   $("#referral-modal")?.classList.remove("hidden");
+  try{localStorage.removeItem("bbx_referral_earned");}catch(_){}   // 한 번만
 }
 function _obLoadImg(src){
   return new Promise(res=>{

@@ -503,6 +503,16 @@ class H(SimpleHTTPRequestHandler):
                 return json_response(self, 400, {"error": "invalid_json"})
             db.delete_referral((body.get("code") or ""))
             return json_response(self, 200, {"ok": True, "referrals": db.list_referrals()})
+        if path == "/api/admin/referral/reset":
+            if (self._query("key") or "") != ADMIN_KEY:
+                return json_response(self, 401, {"error": "unauthorized"})
+            try:
+                body = read_json_body(self)
+            except json.JSONDecodeError:
+                return json_response(self, 400, {"error": "invalid_json"})
+            n = db.reset_referral_redemptions((body.get("code") or ""))
+            return json_response(self, 200,
+                                 {"ok": True, "cleared": n, "referrals": db.list_referrals()})
         # AI 그라운드 미니앱 실행: POST /apps/<slug>/api/run
         m = re.match(r"^/apps/([^/]+)/api/(.*)$", path)
         if m:
