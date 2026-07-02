@@ -2390,9 +2390,40 @@ const STUDIO_CONCEPTS={
   flower:{label:"봄꽃 컨셉",studioId:"spring",title:"봄꽃 스튜디오 컨셉 아기 사진 만들기",desc:"화사한 봄꽃 가득한 스튜디오에서 우리 아이만의 화보를 만들어보세요",img:"public/photos/c-spring.jpg",fallbackImg:"public/photos/ai-02.jpg"},
   watermelon:{label:"수박 컨셉",studioId:"watermelon",title:"수박 컨셉 아기 사진 만들기",desc:"상큼한 여름 수박을 안고 찰칵! 시원한 수박 컨셉 베이비 화보를 만들어보세요",img:"public/photos/c-watermelon.jpg",fallbackImg:"public/photos/ai-03.jpg"},
   beach:{label:"바닷가 컨셉",studioId:"beach",title:"바닷가 컨셉 아기 사진 만들기",desc:"시원한 여름 바닷가에서 수영복 입은 사랑스러운 베이비 화보를 만들어보세요",img:"public/photos/c-beach.jpg",fallbackImg:"public/photos/ai-03.jpg",outfit:{girl:"public/photos/outfits/swim-girl.png",boy:"public/photos/outfits/swim-boy.png"}},
-  picnic:{label:"피크닉 컨셉",studioId:"picnic",title:"피크닉 컨셉 아기 사진 만들기",desc:"화창한 날 소풍 나온 듯한 감성 나들이 화보를 만들어보세요",img:"public/photos/outfits/picnic.png",fallbackImg:"public/photos/ai-02.jpg",outfit:"public/photos/outfits/picnic.png"},
-  rainy:{label:"비 오는 날 컨셉",studioId:"rainy",title:"비 오는 날 컨셉 아기 사진 만들기",desc:"귀여운 우비를 입고 빗속을 즐기는 감성 화보를 만들어보세요",img:"public/photos/outfits/rainy.png",fallbackImg:"public/photos/ai-03.jpg",outfit:"public/photos/outfits/rainy.png"},
+  picnic:{label:"피크닉 컨셉",studioId:"picnic",title:"피크닉 컨셉 아기 사진 만들기",desc:"화창한 날 소풍 나온 듯한 감성 나들이 화보를 만들어보세요",img:"public/photos/c-picnic.jpg",fallbackImg:"public/photos/ai-02.jpg",outfit:"public/photos/outfits/picnic.png"},
+  rainy:{label:"비 오는 날 컨셉",studioId:"rainy",title:"비 오는 날 컨셉 아기 사진 만들기",desc:"귀여운 우비를 입고 빗속을 즐기는 감성 화보를 만들어보세요",img:"public/photos/c-rainy.jpg",fallbackImg:"public/photos/ai-03.jpg",outfit:"public/photos/outfits/rainy.png"},
 };
+// 컨셉 결과 화면에 노출할 어울리는 핀핀 상품(키디키디)
+const CONCEPT_PRODUCTS={
+  beach:[
+    {no:"2605434671",name:"플라워캉캉 스윔웨어 3P세트",price:39900,img:"https://item.elandrs.com/r/image/item/2026-06-19/53c5be1b-b017-49e0-904a-5e7d619a17e2.jpg"},
+    {no:"2605416092",name:"아쿠아봉봉 쿨니트 슬립온",price:17900,img:"https://item.elandrs.com/r/image/item/2026-05-20/82725ef8-4ff6-41b9-a779-f77cd2d58722.jpg"},
+    {no:"2604379119",name:"플라워/킥보드 드림 레인부츠",price:13900,img:"https://item.elandrs.com/r/image/item/2026-04-17/6c5d2dbb-d172-4fd9-8ce8-412b578d5051.jpg"},
+  ],
+  picnic:[
+    {no:"2605429467",name:"트윙클 쥬시팝 젤리슈즈",price:20900,img:"https://item.elandrs.com/r/image/item/2026-05-18/cfd4ff05-4f25-4c18-bd32-15c2cdc0d062.jpg"},
+    {no:"2605416183",name:"쁘띠 파머스 고쟁이 팬츠",price:17900,img:"https://item.elandrs.com/r/image/item/2026-05-20/8bf209d6-e531-46ad-bfd9-1a30917d52f7.jpg"},
+  ],
+  rainy:[
+    {no:"2604379109",name:"플라워/킥보드 드림 레인코트",price:23900,img:"https://item.elandrs.com/r/image/item/2026-04-17/64faf5ae-569a-40f5-acdf-b56f54dd7cc9.jpg"},
+    {no:"2604380743",name:"플라워/킥보드 드림 레인코트·부츠 세트",price:35900,img:"https://item.elandrs.com/r/image/item/2024-09-01/950156ad-0900-4ccb-b47b-dd7cfcce847c.jpg"},
+  ],
+};
+function _wonFmt(n){return (n||0).toLocaleString("ko-KR")+"원";}
+function renderConceptShop(concept){
+  const box=$("#concept-shop"),row=$("#concept-products");
+  if(!box||!row)return;
+  const list=CONCEPT_PRODUCTS[concept];
+  if(!list||!list.length){box.hidden=true;row.innerHTML="";return;}
+  row.innerHTML=list.map(p=>
+    `<a class="kr-prod" href="https://kidikidi.elandmall.co.kr/i/item?itemNo=${p.no}" target="_blank" rel="noopener noreferrer">`
+    +`<span class="kr-prod-img"><img src="${p.img}" alt="" loading="lazy"/></span>`
+    +`<span class="kr-prod-brand">핀핀</span>`
+    +`<span class="kr-prod-name">${p.name}</span>`
+    +`<span class="kr-prod-price">${_wonFmt(p.price)}</span></a>`
+  ).join("");
+  box.hidden=false;
+}
 // 컨셉에 지정된 옷 이미지 경로(바닷가는 프로필 성별에 따라 다름). 없으면 null.
 function conceptOutfitUrl(c){
   var o=c&&c.outfit; if(!o)return null;
@@ -2425,6 +2456,8 @@ function resetConceptMake(){
   const cue=$("#concept-photo-btn");if(cue)cue.hidden=false;
   const s=$("#concept-sample-img");if(s)s.hidden=false;
   const g=$("#concept-photoguide");if(g)g.hidden=true;
+  const shop=$("#concept-shop");if(shop)shop.hidden=true;
+  const prow=$("#concept-products");if(prow)prow.innerHTML="";
   const f=$("#concept-photo-file");if(f)f.value="";
   const cta=$("#btn-concept-make");if(cta)cta.textContent=_conceptMakeLabel();
 }
@@ -2492,6 +2525,7 @@ async function runConceptInline(){
       if(!r.ok||!url)throw new Error((j&&(j.detail||j.error))||"이미지가 만들어지지 않았어요");
       const rimg=$("#concept-result-img");if(rimg)rimg.src=url;
       const rbox=$("#concept-result");if(rbox)rbox.hidden=false;
+      renderConceptShop(_currentConcept);
       _lastConceptResult={url:url,label:(out.concept_label||c.label)};
       if(typeof addPuzzlePieces==="function")addPuzzlePieces(1,"concept");
       if(typeof _syncProfileChange==="function")_syncProfileChange();
@@ -2516,6 +2550,7 @@ async function runConceptInline(){
 
 /* ─── 게임 탭: 전체보기 리스트 + 더보기 앵커 ────────────────────── */
 const ALL_CONTENT=[
+  {app:"kart",label:"베베 카트 레이스",desc:"우리 아이가 카트를 타고 달리는 미니게임 · 약 1분",icon:"🏎️",bg:"#eef1ff"},
   {app:"naming",label:"글로벌 작명소",desc:"아이에게 어울리는 예쁜 글로벌 이름을 추천해요",icon:"🌐",bg:"#fff3e0"},
   {app:"doodle",label:"낙서 심리 분석",desc:"아이 그림으로 마음상태와 감정을 알아봐요",icon:"✏️",bg:"#f3e8ff"},
   {app:"health",label:"아이 건강 체크",desc:"증상을 입력하면 AI가 건강 상태를 살펴봐요",icon:"➕",bg:"#ffe8e8"},
@@ -2534,7 +2569,11 @@ function renderAllContent(){
     +`<span class="ig-chevron">›</span></button>`
   ).join("");
   wrap.querySelectorAll(".ig-list-item").forEach(btn=>
-    btn.onclick=()=>openAiApp(btn.dataset.app,btn.dataset.ig));
+    btn.onclick=()=>{
+      const app=btn.dataset.app;
+      if(app==="kart"){if(window.KartGame&&window.KartGame.open)window.KartGame.open();return;}
+      openAiApp(app,btn.dataset.ig);
+    });
 }
 function getShareUrl(){
   // 지인용 공유 페이지(/share/:가족코드) 로 연결한다.
