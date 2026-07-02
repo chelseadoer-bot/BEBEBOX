@@ -2389,8 +2389,23 @@ window.addEventListener("message",function(e){
 const STUDIO_CONCEPTS={
   flower:{label:"봄꽃 컨셉",studioId:"spring",title:"봄꽃 스튜디오 컨셉 아기 사진 만들기",desc:"화사한 봄꽃 가득한 스튜디오에서 우리 아이만의 화보를 만들어보세요",img:"public/photos/c-spring.jpg",fallbackImg:"public/photos/ai-02.jpg"},
   watermelon:{label:"수박 컨셉",studioId:"watermelon",title:"수박 컨셉 아기 사진 만들기",desc:"상큼한 여름 수박을 안고 찰칵! 시원한 수박 컨셉 베이비 화보를 만들어보세요",img:"public/photos/c-watermelon.jpg",fallbackImg:"public/photos/ai-03.jpg"},
-  beach:{label:"바닷가 컨셉",studioId:"beach",title:"바닷가 컨셉 아기 사진 만들기",desc:"시원한 여름 바닷가를 배경으로 사랑스러운 베이비 화보를 만들어보세요",img:"public/photos/c-beach.jpg",fallbackImg:"public/photos/ai-03.jpg"},
+  beach:{label:"바닷가 컨셉",studioId:"beach",title:"바닷가 컨셉 아기 사진 만들기",desc:"시원한 여름 바닷가에서 수영복 입은 사랑스러운 베이비 화보를 만들어보세요",img:"public/photos/c-beach.jpg",fallbackImg:"public/photos/ai-03.jpg",outfit:{girl:"public/photos/outfits/swim-girl.png",boy:"public/photos/outfits/swim-boy.png"}},
+  picnic:{label:"피크닉 컨셉",studioId:"picnic",title:"피크닉 컨셉 아기 사진 만들기",desc:"화창한 날 소풍 나온 듯한 감성 나들이 화보를 만들어보세요",img:"public/photos/outfits/picnic.png",fallbackImg:"public/photos/ai-02.jpg",outfit:"public/photos/outfits/picnic.png"},
+  rainy:{label:"비 오는 날 컨셉",studioId:"rainy",title:"비 오는 날 컨셉 아기 사진 만들기",desc:"귀여운 우비를 입고 빗속을 즐기는 감성 화보를 만들어보세요",img:"public/photos/outfits/rainy.png",fallbackImg:"public/photos/ai-03.jpg",outfit:"public/photos/outfits/rainy.png"},
 };
+// 컨셉에 지정된 옷 이미지 경로(바닷가는 프로필 성별에 따라 다름). 없으면 null.
+function conceptOutfitUrl(c){
+  var o=c&&c.outfit; if(!o)return null;
+  if(typeof o==="string")return o;
+  var g=""; try{ g=(window.state&&state.profile&&state.profile.gender)||""; }catch(_){}
+  return g==="boy" ? (o.boy||o.girl) : (o.girl||o.boy);
+}
+function urlToDataUrl(url){
+  return fetch(url).then(function(r){return r.ok?r.blob():null;}).then(function(b){
+    if(!b)return null;
+    return new Promise(function(res){ var fr=new FileReader(); fr.onload=function(){res(fr.result);}; fr.onerror=function(){res(null);}; fr.readAsDataURL(b); });
+  }).catch(function(){return null;});
+}
 let _currentConcept=null,_conceptPhoto=null,_conceptBusy=false,_lastConceptResult=null;
 function _conceptImg(el,src,fb){if(!el)return;el.onerror=function(){el.onerror=null;if(fb)el.src=fb;};el.src=src;}
 function refreshConceptCta(){
@@ -2457,8 +2472,11 @@ async function runConceptInline(){
     if(typeof track==="function")track("concept_run",{concept:_currentConcept});
     try{
       const code=((typeof ensureInviteCode==="function"&&ensureInviteCode(true))||(typeof getInviteCode==="function"&&getInviteCode())||"").toString().toUpperCase();
+      const inputs={photo:_conceptPhoto,concept:c.studioId};
+      const ourl=conceptOutfitUrl(c);
+      if(ourl){ const od=await urlToDataUrl(ourl); if(od)inputs.outfit=od; }
       const r=await fetch("/apps/studio/api/run",{method:"POST",headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({uid:code,inputs:{photo:_conceptPhoto,concept:c.studioId}})});
+        body:JSON.stringify({uid:code,inputs:inputs})});
       const j=await r.json().catch(()=>({}));
       const out=j&&j.output;const url=out&&out.image_url;
       if(!r.ok||!url)throw new Error((j&&(j.detail||j.error))||"이미지가 만들어지지 않았어요");
