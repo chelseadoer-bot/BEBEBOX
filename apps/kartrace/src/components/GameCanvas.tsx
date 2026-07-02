@@ -48,8 +48,8 @@ export default function GameCanvas({
     // Player positioning
     playerX: 240, // Middle of 480px width
     playerY: 480, // Near bottom of 640px height
-    playerWidth: 56,
-    playerHeight: 76,
+    playerWidth: 88,
+    playerHeight: 116,
     playerAngle: 0, // for spin animations
     spinTimer: 0,
     steerDirection: 0, // -1: left, 1: right
@@ -317,8 +317,8 @@ export default function GameCanvas({
       const steerSpeed = 6 * (1 + (kart.handling - 3) * 0.12);
       state.playerX += state.steerDirection * steerSpeed;
       // Keep player strictly inside the road limits (road is between X: 80 and X: 400)
-      if (state.playerX < 95) state.playerX = 95;
-      if (state.playerX > 385) state.playerX = 385;
+      if (state.playerX < 112) state.playerX = 112;
+      if (state.playerX > 368) state.playerX = 368;
 
       // Accelerate towards maximum speed
       state.targetSpeed = maxSpeedLimit;
@@ -458,7 +458,8 @@ export default function GameCanvas({
   // Helper Rect Collision
   const checkRectCollision = (x1: number, y1: number, w1: number, h1: number, x2: number, y2: number, w2: number, h2: number) => {
     // Add slightly generous hitbox padding for fun gameplay!
-    const padding = 6;
+    // 카트를 크게 키운 만큼 여유 패딩도 키워 난이도 유지
+    const padding = 16;
     return (
       x1 + padding < x2 + w2 - padding &&
       x1 + w1 - padding > x2 + padding &&
@@ -879,7 +880,7 @@ export default function GameCanvas({
       // Driver seat is typically positioned 35% down from the front of the car
       const headX = 0 + (faceConfig.offsetX || 0) * 0.35;
       const headY = -state.playerHeight * 0.18 + (faceConfig.offsetY || 0) * 0.35;
-      const headRadius = 18 * (faceConfig.scale || 1.0);
+      const headRadius = 26 * (faceConfig.scale || 1.0);
 
       ctx.save();
       ctx.translate(headX, headY);
