@@ -17,8 +17,12 @@ def run(inputs, ctx):
     if concept not in prompts.CONCEPTS:
         concept = prompts.DEFAULT_CONCEPT
 
-    prompt = prompts.build_prompt(concept)
+    # 옷 참고 이미지(선택): 있으면 두 번째 레퍼런스로 넣어 해당 의상을 입힌다.
+    outfit = inputs.get("outfit")
+    prompt = prompts.build_prompt(concept, has_outfit=bool(outfit))
     ref_imgs = [{"data": photo, "mime": "image/jpeg"}]
+    if outfit:
+        ref_imgs.append({"data": outfit, "mime": "image/png"})
 
     data_url = ctx.llm.generate_image(prompt, images=ref_imgs)
     image_url = ctx.save_media(data_url, "png")
