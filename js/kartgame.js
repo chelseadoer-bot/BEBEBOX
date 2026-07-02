@@ -13,6 +13,33 @@
   var DEFAULT_AVATAR = "public/photos/default-profile.png";
   var GAME_SECONDS = 60;
 
+  // 결과 화면 '핀핀 상품 더보기' (키디키디 상품)
+  var PINPIN_PRODUCTS = [
+    { no: "2603319309", name: "초경량 휴대용 트라이크 V1 클래식", price: 69900, img: "https://item.elandrs.com/r/image/item/2026-05-21/e5214c5c-4dbd-4d5c-a7d4-573c60ddc6db.jpg" },
+    { no: "2604393821", name: "초경량 휴대용 트라이크 V2 와이드", price: 85900, img: "https://item.elandrs.com/r/image/item/2026-05-14/cd02590b-b069-4200-9f84-0a8069f9fbbf.jpg" },
+    { no: "2603334059", name: "드림 스타트 밸런스 바이크 V2 프로", price: 45900, img: "https://item.elandrs.com/r/image/item/2026-03-19/cfc89107-87e2-4e7f-a749-f8178bb0282a.jpg" },
+    { no: "2604390565", name: "스위밍베어 캐노피 튜브", price: 17900, img: "https://item.elandrs.com/r/image/item/2026-05-13/ae1f4e2b-41e7-429c-9651-7c72ff317533.jpg" }
+  ];
+  function pinpinUrl(no) { return "https://kidikidi.elandmall.co.kr/i/item?itemNo=" + no; }
+  function wonFmt(n) { return (n || 0).toLocaleString("ko-KR") + "원"; }
+  function renderPinpin() {
+    var wrap = $("#kr-products"); if (!wrap) return;
+    if (wrap.getAttribute("data-filled") === "1") return;
+    wrap.innerHTML = "";
+    PINPIN_PRODUCTS.forEach(function (p) {
+      var a = document.createElement("a");
+      a.href = pinpinUrl(p.no); a.target = "_blank"; a.rel = "noopener noreferrer";
+      a.className = "kr-prod";
+      a.innerHTML =
+        '<span class="kr-prod-img"><img src="' + p.img + '" alt="" loading="lazy"/></span>' +
+        '<span class="kr-prod-brand">핀핀</span>' +
+        '<span class="kr-prod-name">' + p.name + '</span>' +
+        '<span class="kr-prod-price">' + wonFmt(p.price) + '</span>';
+      wrap.appendChild(a);
+    });
+    wrap.setAttribute("data-filled", "1");
+  }
+
   var $ = function (s, r) { return (r || document).querySelector(s); };
   var chosen = null, kartImg = null, avatarImg = null;
   var timer = null, running = false, lastTs = 0;
@@ -93,6 +120,7 @@
       g = {
         kartX: 0, kartY: 0, kartW: 0, kartH: 0,
         vx: 0, obstacles: [], spawnAt: 0, laneOffset: 0,
+        scenery: [], sceneryAt: 0, bob: 0,
         speed: 240, score: 0, lives: 3, time: GAME_SECONDS,
         invuln: 0, over: false
       };
@@ -130,6 +158,7 @@
       if (rewarded && typeof window.showToast === "function") window.showToast("🎉 완주 성공! +10캔디 획득");
     }
     else { if (t) t.textContent = "게임 오버"; if (e) e.textContent = "💥"; if (sub) sub.textContent = "별을 더 모아 최고 점수에 도전해요!"; }
+    renderPinpin();
     screen("kart-result");
   }
 
@@ -161,6 +190,18 @@
     // 속도 점점 증가
     g.speed = Math.min(560, g.speed + dt * 18);
     g.laneOffset = (g.laneOffset + g.speed * dt) % 60;
+    g.bob += dt;
+    // 길가 배경 장식(비충돌) 스폰/이동
+    g.sceneryAt -= dt;
+    if (g.sceneryAt <= 0) {
+      g.sceneryAt = 0.42 + Math.random() * 0.35;
+      var TYPES = ["tree", "tree", "bush", "flower"];
+      g.scenery.push({ side: Math.random() < 0.5 ? -1 : 1, y: -40, type: TYPES[(Math.random() * TYPES.length) | 0], seed: Math.random() });
+    }
+    for (var si = g.scenery.length - 1; si >= 0; si--) {
+      g.scenery[si].y += g.speed * dt * 0.92;
+      if (g.scenery[si].y > H + 50) g.scenery.splice(si, 1);
+    }
     // 카트 이동
     g.kartX += dir * (W * 0.9) * dt;
     var minX = rd.x + 4, maxX = rd.x + rd.w - g.kartW - 4;
@@ -195,15 +236,9 @@
 
   function draw() {
     var rd = roadRect();
-    // 잔디 배경
-    ctx.fillStyle = "#8fd18a"; ctx.fillRect(0, 0, W, H);
-    // 도로
-    ctx.fillStyle = "#5b6472"; ctx.fillRect(rd.x, 0, rd.w, H);
-    ctx.fillStyle = "#e9edf2"; ctx.fillRect(rd.x - 5, 0, 5, H); ctx.fillRect(rd.x + rd.w, 0, 5, H);
-    // 차선(점선, 스크롤)
-    ctx.fillStyle = "rgba(255,255,255,.85)";
-    var cx = rd.x + rd.w / 2 - 3;
-    for (var y = -60 + g.laneOffset; y < H; y += 60) ctx.fillRect(cx, y, 6, 34);
+    drawGrass();
+    drawScenery(rd);   // 길가 나무/꽃/덤불 (도로 밖 잔디 위)
+    drawRoad(rd);
     // 장애물/별
     for (var i = 0; i < g.obstacles.length; i++) {
       var o = g.obstacles[i];
@@ -211,33 +246,101 @@
       ctx.textAlign = "center"; ctx.textBaseline = "middle";
       ctx.fillText(o.star ? "⭐" : "🚧", o.x, o.y);
     }
-    // 카트 + 아기
+    // 카트 + 아이
     var blink = g.invuln > 0 && (Math.floor(g.invuln * 12) % 2 === 0);
-    if (!blink) {
-      // 그림자
-      ctx.fillStyle = "rgba(0,0,0,.18)";
-      ctx.beginPath();
-      ctx.ellipse(g.kartX + g.kartW / 2, g.kartY + g.kartH - 6, g.kartW * 0.34, 8, 0, 0, 7);
-      ctx.fill();
-      if (kartImg) ctx.drawImage(kartImg, g.kartX, g.kartY, g.kartW, g.kartH);
-      // 아기 아바타 — 좌석 위에 '운전자'처럼 (원형 배지 + 그림자 + 흰 링)
-      var ax = g.kartX + g.kartW * 0.48, ay = g.kartY + g.kartH * 0.40, ar = g.kartW * 0.155;
-      ctx.save();
-      // 배지 그림자
-      ctx.beginPath(); ctx.arc(ax, ay + 2, ar + 2, 0, 7); ctx.fillStyle = "rgba(0,0,0,.18)"; ctx.fill();
-      // 사진 클립
-      ctx.beginPath(); ctx.arc(ax, ay, ar, 0, 7); ctx.closePath();
-      ctx.fillStyle = "#fff"; ctx.fill();
-      ctx.save(); ctx.clip();
-      if (avatarImg) {
-        var s = Math.max((2 * ar) / avatarImg.width, (2 * ar) / avatarImg.height);
-        ctx.drawImage(avatarImg, ax - avatarImg.width * s / 2, ay - avatarImg.height * s / 2, avatarImg.width * s, avatarImg.height * s);
-      } else { ctx.fillStyle = "#c9ccd2"; ctx.fillRect(ax - ar, ay - ar, 2 * ar, 2 * ar); }
-      ctx.restore();
-      // 흰 링
-      ctx.lineWidth = ar * 0.22; ctx.strokeStyle = "#fff"; ctx.beginPath(); ctx.arc(ax, ay, ar, 0, 7); ctx.stroke();
-      ctx.restore();
+    if (!blink) drawKartAndChild();
+  }
+
+  function drawGrass() {
+    var gr = ctx.createLinearGradient(0, 0, 0, H);
+    gr.addColorStop(0, "#7ec97a"); gr.addColorStop(1, "#93d98c");
+    ctx.fillStyle = gr; ctx.fillRect(0, 0, W, H);
+    // 스크롤되는 잔디 줄무늬(잔디 깎은 느낌)
+    ctx.fillStyle = "rgba(255,255,255,.05)";
+    var band = 74, start = (g.laneOffset % band) - band;
+    for (var y = start; y < H; y += band) ctx.fillRect(0, y, W, band / 2);
+  }
+
+  function drawRoad(rd) {
+    var agr = ctx.createLinearGradient(rd.x, 0, rd.x + rd.w, 0);
+    agr.addColorStop(0, "#4f5866"); agr.addColorStop(0.5, "#606978"); agr.addColorStop(1, "#4f5866");
+    ctx.fillStyle = agr; ctx.fillRect(rd.x, 0, rd.w, H);
+    // 도로 안쪽 흰 실선
+    ctx.fillStyle = "#eef2f7"; ctx.fillRect(rd.x + 4, 0, 4, H); ctx.fillRect(rd.x + rd.w - 8, 0, 4, H);
+    // 빨강/흰 커브(스크롤)
+    var seg = 34, p = (g.laneOffset % (seg * 2)) - seg * 2;
+    for (var y = p; y < H; y += seg * 2) {
+      ctx.fillStyle = "#e2554f"; ctx.fillRect(rd.x - 6, y, 6, seg); ctx.fillRect(rd.x + rd.w, y, 6, seg);
+      ctx.fillStyle = "#f5f6f8"; ctx.fillRect(rd.x - 6, y + seg, 6, seg); ctx.fillRect(rd.x + rd.w, y + seg, 6, seg);
     }
+    // 중앙 점선
+    ctx.fillStyle = "rgba(255,255,255,.9)";
+    var cx = rd.x + rd.w / 2 - 3;
+    for (var y2 = -60 + g.laneOffset; y2 < H; y2 += 60) ctx.fillRect(cx, y2, 6, 34);
+  }
+
+  function drawScenery(rd) {
+    var leftC = rd.x * 0.52, rightC = rd.x + rd.w + (W - rd.x - rd.w) * 0.48;
+    for (var i = 0; i < g.scenery.length; i++) {
+      var sc = g.scenery[i];
+      var cx = (sc.side < 0 ? leftC : rightC) + (sc.seed - 0.5) * (rd.x * 0.5);
+      drawSceneryItem(sc.type, cx, sc.y, sc.seed);
+    }
+  }
+
+  function drawSceneryItem(type, x, y, seed) {
+    if (type === "tree") {
+      ctx.fillStyle = "#8a5a33"; ctx.fillRect(x - 3, y, 6, 16);
+      ctx.fillStyle = "#3f9d55"; ctx.beginPath(); ctx.arc(x, y - 4, 15, 0, 7); ctx.fill();
+      ctx.fillStyle = "#4bb168"; ctx.beginPath(); ctx.arc(x - 6, y - 1, 10, 0, 7); ctx.arc(x + 7, y - 2, 11, 0, 7); ctx.fill();
+    } else if (type === "bush") {
+      ctx.fillStyle = "#57b56e";
+      ctx.beginPath(); ctx.arc(x - 8, y, 9, 0, 7); ctx.arc(x + 8, y, 9, 0, 7); ctx.arc(x, y - 5, 11, 0, 7); ctx.fill();
+    } else if (type === "flower") {
+      var cols = ["#ff8fb1", "#ffd45e", "#a99cff", "#ff9d6e"];
+      for (var k = 0; k < 3; k++) {
+        var fx = x + (k - 1) * 12, fy = y + ((k % 2) ? 6 : 0);
+        ctx.fillStyle = cols[((seed * 10 + k) | 0) % cols.length];
+        for (var q = 0; q < 5; q++) { var an = q / 5 * 6.283; ctx.beginPath(); ctx.arc(fx + Math.cos(an) * 4, fy + Math.sin(an) * 4, 3, 0, 7); ctx.fill(); }
+        ctx.fillStyle = "#fff6c0"; ctx.beginPath(); ctx.arc(fx, fy, 2.5, 0, 7); ctx.fill();
+      }
+    }
+  }
+
+  function drawKartAndChild() {
+    var kx = g.kartX, ky = g.kartY, kw = g.kartW, kh = g.kartH;
+    var bob = Math.sin(g.bob * 6) * 1.2; // 살짝 흔들리는 주행감
+    // 바닥 접지 그림자
+    ctx.fillStyle = "rgba(0,0,0,.22)";
+    ctx.beginPath(); ctx.ellipse(kx + kw / 2, ky + kh - 3, kw * 0.36, 8, 0, 0, 7); ctx.fill();
+    // 누끼 카트
+    if (kartImg) ctx.drawImage(kartImg, kx, ky + bob, kw, kh);
+    // 좌석에 앉은 아이: 접지 그림자 → 몸통 → 머리
+    var ax = kx + kw * 0.5, ay = ky + kh * 0.31 + bob, ar = kw * 0.145;
+    // 좌석 위 접지 그림자
+    ctx.fillStyle = "rgba(0,0,0,.13)";
+    ctx.beginPath(); ctx.ellipse(ax, ay + ar * 1.35, ar * 1.0, ar * 0.34, 0, 0, 7); ctx.fill();
+    // 몸통/어깨(레이싱 로퍼)
+    ctx.save();
+    ctx.fillStyle = "#6d5cff"; ctx.strokeStyle = "rgba(0,0,0,.12)"; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.ellipse(ax, ay + ar * 1.18, ar * 1.02, ar * 0.72, 0, 0, 7); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = "rgba(255,255,255,.18)";
+    ctx.beginPath(); ctx.ellipse(ax, ay + ar * 0.98, ar * 0.68, ar * 0.26, 0, 0, 7); ctx.fill();
+    ctx.restore();
+    // 머리(아바타) — 부드러운 그림자 + 원형 클립 + 얇은 흰 링
+    ctx.save();
+    ctx.shadowColor = "rgba(0,0,0,.20)"; ctx.shadowBlur = 4; ctx.shadowOffsetY = 1;
+    ctx.beginPath(); ctx.arc(ax, ay, ar, 0, 7); ctx.fillStyle = "#fff"; ctx.fill();
+    ctx.restore();
+    ctx.save();
+    ctx.beginPath(); ctx.arc(ax, ay, ar, 0, 7); ctx.clip();
+    if (avatarImg) {
+      var s = Math.max((2 * ar) / avatarImg.width, (2 * ar) / avatarImg.height);
+      ctx.drawImage(avatarImg, ax - avatarImg.width * s / 2, ay - avatarImg.height * s / 2, avatarImg.width * s, avatarImg.height * s);
+    } else { ctx.fillStyle = "#c9ccd2"; ctx.fillRect(ax - ar, ay - ar, 2 * ar, 2 * ar); }
+    ctx.restore();
+    ctx.lineWidth = Math.max(1.5, ar * 0.09); ctx.strokeStyle = "#fff";
+    ctx.beginPath(); ctx.arc(ax, ay, ar, 0, 7); ctx.stroke();
   }
 
   function updateHud() {
@@ -293,7 +396,7 @@
     window.addEventListener("resize", function () { if (running) sizeCanvas(); });
   }
 
-  window.KartGame = { open: open };
+  window.KartGame = { open: open, renderShop: renderPinpin };
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", bind);
   else bind();
 })();
