@@ -12,6 +12,10 @@ dist
 dist-ssr
 *.local
 
+# 카트레이싱 미니앱 정적 번들은 Render 정적서빙 위해 커밋한다(빌드 산출물)
+!apps/kartrace/dist/
+!apps/kartrace/dist/**
+
 # Python
 __pycache__/
 *.pyc
