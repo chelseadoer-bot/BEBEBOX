@@ -2413,13 +2413,20 @@ function refreshConceptCta(){
   const ok=!!($("#concept-consent")&&$("#concept-consent").checked)&&!!_conceptPhoto&&!_conceptBusy;
   cta.disabled=!ok;cta.classList.toggle("on",ok);
 }
+function _conceptMakeLabel(){
+  const cost=(typeof miniAppCost==="function")?miniAppCost("studio"):0;
+  return cost?(cost+"캔디로 만들기"):"바로 만들기";
+}
 function resetConceptMake(){
   _conceptPhoto=null;_conceptBusy=false;_lastConceptResult=null;
   const r=$("#concept-result");if(r)r.hidden=true;
   const t=$("#concept-photo-thumb");if(t){t.hidden=true;t.removeAttribute("src");}
   const ph=$("#concept-photo-ph");if(ph)ph.hidden=false;
+  const cue=$("#concept-photo-btn");if(cue)cue.hidden=false;
+  const s=$("#concept-sample-img");if(s)s.hidden=false;
+  const g=$("#concept-photoguide");if(g)g.hidden=true;
   const f=$("#concept-photo-file");if(f)f.value="";
-  const cta=$("#btn-concept-make");if(cta)cta.textContent="바로 만들기";
+  const cta=$("#btn-concept-make");if(cta)cta.textContent=_conceptMakeLabel();
 }
 function openConcept(id){
   const c=STUDIO_CONCEPTS[id];if(!c)return;
@@ -2455,6 +2462,9 @@ async function onConceptPhotoPick(file){
     _conceptPhoto=dataUrl;
     const t=$("#concept-photo-thumb");if(t){t.src=dataUrl;t.hidden=false;}
     const ph=$("#concept-photo-ph");if(ph)ph.hidden=true;
+    const cue=$("#concept-photo-btn");if(cue)cue.hidden=true;
+    const s=$("#concept-sample-img");if(s)s.hidden=true;
+    const g=$("#concept-photoguide");if(g)g.hidden=false;
     const r=$("#concept-result");if(r)r.hidden=true;
     refreshConceptCta();
   }catch(_){showToast("사진을 불러오지 못했어요. 다른 사진을 골라주세요");}
@@ -2770,6 +2780,10 @@ function bindEvents(){
   $("#btn-concept-back")?.addEventListener("click",closeConcept);
   $("#concept-consent")?.addEventListener("change",refreshConceptCta);
   $("#concept-photo-btn")?.addEventListener("click",()=>$("#concept-photo-file")?.click());
+  $("#concept-photo-reselect")?.addEventListener("click",()=>$("#concept-photo-file")?.click());
+  $("#concept-photo-tip")?.addEventListener("click",()=>$("#phototip-modal")?.classList.remove("hidden"));
+  $("#phototip-close")?.addEventListener("click",()=>$("#phototip-modal")?.classList.add("hidden"));
+  $("#phototip-backdrop")?.addEventListener("click",()=>$("#phototip-modal")?.classList.add("hidden"));
   $("#concept-photo-file")?.addEventListener("change",e=>{onConceptPhotoPick(e.target.files&&e.target.files[0]);});
   $("#btn-concept-make")?.addEventListener("click",()=>{if(!$("#btn-concept-make").disabled)runConceptInline();});
   $("#concept-save-diary")?.addEventListener("click",()=>{
