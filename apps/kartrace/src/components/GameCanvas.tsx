@@ -1323,16 +1323,6 @@ export default function GameCanvas({
     ctx.font = 'bold 18px monospace';
     ctx.fillText(`${state.timeLeft.toFixed(1)}s`, 24, 46);
 
-    // Coins collected
-    ctx.textAlign = 'center';
-    ctx.fillStyle = '#94a3b8';
-    ctx.font = '10px sans-serif';
-    ctx.fillText('코인 수집', canvas.width / 2 - 15, 26);
-    
-    ctx.fillStyle = '#fbbf24';
-    ctx.font = 'bold 18px sans-serif';
-    ctx.fillText(`🪙 ${state.coins}`, canvas.width / 2 - 15, 46);
-
     // Score Panel
     ctx.textAlign = 'right';
     ctx.fillStyle = '#94a3b8';
