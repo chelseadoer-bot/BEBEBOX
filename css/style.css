@@ -150,6 +150,47 @@ body{display:flex;justify-content:center;min-height:100vh}
 .terms-body li{margin:3px 0}
 .terms-body b{font-weight:700}
 .terms-biz{background:#faf7f2;border:1px solid #efe6d4;border-radius:8px;padding:9px 11px;font-size:12px;color:#6b6b6b;line-height:1.6}
+/* ─── 베베 카트 레이스 게임 ─── */
+.kr-hero{width:100%;display:flex;align-items:center;gap:12px;border:none;cursor:pointer;font-family:var(--font);
+  border-radius:18px;padding:15px 16px;color:#fff;text-align:left;
+  background:linear-gradient(135deg,#6d5cff 0%,#8b6bff 45%,#ff7aa0 100%);box-shadow:0 10px 24px rgba(109,92,255,.28)}
+.kr-hero-ico{font-size:34px;flex:0 0 auto;filter:drop-shadow(0 2px 3px rgba(0,0,0,.2))}
+.kr-hero-tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.kr-hero-badge{align-self:flex-start;font-size:10px;font-weight:800;letter-spacing:.06em;background:rgba(255,255,255,.24);border:1px solid rgba(255,255,255,.5);border-radius:999px;padding:2px 8px}
+.kr-hero-tx strong{font-size:17px;font-weight:800}
+.kr-hero-tx small{font-size:12px;opacity:.92}
+.kr-hero-go{flex:0 0 auto;font-size:16px;width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center}
+.kart-view{background:linear-gradient(180deg,#eaf4ff 0%,#f6f9ff 100%)}
+.kr-screen{display:flex;flex-direction:column;align-items:center;min-height:100vh;box-sizing:border-box;padding:22px 18px calc(20px + env(safe-area-inset-bottom));position:relative}
+.kr-screen.hidden{display:none}
+.kr-back{position:absolute;left:12px;top:12px;width:40px;height:40px;border:none;background:#fff;border-radius:50%;font-size:20px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.12)}
+.kr-emoji{font-size:46px;margin-top:26px}
+.kr-title{font-size:23px;font-weight:800;margin-top:6px;color:#1b2233}
+.kr-sub{font-size:14px;color:#5c6678;margin-top:6px;text-align:center;line-height:1.5}
+.kr-sub b{color:#2456d6;font-weight:800}
+.kr-tip{font-size:12.5px;color:#7a8296;margin-top:14px;text-align:center;line-height:1.5}
+.kr-karts{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;max-width:440px;margin:20px 0 8px}
+.kr-kart{background:#fff;border:2px solid #e6eaf2;border-radius:16px;padding:12px 10px 10px;cursor:pointer;font-family:var(--font);display:flex;flex-direction:column;align-items:center;gap:8px;transition:border-color .15s,transform .1s}
+.kr-kart:active{transform:scale(.98)}
+.kr-kart.on{border-color:#6d5cff;box-shadow:0 6px 16px rgba(109,92,255,.22);background:#f7f5ff}
+.kr-kart-stage{position:relative;width:100%;aspect-ratio:1;background:radial-gradient(circle at 50% 62%,#eef1f7,#f7f9fc 70%);border-radius:12px;overflow:hidden}
+.kr-kart-img{position:absolute;inset:6%;width:88%;height:88%;object-fit:contain}
+.kr-kart-ava{position:absolute;left:50%;top:37%;transform:translate(-50%,-50%);width:34%;aspect-ratio:1;border-radius:50%;background-size:cover;background-position:center;border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.18)}
+.kr-kart-nm{font-size:13px;font-weight:800;color:#2b3242}
+.kr-start{width:100%;max-width:440px;margin-top:14px;padding:16px;border:none;border-radius:14px;background:linear-gradient(135deg,#6d5cff,#8b6bff);color:#fff;font-size:16px;font-weight:800;cursor:pointer;font-family:var(--font);box-shadow:0 8px 18px rgba(109,92,255,.3)}
+.kr-start:disabled{background:#d7d9e2;box-shadow:none;cursor:default}
+.kr-secondary{width:100%;max-width:440px;margin-top:10px;padding:13px;border:none;border-radius:12px;background:#eef1f7;color:#4a5568;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font)}
+.kr-result-score{font-size:20px;font-weight:800;color:#ff6b3d;background:#fff3ec;border-radius:999px;padding:8px 18px;margin:14px 0 2px}
+.kr-result-score b{font-size:26px}
+/* 플레이 화면 */
+#kart-play{height:100vh;min-height:100vh;padding:0;justify-content:flex-start}
+.kr-hud{width:100%;display:flex;justify-content:center;gap:18px;padding:calc(12px + env(safe-area-inset-top)) 16px 10px;font-size:15px;font-weight:800;color:#2b3242;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.kr-hud b{color:#2456d6}
+.kr-canvas-wrap{flex:1;width:100%;position:relative;overflow:hidden}
+#kr-canvas{display:block;width:100%;height:100%;touch-action:none}
+.kr-controls{display:flex;gap:14px;padding:12px 16px calc(16px + env(safe-area-inset-bottom));background:#fff}
+.kr-ctrl{flex:1;height:64px;border:none;border-radius:16px;background:#eef1f7;color:#2456d6;font-size:26px;font-weight:800;cursor:pointer;font-family:var(--font);user-select:none;-webkit-user-select:none;touch-action:none}
+.kr-ctrl:active{background:#dfe4ef}
 #terms-close{margin-top:14px}
 .help-content h3{text-align:center;margin-bottom:14px}
 .help-steps{display:flex;flex-direction:column;gap:14px}

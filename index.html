@@ -6,7 +6,7 @@
 <title>베베박스</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍼</text></svg>"/>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css"/>
-<link rel="stylesheet" href="css/style.css?v=62"/>
+<link rel="stylesheet" href="css/style.css?v=63"/>
 <link rel="stylesheet" href="css/onboarding.css?v=9"/>
 <link rel="stylesheet" href="css/theme.css?v=4"/>
 </head>
@@ -300,6 +300,13 @@
 <div class="ig-scroll">
 <div class="ig-point-chip">🍬 <strong class="js-point-balance">0</strong> 캔디 · AI 결과 보기에 캔디를 써요</div>
 <div class="ig-banner" id="ig-banner"></div>
+<section class="ig-section">
+<button class="kr-hero" type="button" id="btn-kart-game">
+<span class="kr-hero-ico">🏎️</span>
+<span class="kr-hero-tx"><span class="kr-hero-badge">NEW GAME</span><strong>베베 카트 레이스</strong><small>우리 아이가 카트를 타고 달려요! · 약 1분</small></span>
+<span class="kr-hero-go">▶</span>
+</button>
+</section>
 <section class="ig-section">
 <h2 class="ig-section-title">가장 많이 찾고 있어요</h2>
 <div class="ig-grid">
@@ -989,6 +996,37 @@
 </header>
 <iframe id="app-frame" class="app-frame" title="앱" src="about:blank" allow="camera;microphone;clipboard-write;fullscreen" referrerpolicy="no-referrer"></iframe>
 </div>
+<div id="kart-view" class="view kart-view">
+<div id="kart-select" class="kr-screen">
+<button type="button" class="kr-back" id="kr-back">←</button>
+<div class="kr-emoji">🏁</div>
+<h2 class="kr-title">베베 카트 레이스</h2>
+<p class="kr-sub">카트를 고르면 <b class="js-baby-name">우리 아이</b>가 타고 달려요! (약 1분)</p>
+<div class="kr-karts" id="kr-karts"></div>
+<button type="button" class="kr-start" id="kr-start" disabled>이 카트로 시작하기</button>
+<p class="kr-tip">◀ ▶ 버튼(또는 좌우 화면 터치)으로 장애물을 피하고 ⭐별을 모아요!</p>
+</div>
+<div id="kart-play" class="kr-screen hidden">
+<div class="kr-hud">
+<span class="kr-hud-item">⏱ <b id="kr-time">60</b></span>
+<span class="kr-hud-item">⭐ <b id="kr-score">0</b></span>
+<span class="kr-hud-item" id="kr-lives">❤️❤️❤️</span>
+</div>
+<div class="kr-canvas-wrap"><canvas id="kr-canvas"></canvas></div>
+<div class="kr-controls">
+<button type="button" class="kr-ctrl" id="kr-left" aria-label="왼쪽">◀</button>
+<button type="button" class="kr-ctrl" id="kr-right" aria-label="오른쪽">▶</button>
+</div>
+</div>
+<div id="kart-result" class="kr-screen hidden">
+<div class="kr-emoji" id="kr-result-emoji">🏁</div>
+<h2 class="kr-title" id="kr-result-title">완주!</h2>
+<p class="kr-result-score">⭐ <b id="kr-final-score">0</b>점</p>
+<p class="kr-sub" id="kr-result-sub"></p>
+<button type="button" class="kr-start" id="kr-again">다시 하기</button>
+<button type="button" class="kr-secondary" id="kr-tolist">목록으로</button>
+</div>
+</div>
 <div class="modal hidden" id="miniapp-gate-modal">
 <div class="modal-backdrop" id="miniapp-gate-backdrop"></div>
 <div class="modal-content miniapp-gate-content">
@@ -1021,6 +1059,7 @@
 <script src="js/family-data.js?v=6"></script>
 <script src="js/kakao-auth.js?v=1"></script>
 <script src="js/onboarding.js?v=15"></script>
-<script src="js/app.js?v=100"></script>
+<script src="js/kartgame.js?v=2"></script>
+<script src="js/app.js?v=101"></script>
 </body>
 </html>

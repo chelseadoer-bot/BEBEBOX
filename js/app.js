@@ -3044,6 +3044,8 @@ async function seedWelcomePost(){
   if(typeof renderFeed==="function"&&currentMainTab==="home")renderFeed();
 }
 window.enterMainApp=enterMainApp;
+window.showOverlay=showOverlay;
+window.switchMainTab=switchMainTab;
 window.ageMonthsFromBirthday=ageMonthsFromBirthday;
 window.ageLabelForMonth=ageLabelForMonth;
 window.state=state;
