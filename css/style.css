@@ -138,6 +138,15 @@ body{display:flex;justify-content:center;min-height:100vh}
 .fr2-skip{display:block;width:100%;margin-top:8px;background:none;border:none;color:#9e9e9e;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font)}
 /* 도움말 */
 .help-content{text-align:left}
+/* 이용약관 모달 */
+.terms-content{text-align:left;display:flex;flex-direction:column;max-height:86vh}
+.terms-content h3{text-align:center;margin-bottom:12px}
+.terms-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;font-size:13px;line-height:1.72;color:#4a453f;padding:2px 2px 10px;border-top:1px solid #f1ece4;border-bottom:1px solid #f1ece4}
+.terms-body h4{font-size:14px;font-weight:800;color:#191919;margin:14px 0 6px}
+.terms-body h4:first-child{margin-top:2px}
+.terms-body p{margin:6px 0;white-space:pre-wrap}
+.terms-body b{font-weight:700}
+#terms-close{margin-top:14px}
 .help-content h3{text-align:center;margin-bottom:14px}
 .help-steps{display:flex;flex-direction:column;gap:14px}
 .help-step{display:flex;gap:12px;align-items:flex-start}

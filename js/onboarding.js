@@ -211,7 +211,21 @@ function finishOnboarding(asGuest){
       window.state.profile.kidikidiId=onboarding.kidikidiId||window.state.profile.kidikidiId||"";
       if(onboarding.photo){window.state.profile.avatar=onboarding.photo;window.state.profile.background=window.state.profile.background||onboarding.photo;}
       if(onboarding.gender)window.state.profile.gender=onboarding.gender;
-      if(onboarding.birthday)window.state.profile.birthday=formatBirthday(onboarding.birthday);
+      if(onboarding.birthday){
+        window.state.profile.birthday=formatBirthday(onboarding.birthday);
+        window.state.profile.birthdayISO=onboarding.birthday;   // 원본(YYYY-MM-DD) — 나이 계산용
+        const _mo=(typeof window.ageMonthsFromBirthday==="function")?window.ageMonthsFromBirthday(onboarding.birthday):null;
+        if(_mo!=null){
+          window.state.profile.currentAge=_mo;
+          window.state.profile.startAge=0;   // 신생아(0)부터 현재 월령까지 연령탭 구성
+          window.state.profile.status=(typeof window.ageLabelForMonth==="function")?window.ageLabelForMonth(_mo):(_mo+"개월");
+        }
+      }else{
+        // 생일 미입력(태명 등) → 9개월 데모 기본값 대신 신생아로 시작
+        window.state.profile.currentAge=0;
+        window.state.profile.startAge=0;
+        window.state.profile.status="신생아";
+      }
       if(onboarding.favs&&onboarding.favs.length)window.state.profile.favs=onboarding.favs.slice();
       if(typeof window.save==="function")window.save();
     }
@@ -420,6 +434,8 @@ function bindOnboarding(){
   $("#ob-referral-code")?.addEventListener("input",e=>{
     e.target.value=e.target.value.replace(/[^a-zA-Z0-9]/g,"").toUpperCase();
   });
+  $("#ob-terms-service")?.addEventListener("click",e=>{e.preventDefault();if(window.openTerms)window.openTerms("service");});
+  $("#ob-terms-privacy")?.addEventListener("click",e=>{e.preventDefault();if(window.openTerms)window.openTerms("privacy");});
 }
 function initOnboarding(){
   bindOnboarding();

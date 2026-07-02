@@ -63,6 +63,25 @@ const AGE_STEPS=(()=>{
   for(let y=3;y<=14;y++)s.push({id:"y"+y,month:y*12,label:y+"세"});
   return s;
 })();
+// 생일(YYYY-MM-DD 또는 YYYY.MM.DD)로부터 개월 수 계산. 미래/무효면 null.
+function ageMonthsFromBirthday(str){
+  const m=/(\d{4})[.\-\/](\d{1,2})[.\-\/](\d{1,2})/.exec(String(str||""));
+  if(!m)return null;
+  const by=+m[1],bm=+m[2]-1,bd=+m[3];
+  const bdt=new Date(by,bm,bd);
+  if(isNaN(bdt.getTime()))return null;
+  const now=new Date();
+  if(bdt>now)return null;
+  let mo=(now.getFullYear()-by)*12+(now.getMonth()-bm);
+  if(now.getDate()<bd)mo--;
+  return Math.max(0,mo);
+}
+function ageLabelForMonth(m){
+  m=Math.max(0,m|0);
+  if(m===0)return "신생아";
+  if(m<24)return m+"개월";
+  return Math.floor(m/12)+"세";
+}
 const AGE_TAB_CHIP_LIMIT=8; // (전체 포함) 칩이 이보다 많으면 드롭다운으로 표시
 function stepIndexForMonth(m){
   m=(m==null?0:m);
@@ -356,6 +375,9 @@ function load(){
   state.profile.kidikidiId=state.profile.kidikidiId||"";
   // 가입 시점(연령)을 한 번 고정해 두고, 이후 월령이 늘면 칩이 그 위로 쌓인다.
   if(state.profile.startAge==null)state.profile.startAge=state.profile.currentAge;
+  // 생일이 지정돼 있으면 실제 월령으로 현재 나이를 계산 → 연령탭이 아기 나이에 맞게 구성된다.
+  {const _mo=ageMonthsFromBirthday(state.profile.birthdayISO||state.profile.birthday);
+   if(_mo!=null){state.profile.currentAge=_mo;state.profile.startAge=0;state.profile.status=ageLabelForMonth(_mo);}}
   state.currentAgeTab="all";
   const sp=localStorage.getItem("photoShare_points");
   state.points=sp?(parseInt(sp,10)||0):0;
@@ -2737,7 +2759,9 @@ function bindEvents(){
     saveMiniAppResultToDiary({image:_lastConceptResult.url,caption:`${_lastConceptResult.label} 사진 ✨`},{slug:"studio",label:"AI 컨셉스튜디오"});
     showToast("일기에 저장했어요 📔");
   });
-  $("#concept-terms")?.addEventListener("click",e=>{e.preventDefault();showToast("약관 전문은 준비 중이에요");});
+  $("#concept-terms")?.addEventListener("click",e=>{e.preventDefault();openTerms("studio");});
+  $("#terms-close")?.addEventListener("click",()=>$("#terms-modal").classList.add("hidden"));
+  $("#terms-backdrop")?.addEventListener("click",()=>$("#terms-modal").classList.add("hidden"));
   $("#btn-concept-share")?.addEventListener("click",()=>copyShareLink());
   $("#btn-ig-more-all")?.addEventListener("click",()=>{
     $("#ig-all-section")?.scrollIntoView({behavior:"smooth",block:"start"});
@@ -2890,6 +2914,17 @@ function showFirstRecordPopup(){
   $("#firstrec-modal")?.classList.remove("hidden");
   return true;
 }
+// 이용약관 모달: kind = service | privacy | studio → #terms-store 의 해당 블록을 표시.
+function openTerms(kind){
+  const store=$("#terms-store");
+  const src=store?store.querySelector('[data-terms="'+kind+'"]'):null;
+  const body=$("#terms-body");
+  if(body){body.innerHTML=src?src.innerHTML:"<p>약관 내용을 준비 중이에요.</p>";body.scrollTop=0;}
+  const t=$("#terms-title");
+  if(t)t.textContent=(src&&src.getAttribute("data-title"))||"이용약관";
+  $("#terms-modal")?.classList.remove("hidden");
+}
+window.openTerms=openTerms;
 function _obLoadImg(src){
   return new Promise(res=>{
     const im=new Image();
@@ -3009,6 +3044,8 @@ async function seedWelcomePost(){
   if(typeof renderFeed==="function"&&currentMainTab==="home")renderFeed();
 }
 window.enterMainApp=enterMainApp;
+window.ageMonthsFromBirthday=ageMonthsFromBirthday;
+window.ageLabelForMonth=ageLabelForMonth;
 window.state=state;
 window.save=save;
 window.ensureInviteCode=ensureInviteCode;
