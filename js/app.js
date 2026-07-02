@@ -2223,6 +2223,39 @@ function closeAppFrame(){
   switchMainTab("game");
 }
 
+/* ─── 아기랑 카트 레이싱(React 미니앱) ───────────────────────────────
+ * /apps/kartrace/dist/ 정적 번들을 app-frame iframe 으로 띄우고,
+ * 프로필 사진/아기 이름을 postMessage 로 넘겨 기본 라이더로 태운다. */
+const KARTRACE_URL="/apps/kartrace/dist/index.html";
+const KARTRACE_VER="1";
+function _kartAbsAvatar(){
+  let a="";
+  try{ a=(window.state&&state.profile&&state.profile.avatar)||""; }catch(_){}
+  if(!a) a="/public/photos/default-profile.png";
+  if(/^data:/i.test(a)) return a;                 // data URL 은 그대로
+  try{ return new URL(a, location.origin+"/").href; }catch(_){ return a; }
+}
+function _kartBabyName(){
+  try{ return (window.state&&state.profile&&state.profile.babyName)||"우리 아기"; }catch(_){ return "우리 아기"; }
+}
+function openKartRace(){
+  const f=$("#app-frame"); if(!f) return;
+  if(typeof track==="function")track("kart_open",{});
+  const t=$("#app-frame-title"); if(t)t.textContent="아기랑 카트 레이싱";
+  _activeMiniApp=null;                            // 캔디 게이트 로직과 무관
+  const init=()=>{ try{ f.contentWindow&&f.contentWindow.postMessage(
+    {type:"bebebox-init",avatar:_kartAbsAvatar(),babyName:_kartBabyName()},"*"); }catch(_){}
+  };
+  // 자식(React)이 준비되면 'kartrace-ready' 를 보냄 → 프로필 전달. load 폴백도 둔다.
+  const onMsg=(e)=>{ if(e&&e.data&&e.data.type==="kartrace-ready") init(); };
+  if(f._kartMsg) window.removeEventListener("message",f._kartMsg);
+  f._kartMsg=onMsg; window.addEventListener("message",onMsg);
+  f.onload=init;
+  f.src=KARTRACE_URL+"?_v="+KARTRACE_VER;
+  showOverlay("#app-frame-view");
+}
+window.openKartRace=openKartRace;
+
 /* ─── 미니앱 트리거 → 고객 프로필(포인트/달성) 변경 ──────────────────
  * 미니앱 iframe(KD._emit)이 보내는 생성요청·생성완료·결과공유 이벤트를 받아
  * 고객 프로필(state.points: 캔디 경제)을 적립/차감하고, 변경분을 고객 DB에
@@ -2571,7 +2604,7 @@ function renderAllContent(){
   wrap.querySelectorAll(".ig-list-item").forEach(btn=>
     btn.onclick=()=>{
       const app=btn.dataset.app;
-      if(app==="kart"){if(window.KartGame&&window.KartGame.open)window.KartGame.open();return;}
+      if(app==="kart"){openKartRace();return;}
       openAiApp(app,btn.dataset.ig);
     });
 }
@@ -2813,6 +2846,7 @@ function bindEvents(){
   $("#btn-wish-add-cancel")?.addEventListener("click",closeWishAdd);
   $("#wish-add-backdrop")?.addEventListener("click",closeWishAdd);
   $$(".ig-grid-item").forEach(btn=>btn.onclick=()=>openAiApp(btn.dataset.app,btn.dataset.ig));
+  $("#btn-kart-game")?.addEventListener("click",openKartRace);
   $("#btn-ig-studio")?.addEventListener("click",()=>openAiApp("studio","AI 컨셉스튜디오"));
   $("#btn-ig-recommend")?.addEventListener("click",()=>openAiApp("pastlife","전생 인연"));
   $$(".ig-concept-card").forEach(btn=>btn.onclick=()=>openConcept(btn.dataset.concept));
