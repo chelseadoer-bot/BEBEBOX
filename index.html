@@ -6,7 +6,7 @@
 <title>베베박스</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍼</text></svg>"/>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css"/>
-<link rel="stylesheet" href="css/style.css?v=63"/>
+<link rel="stylesheet" href="css/style.css?v=64"/>
 <link rel="stylesheet" href="css/onboarding.css?v=9"/>
 <link rel="stylesheet" href="css/theme.css?v=4"/>
 </head>
@@ -975,20 +975,30 @@
 <div class="concept-scroll">
 <h2 class="concept-title" id="concept-title"></h2>
 <p class="concept-desc" id="concept-desc"></p>
-<div class="concept-sample"><img id="concept-sample-img" src="" alt="컨셉 샘플"/></div>
-<div class="concept-make">
-<p class="concept-make-h">우리 아이 사진으로 만들기</p>
-<button type="button" class="concept-photo" id="concept-photo-btn"><img id="concept-photo-thumb" alt="" hidden/><span id="concept-photo-ph">＋ 아이 사진 올리기</span></button>
+<div class="concept-stage" id="concept-stage">
+<img id="concept-sample-img" class="concept-stage-img" src="" alt="컨셉 샘플"/>
+<img id="concept-photo-thumb" class="concept-stage-img concept-stage-mine" alt="내 사진" hidden/>
+<button type="button" class="concept-uploadcue" id="concept-photo-btn"><span id="concept-photo-ph"><span class="cue-plus">＋</span> 내 아이 사진 올리기</span></button>
+</div>
 <input type="file" id="concept-photo-file" accept="image/*" hidden/>
+<div class="concept-photoguide" id="concept-photoguide" hidden>
+<p class="cpg-check">📸 정면을 응시한 사진이 맞는지 다시 한번 확인해주세요</p>
+<div class="cpg-actions">
+<button type="button" class="cpg-link" id="concept-photo-reselect">사진 다시 고르기 ↻</button>
+<button type="button" class="cpg-link muted" id="concept-photo-tip">사진 고르기 Tip</button>
+</div>
+</div>
 <div class="concept-result" id="concept-result" hidden>
 <img id="concept-result-img" alt="생성 결과"/>
 <button type="button" class="concept-save" id="concept-save-diary">이 사진 일기에 저장 📔</button>
 </div>
 </div>
-</div>
 <div class="concept-foot">
 <label class="concept-consent"><input type="checkbox" id="concept-consent"/><span><strong>[필수]</strong> 개인정보 수집·이용 및 AI 이미지 서비스 이용에 동의합니다. <a href="#" id="concept-terms">약관 전문 보기</a></span></label>
+<div class="concept-cta-wrap">
+<span class="concept-cta-badge">🎉 첫 오픈 이벤트</span>
 <button type="button" class="concept-cta" id="btn-concept-make" disabled>바로 만들기</button>
+</div>
 </div>
 </div>
 <div id="app-frame-view" class="view app-frame-view">
@@ -1040,6 +1050,33 @@
 <button type="button" class="game-retry-btn" id="btn-miniapp-gate-cancel">다음에 할게요</button>
 </div>
 </div>
+<!-- 사진 고르기 Tip (AI 컨셉스튜디오 공용) -->
+<div class="modal hidden" id="phototip-modal">
+<div class="modal-backdrop" id="phototip-backdrop"></div>
+<div class="modal-content phototip-content">
+<h3 class="phototip-title">📷 사진 고르기 Tip</h3>
+<p class="phototip-sub">아래 가이드에 맞는 사진일수록 더 예쁜 결과가 나와요</p>
+<div class="phototip-group good">
+<p class="phototip-head">이런 사진이 좋아요!</p>
+<ul class="phototip-list">
+<li><span class="pt-emoji">🙂</span>정면을 바라보는 또렷한 얼굴</li>
+<li><span class="pt-emoji">☀️</span>밝고 고른 조명</li>
+<li><span class="pt-emoji">🧸</span>얼굴이 크게 나온 단독 사진</li>
+<li><span class="pt-emoji">🎯</span>초점이 잘 맞은 고화질</li>
+</ul>
+</div>
+<div class="phototip-group bad">
+<p class="phototip-head">이런 사진은 피해주세요!</p>
+<ul class="phototip-list">
+<li><span class="pt-emoji">🕶️</span>모자·마스크로 얼굴이 가려진 사진</li>
+<li><span class="pt-emoji">🌫️</span>흐리거나 흔들린 사진</li>
+<li><span class="pt-emoji">👥</span>여러 명이 함께 나온 사진</li>
+<li><span class="pt-emoji">🌚</span>너무 어둡거나 역광인 사진</li>
+</ul>
+</div>
+<button type="button" class="phototip-close" id="phototip-close">확인했어요</button>
+</div>
+</div>
 <nav class="bottom-tab-bar hidden" id="bottom-tab-bar" aria-label="하단 메뉴">
 <button type="button" class="tab-bar-item" data-tab="my"><span class="tab-bar-icon">🏠</span><span>마이</span></button>
 <button type="button" class="tab-bar-item" data-tab="gift"><span class="tab-bar-icon">🎁</span><span>선물</span></button>
@@ -1061,7 +1098,7 @@
 <script src="js/family-data.js?v=6"></script>
 <script src="js/kakao-auth.js?v=1"></script>
 <script src="js/onboarding.js?v=15"></script>
-<script src="js/kartgame.js?v=2"></script>
-<script src="js/app.js?v=102"></script>
+<script src="js/kartgame.js?v=3"></script>
+<script src="js/app.js?v=103"></script>
 </body>
 </html>

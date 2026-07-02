@@ -115,7 +115,20 @@
     var t = $("#kr-result-title"), e = $("#kr-result-emoji"),
         fs = $("#kr-final-score"), sub = $("#kr-result-sub");
     if (fs) fs.textContent = g ? g.score : 0;
-    if (cleared) { if (t) t.textContent = "완주 성공!"; if (e) e.textContent = "🏆"; if (sub) sub.textContent = babyName() + "가 끝까지 달렸어요!"; }
+    if (cleared) {
+      if (t) t.textContent = "완주 성공! 🎉";
+      if (e) e.textContent = "🏆";
+      var rewarded = false;
+      try {
+        if (typeof window.addPoints === "function") {
+          window.addPoints(10, "kart_win"); rewarded = true;
+          if (typeof window._syncProfileChange === "function") window._syncProfileChange();
+          if (typeof window.renderPointsUI === "function") window.renderPointsUI();
+        }
+      } catch (err) {}
+      if (sub) sub.textContent = babyName() + "가 끝까지 달렸어요!" + (rewarded ? " 🍬 완주 보상 +10캔디!" : "");
+      if (rewarded && typeof window.showToast === "function") window.showToast("🎉 완주 성공! +10캔디 획득");
+    }
     else { if (t) t.textContent = "게임 오버"; if (e) e.textContent = "💥"; if (sub) sub.textContent = "별을 더 모아 최고 점수에 도전해요!"; }
     screen("kart-result");
   }
@@ -207,9 +220,12 @@
       ctx.ellipse(g.kartX + g.kartW / 2, g.kartY + g.kartH - 6, g.kartW * 0.34, 8, 0, 0, 7);
       ctx.fill();
       if (kartImg) ctx.drawImage(kartImg, g.kartX, g.kartY, g.kartW, g.kartH);
-      // 아기 아바타 (좌석 위, 원형)
-      var ax = g.kartX + g.kartW * 0.52, ay = g.kartY + g.kartH * 0.40, ar = g.kartW * 0.17;
+      // 아기 아바타 — 좌석 위에 '운전자'처럼 (원형 배지 + 그림자 + 흰 링)
+      var ax = g.kartX + g.kartW * 0.48, ay = g.kartY + g.kartH * 0.40, ar = g.kartW * 0.155;
       ctx.save();
+      // 배지 그림자
+      ctx.beginPath(); ctx.arc(ax, ay + 2, ar + 2, 0, 7); ctx.fillStyle = "rgba(0,0,0,.18)"; ctx.fill();
+      // 사진 클립
       ctx.beginPath(); ctx.arc(ax, ay, ar, 0, 7); ctx.closePath();
       ctx.fillStyle = "#fff"; ctx.fill();
       ctx.save(); ctx.clip();
@@ -218,7 +234,8 @@
         ctx.drawImage(avatarImg, ax - avatarImg.width * s / 2, ay - avatarImg.height * s / 2, avatarImg.width * s, avatarImg.height * s);
       } else { ctx.fillStyle = "#c9ccd2"; ctx.fillRect(ax - ar, ay - ar, 2 * ar, 2 * ar); }
       ctx.restore();
-      ctx.lineWidth = 3; ctx.strokeStyle = "#fff"; ctx.beginPath(); ctx.arc(ax, ay, ar, 0, 7); ctx.stroke();
+      // 흰 링
+      ctx.lineWidth = ar * 0.22; ctx.strokeStyle = "#fff"; ctx.beginPath(); ctx.arc(ax, ay, ar, 0, 7); ctx.stroke();
       ctx.restore();
     }
   }
