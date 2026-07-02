@@ -78,8 +78,8 @@ export default function ScoreBoard({
             <span className="text-base font-bold text-slate-100">{distance} m</span>
           </div>
           <div>
-            <span className="text-[10px] text-white/50 block">수집한 코인</span>
-            <span className="text-base font-bold text-yellow-300">🪙 {coins}개</span>
+            <span className="text-[10px] text-white/50 block">완주 보상</span>
+            <span className="text-base font-bold text-yellow-300">{isWinner ? '🍬 +5 캔디' : '—'}</span>
           </div>
         </div>
       </div>

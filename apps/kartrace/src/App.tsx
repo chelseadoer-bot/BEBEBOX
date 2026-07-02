@@ -65,6 +65,10 @@ export default function App() {
   const handleGameEnd = (score: number, distance: number, coins: number) => {
     setGameResult({ score, distance, coins });
     setActiveScreen('scoreboard');
+    // 완주(1,000m) 성공 시 부모(BEBEBOX)에 캔디 보상 요청
+    if (distance >= 1000) {
+      try { window.parent.postMessage({ type: 'kartrace-win', reward: 5 }, '*'); } catch (_) {}
+    }
   };
 
   const startRace = () => {

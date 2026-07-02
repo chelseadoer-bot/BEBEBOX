@@ -2247,7 +2247,22 @@ function openKartRace(){
     {type:"bebebox-init",avatar:_kartAbsAvatar(),babyName:_kartBabyName()},"*"); }catch(_){}
   };
   // 자식(React)이 준비되면 'kartrace-ready' 를 보냄 → 프로필 전달. load 폴백도 둔다.
-  const onMsg=(e)=>{ if(e&&e.data&&e.data.type==="kartrace-ready") init(); };
+  // 완주 시 'kartrace-win' → 캔디 보상 지급.
+  const onMsg=(e)=>{
+    if(!e||!e.data) return;
+    if(e.data.type==="kartrace-ready"){ init(); return; }
+    if(e.data.type==="kartrace-win"){
+      var amt=Number(e.data.reward)||5;
+      try{
+        if(typeof addPoints==="function"){
+          addPoints(amt,"kart_win");
+          if(typeof _syncProfileChange==="function")_syncProfileChange();
+          if(typeof renderPointsUI==="function")renderPointsUI();
+          if(typeof showToast==="function")showToast("🎉 완주 성공! +"+amt+"캔디");
+        }
+      }catch(_){}
+    }
+  };
   if(f._kartMsg) window.removeEventListener("message",f._kartMsg);
   f._kartMsg=onMsg; window.addEventListener("message",onMsg);
   f.onload=init;

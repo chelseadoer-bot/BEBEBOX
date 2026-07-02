@@ -11,7 +11,7 @@ export const PRESET_KARTS: Kart[] = [
     color: '#f2d9b1',
     speed: 4,
     handling: 5,
-    svgPath: '/public/photos/karts/kart1.png',
+    svgPath: '/public/photos/karts/kart1.png?v=2',
     isCustom: true
   },
   {
@@ -20,7 +20,7 @@ export const PRESET_KARTS: Kart[] = [
     color: '#9aa3ad',
     speed: 5,
     handling: 3,
-    svgPath: '/public/photos/karts/kart2.png',
+    svgPath: '/public/photos/karts/kart2.png?v=2',
     isCustom: true
   },
   {
@@ -29,7 +29,7 @@ export const PRESET_KARTS: Kart[] = [
     color: '#4b5058',
     speed: 5,
     handling: 4,
-    svgPath: '/public/photos/karts/kart3.png',
+    svgPath: '/public/photos/karts/kart3.png?v=2',
     isCustom: true
   },
   {
@@ -38,7 +38,7 @@ export const PRESET_KARTS: Kart[] = [
     color: '#efe9dd',
     speed: 4,
     handling: 4,
-    svgPath: '/public/photos/karts/kart4.png',
+    svgPath: '/public/photos/karts/kart4.png?v=2',
     isCustom: true
   }
 ];
