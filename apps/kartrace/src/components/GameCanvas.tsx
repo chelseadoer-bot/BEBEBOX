@@ -889,8 +889,8 @@ export default function GameCanvas({
       // Draw Baby Head precisely on driver's seat
       // Driver seat is typically positioned 35% down from the front of the car
       const headX = 0 + (faceConfig.offsetX || 0) * 0.35;
-      const headY = -state.playerHeight * 0.18 + (faceConfig.offsetY || 0) * 0.35;
-      const headRadius = 26 * (faceConfig.scale || 1.0);
+      const headY = -state.playerHeight * 0.24 + (faceConfig.offsetY || 0) * 0.35; // 사진을 좀 더 위로
+      const headRadius = 30 * (faceConfig.scale || 1.0); // 얼굴 더 크게
 
       ctx.save();
       ctx.translate(headX, headY);
@@ -903,12 +903,12 @@ export default function GameCanvas({
         ctx.arc(0, 0, headRadius, 0, Math.PI * 2);
         ctx.clip();
         
-        // 얼굴만 크게 보이도록 cover-fit(얼굴은 보통 상단-중앙) + 살짝 위 크롭
+        // 얼굴이 크게 보이도록 cover-fit + 살짝 아래로 내려 얼굴이 캡 아래 중앙에 오게
         const _bi = babyImageRef.current;
         const _d = headRadius * 2;
         const _sc = Math.max(_d / _bi.width, _d / _bi.height);
         const _w = _bi.width * _sc, _h = _bi.height * _sc;
-        ctx.drawImage(_bi, -_w / 2, -_h / 2 - _h * 0.06, _w, _h);
+        ctx.drawImage(_bi, -_w / 2, -_h / 2 + _h * 0.05, _w, _h);
         ctx.restore();
       } else {
         // Fallback placeholder baby smiley face
@@ -938,13 +938,13 @@ export default function GameCanvas({
       if (faceConfig.hasHelmet) {
         const hr = headRadius;
         ctx.save();
-        // 캡 셸: 정수리~윗이마까지만 (옆은 관자놀이 위에서 끝)
+        // 캡 셸: 정수리(머리 맨 위)에만 얹는다 — 이마/눈/코/입 전부 노출
         ctx.beginPath();
-        ctx.moveTo(-hr * 0.92, -hr * 0.44);
-        ctx.quadraticCurveTo(-hr * 1.14, -hr * 1.02, 0, -hr * 1.16);
-        ctx.quadraticCurveTo(hr * 1.14, -hr * 1.02, hr * 0.92, -hr * 0.44);
-        // 브림: 이마 위로 볼록 → 얼굴이 더 열림
-        ctx.quadraticCurveTo(0, -hr * 0.66, -hr * 0.92, -hr * 0.44);
+        ctx.moveTo(-hr * 0.80, -hr * 0.64);
+        ctx.quadraticCurveTo(-hr * 1.06, -hr * 1.12, 0, -hr * 1.24);
+        ctx.quadraticCurveTo(hr * 1.06, -hr * 1.12, hr * 0.80, -hr * 0.64);
+        // 브림: 이마 훨씬 위에서 볼록 → 얼굴 완전히 열림
+        ctx.quadraticCurveTo(0, -hr * 0.86, -hr * 0.80, -hr * 0.64);
         ctx.closePath();
         ctx.fillStyle = '#ef4444';
         ctx.fill();
@@ -953,23 +953,23 @@ export default function GameCanvas({
         ctx.stroke();
         // 흰 브림 트림
         ctx.beginPath();
-        ctx.moveTo(-hr * 0.92, -hr * 0.44);
-        ctx.quadraticCurveTo(0, -hr * 0.66, hr * 0.92, -hr * 0.44);
+        ctx.moveTo(-hr * 0.80, -hr * 0.64);
+        ctx.quadraticCurveTo(0, -hr * 0.86, hr * 0.80, -hr * 0.64);
         ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = Math.max(2, hr * 0.13);
+        ctx.lineWidth = Math.max(2, hr * 0.12);
         ctx.stroke();
         // 가운데 레이싱 스트라이프
         ctx.fillStyle = 'rgba(255,255,255,0.92)';
         ctx.beginPath();
-        ctx.moveTo(-hr * 0.12, -hr * 0.56);
-        ctx.quadraticCurveTo(0, -hr * 1.13, hr * 0.12, -hr * 0.56);
-        ctx.quadraticCurveTo(0, -hr * 0.76, -hr * 0.12, -hr * 0.56);
+        ctx.moveTo(-hr * 0.11, -hr * 0.84);
+        ctx.quadraticCurveTo(0, -hr * 1.22, hr * 0.11, -hr * 0.84);
+        ctx.quadraticCurveTo(0, -hr * 0.98, -hr * 0.11, -hr * 0.84);
         ctx.closePath();
         ctx.fill();
         // 광택
         ctx.fillStyle = 'rgba(255,255,255,0.25)';
         ctx.beginPath();
-        ctx.ellipse(-hr * 0.38, -hr * 0.82, hr * 0.22, hr * 0.09, -0.5, 0, Math.PI * 2);
+        ctx.ellipse(-hr * 0.34, -hr * 1.0, hr * 0.2, hr * 0.08, -0.5, 0, Math.PI * 2);
         ctx.fill();
         ctx.restore();
       }
