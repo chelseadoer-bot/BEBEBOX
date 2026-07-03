@@ -925,33 +925,40 @@ export default function GameCanvas({
         ctx.stroke();
       }
 
-      // Draw cute Tiny Racing Helmet overlay
+      // Draw cute racing helmet — 머리 위에 얹혀 얼굴(눈·코·입)은 그대로 보이게.
+      // 윗부분+옆(관자놀이)만 덮고, 브림(챙)이 이마 위로 아치를 그려 얼굴을 연다.
       if (faceConfig.hasHelmet) {
-        ctx.fillStyle = '#ef4444'; // default racing red helmet
-        ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 1.5;
-        
-        // Helmet top cap
+        const hr = headRadius;
+        ctx.save();
+        // 헬멧 셸(윗면+옆면), 얼굴은 열림
         ctx.beginPath();
-        ctx.arc(0, -headRadius * 0.1, headRadius * 1.05, Math.PI, 0); // top semicircle
-        ctx.lineTo(headRadius * 1.05, -headRadius * 0.1);
+        ctx.moveTo(-hr * 1.03, hr * 0.06);
+        ctx.quadraticCurveTo(-hr * 1.24, -hr * 1.02, 0, -hr * 1.18);
+        ctx.quadraticCurveTo(hr * 1.24, -hr * 1.02, hr * 1.03, hr * 0.06);
+        // 안쪽 브림: 이마 위로 위로 볼록하게 → 얼굴이 드러남
+        ctx.quadraticCurveTo(0, -hr * 0.52, -hr * 1.03, hr * 0.06);
+        ctx.closePath();
+        ctx.fillStyle = '#ef4444'; // 레이싱 레드
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(0,0,0,0.18)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        // 브림 흰 트림
+        ctx.beginPath();
+        ctx.moveTo(-hr * 1.03, hr * 0.06);
+        ctx.quadraticCurveTo(0, -hr * 0.52, hr * 1.03, hr * 0.06);
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = Math.max(2, hr * 0.12);
+        ctx.stroke();
+        // 가운데 레이싱 스트라이프
+        ctx.fillStyle = 'rgba(255,255,255,0.92)';
+        ctx.beginPath();
+        ctx.moveTo(-hr * 0.13, -hr * 0.5);
+        ctx.quadraticCurveTo(0, -hr * 1.15, hr * 0.13, -hr * 0.5);
+        ctx.quadraticCurveTo(0, -hr * 0.72, -hr * 0.13, -hr * 0.5);
         ctx.closePath();
         ctx.fill();
-        ctx.stroke();
-
-        // Helmet visors / goggles details
-        ctx.fillStyle = 'rgba(15, 23, 42, 0.8)'; // dark visor
-        ctx.beginPath();
-        ctx.roundRect(-headRadius * 0.8, -headRadius * 0.6, headRadius * 1.6, headRadius * 0.45, headRadius * 0.15);
-        ctx.fill();
-        ctx.strokeStyle = '#38bdf8'; // neon blue reflection glow
-        ctx.stroke();
-
-        // Visor reflection gloss
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.25)';
-        ctx.beginPath();
-        ctx.ellipse(-headRadius * 0.2, -headRadius * 0.45, headRadius * 0.4, headRadius * 0.08, Math.PI / 12, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.restore();
       }
 
       ctx.restore(); // head transform
