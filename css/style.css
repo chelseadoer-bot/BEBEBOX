@@ -824,6 +824,12 @@ body.is-guest .guest-only{display:block!important}
 .ig-recommend-card:active{background:#fafafa}
 .ig-concept-card{border:none;padding:0;cursor:pointer;font-family:var(--font)}
 .ig-concept-card:active{opacity:.85}
+/* 컨셉 그리드 마지막 '준비중' 자리채움 카드 */
+.ig-concept-card.coming-soon{background:linear-gradient(135deg,#f5f2fb,#eaf1f8);border:1.5px dashed #d3d8e4;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:default}
+.ig-concept-card.coming-soon:active{opacity:1}
+.ig-concept-card.coming-soon .cs-ico{font-size:24px;font-style:normal;line-height:1;opacity:.75}
+.ig-concept-card.coming-soon .cs-tx{font-size:12px;font-weight:800;color:#7b8194}
+.ig-concept-card.coming-soon .cs-sub{font-size:8.5px;font-style:normal;color:#aab0be;font-weight:600;text-align:center;padding:0 6px;line-height:1.3}
 /* 전체보기 리스트 */
 .ig-list{display:flex;flex-direction:column;background:#fff;border:1px solid #eee;border-radius:14px;overflow:hidden}
 .ig-list-item{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:none;border:none;border-bottom:1px solid #f2f2f2;padding:14px 14px;cursor:pointer;font-family:var(--font)}
