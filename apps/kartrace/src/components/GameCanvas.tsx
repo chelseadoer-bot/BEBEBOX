@@ -702,58 +702,60 @@ export default function GameCanvas({
       ctx.translate(dx, dy);
     }
 
-    // 1. Draw Grass / Backdrop
-    ctx.fillStyle = '#22c55e'; // default green grass
+    // 1. 잔디 — 파스텔 아기 동산
+    const grassGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    grassGrad.addColorStop(0, '#c9edb0');
+    grassGrad.addColorStop(1, '#b4e39b');
+    ctx.fillStyle = grassGrad;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Draw Parallax trees or track stripes on sides
-    ctx.fillStyle = '#16a34a'; // darker green stripes for scrolling
     const stripeSize = 80;
     const scrollOffset = state.roadOffsetY;
-    
+    // 부드러운 잔디 줄무늬(잔디 깎은 결, 스크롤)
+    ctx.fillStyle = 'rgba(255,255,255,0.13)';
     for (let y = -stripeSize; y < canvas.height + stripeSize; y += stripeSize) {
-      ctx.fillRect(0, y + scrollOffset, 80, stripeSize / 2);
-      ctx.fillRect(canvas.width - 80, y + scrollOffset, 80, stripeSize / 2);
+      ctx.fillRect(0, y + scrollOffset, canvas.width, stripeSize / 2);
     }
 
-    // 2. Draw Side Curbs / Red-White Kerb (retro arcade style!)
-    const kerbWidth = 10;
-    for (let y = -stripeSize; y < canvas.height + stripeSize; y += stripeSize) {
-      const isRed = (Math.floor((y + scrollOffset) / stripeSize) % 2 === 0);
-      ctx.fillStyle = isRed ? '#ef4444' : '#ffffff';
-      
-      // Left Curb
-      ctx.fillRect(75, y + scrollOffset, kerbWidth, stripeSize);
-      // Right Curb
-      ctx.fillRect(395, y + scrollOffset, kerbWidth, stripeSize);
-    }
-
-    // 3. Draw Road Asphalt
-    ctx.fillStyle = '#475569'; // slate grey road
+    // 2. 오솔길 — 크림색 흙길(가운데 밝게)
+    ctx.fillStyle = 'rgba(0,0,0,0.045)';
+    ctx.fillRect(80, 0, 320, canvas.height);
+    const pathGrad = ctx.createLinearGradient(85, 0, 395, 0);
+    pathGrad.addColorStop(0, '#ecdcb6');
+    pathGrad.addColorStop(0.5, '#f7edd6');
+    pathGrad.addColorStop(1, '#ecdcb6');
+    ctx.fillStyle = pathGrad;
     ctx.fillRect(85, 0, 310, canvas.height);
 
-    // 4. Draw Lanes divider lines (scrolling)
-    ctx.strokeStyle = '#ffffff';
-    ctx.lineWidth = 4;
-    ctx.setLineDash([30, 30]);
+    // 3. 길 가장자리 — 파스텔 조약돌(둥근 스캘럽, 스크롤)
+    const edgeStep = 22;
+    for (let y = -edgeStep; y < canvas.height + edgeStep; y += edgeStep) {
+      const yy = y + (scrollOffset % edgeStep);
+      const idx = Math.round((y + scrollOffset) / edgeStep);
+      ctx.fillStyle = (idx % 2 === 0) ? '#ffc4dd' : '#fff6fa';
+      ctx.beginPath(); ctx.arc(85, yy, 8, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(395, yy, 8, 0, Math.PI * 2); ctx.fill();
+    }
+
+    // 4. 가운데 점선 — 부드러운 도트
+    ctx.setLineDash([16, 26]);
+    ctx.strokeStyle = 'rgba(255,255,255,0.85)';
+    ctx.lineWidth = 6;
+    ctx.lineCap = 'round';
     ctx.beginPath();
-    // Lane 1 divider (around X: 190)
     ctx.moveTo(190, -80 + scrollOffset);
     ctx.lineTo(190, canvas.height + 80);
-    // Lane 2 divider (around X: 290)
     ctx.moveTo(290, -80 + scrollOffset);
     ctx.lineTo(290, canvas.height + 80);
     ctx.stroke();
-    ctx.setLineDash([]); // reset
+    ctx.setLineDash([]);
+    ctx.lineCap = 'butt';
 
-    // 5. Draw roadside decorative elements (flowers, spectator stands, trees)
-    // Draw simple trees
-    for (let y = -120; y < canvas.height + 120; y += 160) {
-      const currentY = y + scrollOffset;
-      // Left side tree
-      drawTree(ctx, 35, currentY);
-      // Right side tree
-      drawTree(ctx, canvas.width - 35, currentY + 80);
+    // 5. 길가 아기자기 장식(꽃/버섯/구름/꽃덤불)
+    for (let y = -160; y < canvas.height + 160; y += 150) {
+      const cy = y + scrollOffset;
+      drawGardenDeco(ctx, 38, cy, Math.floor(y / 150));
+      drawGardenDeco(ctx, canvas.width - 38, cy + 75, Math.floor(y / 150) + 2);
     }
 
     // 6. Draw Finish Line if active
@@ -847,6 +849,14 @@ export default function GameCanvas({
         ctx.fill();
       }
 
+      // 카트 바닥 그림자(크림 길에서 잘 보이도록)
+      ctx.save();
+      ctx.fillStyle = 'rgba(0,0,0,0.16)';
+      ctx.beginPath();
+      ctx.ellipse(0, state.playerHeight / 2 - 4, state.playerWidth * 0.42, 9, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+
       // Draw Kart Body
       if (kart.isCustom && customKartImageRef.current && imagesLoadedRef.current.kart) {
         // Draw uploaded custom car
@@ -893,13 +903,12 @@ export default function GameCanvas({
         ctx.arc(0, 0, headRadius, 0, Math.PI * 2);
         ctx.clip();
         
-        ctx.drawImage(
-          babyImageRef.current,
-          -headRadius,
-          -headRadius,
-          headRadius * 2,
-          headRadius * 2
-        );
+        // 얼굴만 크게 보이도록 cover-fit(얼굴은 보통 상단-중앙) + 살짝 위 크롭
+        const _bi = babyImageRef.current;
+        const _d = headRadius * 2;
+        const _sc = Math.max(_d / _bi.width, _d / _bi.height);
+        const _w = _bi.width * _sc, _h = _bi.height * _sc;
+        ctx.drawImage(_bi, -_w / 2, -_h / 2 - _h * 0.06, _w, _h);
         ctx.restore();
       } else {
         // Fallback placeholder baby smiley face
@@ -925,38 +934,42 @@ export default function GameCanvas({
         ctx.stroke();
       }
 
-      // Draw cute racing helmet — 머리 위에 얹혀 얼굴(눈·코·입)은 그대로 보이게.
-      // 윗부분+옆(관자놀이)만 덮고, 브림(챙)이 이마 위로 아치를 그려 얼굴을 연다.
+      // 레이싱 캡을 '정수리'에만 얹는다 — 눈·코·입 얼굴은 완전히 노출.
       if (faceConfig.hasHelmet) {
         const hr = headRadius;
         ctx.save();
-        // 헬멧 셸(윗면+옆면), 얼굴은 열림
+        // 캡 셸: 정수리~윗이마까지만 (옆은 관자놀이 위에서 끝)
         ctx.beginPath();
-        ctx.moveTo(-hr * 1.03, hr * 0.06);
-        ctx.quadraticCurveTo(-hr * 1.24, -hr * 1.02, 0, -hr * 1.18);
-        ctx.quadraticCurveTo(hr * 1.24, -hr * 1.02, hr * 1.03, hr * 0.06);
-        // 안쪽 브림: 이마 위로 위로 볼록하게 → 얼굴이 드러남
-        ctx.quadraticCurveTo(0, -hr * 0.52, -hr * 1.03, hr * 0.06);
+        ctx.moveTo(-hr * 0.92, -hr * 0.44);
+        ctx.quadraticCurveTo(-hr * 1.14, -hr * 1.02, 0, -hr * 1.16);
+        ctx.quadraticCurveTo(hr * 1.14, -hr * 1.02, hr * 0.92, -hr * 0.44);
+        // 브림: 이마 위로 볼록 → 얼굴이 더 열림
+        ctx.quadraticCurveTo(0, -hr * 0.66, -hr * 0.92, -hr * 0.44);
         ctx.closePath();
-        ctx.fillStyle = '#ef4444'; // 레이싱 레드
+        ctx.fillStyle = '#ef4444';
         ctx.fill();
-        ctx.strokeStyle = 'rgba(0,0,0,0.18)';
+        ctx.strokeStyle = 'rgba(0,0,0,0.16)';
         ctx.lineWidth = 1;
         ctx.stroke();
-        // 브림 흰 트림
+        // 흰 브림 트림
         ctx.beginPath();
-        ctx.moveTo(-hr * 1.03, hr * 0.06);
-        ctx.quadraticCurveTo(0, -hr * 0.52, hr * 1.03, hr * 0.06);
+        ctx.moveTo(-hr * 0.92, -hr * 0.44);
+        ctx.quadraticCurveTo(0, -hr * 0.66, hr * 0.92, -hr * 0.44);
         ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = Math.max(2, hr * 0.12);
+        ctx.lineWidth = Math.max(2, hr * 0.13);
         ctx.stroke();
         // 가운데 레이싱 스트라이프
         ctx.fillStyle = 'rgba(255,255,255,0.92)';
         ctx.beginPath();
-        ctx.moveTo(-hr * 0.13, -hr * 0.5);
-        ctx.quadraticCurveTo(0, -hr * 1.15, hr * 0.13, -hr * 0.5);
-        ctx.quadraticCurveTo(0, -hr * 0.72, -hr * 0.13, -hr * 0.5);
+        ctx.moveTo(-hr * 0.12, -hr * 0.56);
+        ctx.quadraticCurveTo(0, -hr * 1.13, hr * 0.12, -hr * 0.56);
+        ctx.quadraticCurveTo(0, -hr * 0.76, -hr * 0.12, -hr * 0.56);
         ctx.closePath();
+        ctx.fill();
+        // 광택
+        ctx.fillStyle = 'rgba(255,255,255,0.25)';
+        ctx.beginPath();
+        ctx.ellipse(-hr * 0.38, -hr * 0.82, hr * 0.22, hr * 0.09, -0.5, 0, Math.PI * 2);
         ctx.fill();
         ctx.restore();
       }
@@ -1085,6 +1098,56 @@ export default function GameCanvas({
     ctx.arc(x, y - 6, 12, 0, Math.PI * 2);
     ctx.fill();
 
+    ctx.restore();
+  };
+
+  // 아기 동산 길가 장식 — 꽃/버섯/구름/꽃덤불(파스텔)
+  const drawGardenDeco = (ctx: CanvasRenderingContext2D, x: number, y: number, idx: number) => {
+    const t = ((idx % 4) + 4) % 4;
+    ctx.save();
+    if (t === 0) {
+      // 튤립 세 송이
+      const tulip = (tx: number, ty: number, col: string) => {
+        ctx.strokeStyle = '#5cba57'; ctx.lineWidth = 3; ctx.lineCap = 'round';
+        ctx.beginPath(); ctx.moveTo(tx, ty + 15); ctx.lineTo(tx, ty - 2); ctx.stroke();
+        ctx.fillStyle = col;
+        ctx.beginPath();
+        ctx.moveTo(tx - 6, ty - 3);
+        ctx.quadraticCurveTo(tx - 7, ty - 13, tx, ty - 15);
+        ctx.quadraticCurveTo(tx + 7, ty - 13, tx + 6, ty - 3);
+        ctx.quadraticCurveTo(tx, ty - 7, tx - 6, ty - 3);
+        ctx.closePath(); ctx.fill();
+      };
+      tulip(x - 9, y + 3, '#ff9ec4');
+      tulip(x + 9, y + 1, '#ffd36e');
+      tulip(x, y - 7, '#b7a4ff');
+      ctx.lineCap = 'butt';
+    } else if (t === 1) {
+      // 버섯(빨간 갓 + 흰 점)
+      ctx.fillStyle = '#fff7e8';
+      ctx.beginPath();
+      ctx.moveTo(x - 6, y + 14); ctx.quadraticCurveTo(x, y + 16, x + 6, y + 14);
+      ctx.lineTo(x + 5, y - 2); ctx.lineTo(x - 5, y - 2); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = '#ff8a8a';
+      ctx.beginPath();
+      ctx.moveTo(x - 15, y - 2); ctx.quadraticCurveTo(x, y - 20, x + 15, y - 2);
+      ctx.quadraticCurveTo(x, y - 8, x - 15, y - 2); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = 'rgba(255,255,255,0.95)';
+      ctx.beginPath(); ctx.arc(x - 6, y - 7, 2.6, 0, 7); ctx.arc(x + 5, y - 5, 2.1, 0, 7); ctx.arc(x + 1, y - 11, 1.8, 0, 7); ctx.fill();
+    } else if (t === 2) {
+      // 구름
+      ctx.fillStyle = 'rgba(255,255,255,0.92)';
+      ctx.beginPath();
+      ctx.arc(x - 11, y, 8, 0, 7); ctx.arc(x - 1, y - 5, 11, 0, 7);
+      ctx.arc(x + 11, y, 9, 0, 7); ctx.arc(x + 3, y + 2, 9, 0, 7);
+      ctx.fill();
+    } else {
+      // 꽃덤불
+      ctx.fillStyle = '#83cf6f';
+      ctx.beginPath(); ctx.arc(x - 10, y + 2, 10, 0, 7); ctx.arc(x + 10, y + 2, 10, 0, 7); ctx.arc(x, y - 5, 12, 0, 7); ctx.fill();
+      const dot = (dx: number, dy: number, c: string) => { ctx.fillStyle = c; ctx.beginPath(); ctx.arc(x + dx, y + dy, 2.6, 0, 7); ctx.fill(); };
+      dot(-7, 0, '#ff9ec4'); dot(7, -2, '#ffd36e'); dot(0, 4, '#b7a4ff'); dot(2, -6, '#ffffff');
+    }
     ctx.restore();
   };
 

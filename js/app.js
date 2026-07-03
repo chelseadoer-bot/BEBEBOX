@@ -2227,7 +2227,7 @@ function closeAppFrame(){
  * /apps/kartrace/dist/ 정적 번들을 app-frame iframe 으로 띄우고,
  * 프로필 사진/아기 이름을 postMessage 로 넘겨 기본 라이더로 태운다. */
 const KARTRACE_URL="/apps/kartrace/dist/index.html";
-const KARTRACE_VER="3";   // 게임 재빌드(dist 자산 해시 변경) 때마다 올려 index.html 캐시 무력화
+const KARTRACE_VER="4";   // 게임 재빌드(dist 자산 해시 변경) 때마다 올려 index.html 캐시 무력화
 function _kartAbsAvatar(){
   let a="";
   try{ a=(window.state&&state.profile&&state.profile.avatar)||""; }catch(_){}
