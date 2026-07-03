@@ -682,6 +682,14 @@ body.is-guest .guest-only{display:block!important}
 .product-del-btn{flex-shrink:0;width:28px;height:28px;border:none;background:#f0f0f0;border-radius:50%;font-size:12px;color:#999;cursor:pointer;display:flex;align-items:center;justify-content:center}
 .add-product-bar{padding:8px 16px 0;border-top:1px solid #f0f0f0;margin-top:4px}
 .add-product-bar.hidden{display:none}
+/* 검색결과 없을 때 대비: 추천 선물 전체보기(키디키디 기획전) */
+.picker-planshop{display:flex;align-items:center;gap:11px;margin:14px 16px 4px;padding:13px 14px;border-radius:14px;background:linear-gradient(135deg,#fff1f5,#f3f0ff);border:1px solid #ffd9e6;text-decoration:none;color:inherit}
+.picker-planshop:active{opacity:.9}
+.picker-planshop-ic{font-size:22px;flex:0 0 auto;line-height:1}
+.picker-planshop-tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.picker-planshop-tx b{font-size:14px;font-weight:800;color:#e8557a}
+.picker-planshop-tx small{font-size:11px;color:#9a8a95}
+.picker-planshop-go{font-size:20px;color:#e8557a;flex:0 0 auto}
 .add-product-toggle{width:100%;padding:12px;border:1.5px dashed #ccc;border-radius:10px;background:#fafafa;font-size:14px;font-weight:600;color:#555;cursor:pointer}
 .add-product-toggle:active{background:#f0f0f0}
 .add-product-form{display:flex;flex-direction:column;gap:8px;margin-top:8px}
