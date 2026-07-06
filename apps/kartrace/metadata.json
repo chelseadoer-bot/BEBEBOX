@@ -1,8 +1,0 @@
-{
-  "name": "아기랑 카트 레이싱",
-  "description": "아기 얼굴 사진과 귀여운 카트를 선택하여 1분 동안 즐기는 스릴 넘치는 레이싱 게임!",
-  "requestFramePermissions": [],
-  "majorCapabilities": [
-    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
-  ]
-}
