@@ -40,6 +40,20 @@ body{font-family:'Pretendard',sans-serif;background:var(--bg);color:var(--ink);m
 .result-tag{display:inline-block;font-size:12px;font-weight:800;color:var(--brand-d);background:var(--brand-l);padding:6px 14px;border-radius:20px;}
 .err{background:#FEF0EF;border:1px solid #fcc;border-radius:12px;padding:14px;font-size:13px;font-weight:700;color:#c03020;margin-top:12px;display:none;line-height:1.5;}
 input[type=file]{display:none;}
+.consent-row{display:flex;align-items:flex-start;gap:8px;margin:2px 2px 10px;font-size:12px;color:var(--ink3);line-height:1.45;cursor:pointer;text-align:left;}
+.consent-row input{margin-top:2px;flex:0 0 auto;width:16px;height:16px;accent-color:var(--brand);}
+.consent-row b{color:#e8556e;}
+.consent-row a{color:var(--brand);text-decoration:underline;font-weight:700;}
+.terms-modal{display:none;position:fixed;inset:0;z-index:900;background:rgba(0,0,0,.5);align-items:center;justify-content:center;padding:18px;}
+.terms-modal.on{display:flex;}
+.terms-box{background:#fff;border-radius:18px;max-width:420px;width:100%;max-height:82vh;display:flex;flex-direction:column;padding:20px;}
+.terms-box h3{font-size:17px;font-weight:800;margin:0 0 10px;text-align:center;}
+.terms-body{overflow-y:auto;font-size:12.5px;line-height:1.6;color:#444;}
+.terms-body h4{font-size:13.5px;font-weight:800;color:#222;margin:14px 0 6px;}
+.terms-body p{margin:6px 0;}
+.terms-body ul{margin:6px 0;padding-left:18px;}
+.terms-body li{margin:4px 0;}
+.terms-body .terms-biz{font-size:11px;color:#999;margin-top:10px;}
 </style>
 </head>
 <body>
@@ -62,6 +76,10 @@ input[type=file]{display:none;}
       <p class="sec-tit">컨셉을 골라주세요</p>
       <div class="concept-grid" id="concept-grid"></div>
     </div>
+    <label class="consent-row">
+      <input type="checkbox" id="consent-chk">
+      <span><b>[필수]</b> AI 이미지 합성·생성 및 개인정보 수집·이용에 동의합니다. <a href="#" id="terms-link">약관 보기</a></span>
+    </label>
     <button class="btn-main" id="btn-go" disabled onclick="generate()">✨ 컨셉 사진 만들기</button>
     <div class="err" id="err"></div>
   </div>
@@ -90,6 +108,38 @@ input[type=file]{display:none;}
   </div>
 </div>
 
+<!-- AI 이미지(합성) 서비스 이용약관 -->
+<div id="terms-modal" class="terms-modal">
+  <div class="terms-box">
+    <h3>AI 이미지 서비스 이용약관</h3>
+    <div class="terms-body">
+      <h4>개인정보 수집 및 이용 동의</h4>
+      <p>키디키디는 AI 이미지 서비스 제공을 위해 개인정보를 수집 및 이용합니다.</p>
+      <p><b>수집하는 개인정보 항목</b> : (필수) 이용자 사진<br><b>수집 및 이용목적</b> : AI 이미지 생성</p>
+      <p><b>보유 및 이용기간</b><br>· 이용자가 제공한 사진 : AI 결과물 생성 시까지<br>· AI 결과물 : 결과물 생성 이후 삭제</p>
+      <p>이용자의 동의는 AI 이미지 서비스 종료 시까지 유지되며, 개인정보의 수집 및 이용에 대한 동의를 거부할 수 있습니다. 다만, 거부하시는 경우 AI 이미지 서비스를 이용할 수 없습니다.</p>
+      <h4>[AI 이미지 합성·생성] 서비스 이용 안내</h4>
+      <p>본 서비스는 키디키디가 제공합니다. 본 서비스의 이용과 관련한 문의가 있으실 경우 키디키디 고객센터로 연락하여 주시기 바랍니다.</p>
+      <p>본 서비스의 결과물은 이미지 생성형 AI 모델을 이용하여 제작되므로, 그 특성상 키디키디는 결과물의 품질을 보장할 수 없으며, 체형, 손가락, 포즈, 머리스타일 등의 부분에서 실제와 차이가 있거나 표현상 오류가 포함될 수 있습니다. 본인의 초상과 상당히 차이가 나는 등 만족스럽지 않거나 예상치 못한 이미지가 생성될 수 있습니다. 비인물 사진(예: 장난감, 사물, 애니메이션 캐릭터, 동물 등)이나 NSFW 가이드라인에 부적합한 이미지를 등록/생성된 경우, 결과물이 일부 또는 전부 생성되지 않을 수 있습니다.</p>
+      <p>AI 이미지 생성 시스템 상의 오류로 결과물이 생성되지 않거나 정상적으로 제공되지 않은 경우, 회사 정책에 따라 서비스 이용대금(캔디)은 자동으로 반환됩니다.</p>
+      <h4>[AI 이미지 합성·생성] 서비스 준수사항</h4>
+      <p>이용자는 본인(또는 정당한 권리자)의 사진만을 본 서비스에 등록하여 서비스를 이용하여야 합니다.</p>
+      <p>이용자는 본 서비스 및 결과물을 다음 각 호의 목적과 방식으로 이용할 수 없습니다.</p>
+      <ul>
+        <li>음란물 제작, 타인 모욕·명예훼손·사생활 침해 등 관련 법령을 위반하거나 위법의 우려가 상당한 행위</li>
+        <li>타인의 적법한 권리(저작권 등) 침해, 타인에게 피해를 입힐 목적의 개인정보·허위정보 생성 행위</li>
+        <li>본 서비스의 결과물을 판매하는 등 상업적 이용 행위</li>
+        <li>미성년자를 착취·피해를 입히거나 시도할 목적의 일체의 행위</li>
+        <li>특정 개인·집단을 차별·왜곡·피해를 입힐 목적의 일체의 행위</li>
+        <li>신분증 등 행정·사법 및 그에 준하는 절차에 사용하는 행위</li>
+      </ul>
+      <p>이용자가 타인의 사진을 등록·이용하거나 금지행위를 위반할 경우 개인정보보호법·저작권법 및 관계 법령에 따라 처벌될 수 있으며, 키디키디는 위반 결과물을 삭제하고 서비스 이용을 제한할 수 있습니다.</p>
+      <p class="terms-biz">(주)이랜드월드 · 대표이사 조동주 · 사업자등록번호 123-85-50061<br>주소 : 서울특별시 강서구 마곡동로 146 키디키디몰 · 고객센터 1899-9500</p>
+    </div>
+    <button class="btn-main" id="terms-close" style="margin-top:12px">확인</button>
+  </div>
+</div>
+
 <script src="kidikidi-app.js?v=5"></script>
 <script>
 var CONCEPTS = [
@@ -98,15 +148,21 @@ var CONCEPTS = [
   { id:'beach',      emoji:'🌊', name:'바닷가 스튜디오', desc:'시원한 여름 바다' },
   { id:'space',      emoji:'🚀', name:'우주 스튜디오',   desc:'신비로운 우주 탐험' },
   { id:'watermelon', emoji:'🍉', name:'수박 스튜디오',   desc:'상큼한 여름 수박' },
-  { id:'christmas',  emoji:'🎄', name:'크리스마스 스튜디오', desc:'따뜻한 겨울 성탄' }
+  { id:'christmas',  emoji:'🎄', name:'크리스마스 스튜디오', desc:'따뜻한 겨울 성탄' },
+  { id:'picnic',     emoji:'🧺', name:'피크닉 스튜디오', desc:'화창한 날 소풍 나들이' },
+  { id:'rainy',      emoji:'🌧️', name:'비 오는 날 스튜디오', desc:'우비 입고 빗속 감성' }
 ];
-var PLACEHOLDERS = 2; // 그리드 8칸 — 추가 예정 슬롯
+var PLACEHOLDERS = 0; // 컨셉이 그리드를 채움
 var state = { photo:null, concept:null, image_url:null, concept_label:null };
 
 function show(id){document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('on');});document.getElementById(id).classList.add('on');var e=document.getElementById('err');if(e)e.style.display='none';}
 function pick(){document.getElementById('file-photo').click();}
 function showErr(msg){var el=document.getElementById('err');el.textContent=msg;el.style.display='block';}
-function refreshGo(){document.getElementById('btn-go').disabled=!(state.photo&&state.concept);}
+function refreshGo(){document.getElementById('btn-go').disabled=!(state.photo&&state.concept&&document.getElementById('consent-chk').checked);}
+document.getElementById('consent-chk').addEventListener('change',refreshGo);
+document.getElementById('terms-link').onclick=function(e){e.preventDefault();document.getElementById('terms-modal').classList.add('on');};
+document.getElementById('terms-close').onclick=function(){document.getElementById('terms-modal').classList.remove('on');};
+document.getElementById('terms-modal').addEventListener('click',function(e){if(e.target===this)this.classList.remove('on');});
 
 function resizeB64(dataUrl){return new Promise(function(resolve,reject){var img=new Image();img.onload=function(){var max=768;var s=Math.min(1,max/Math.max(img.width,img.height));var c=document.createElement('canvas');c.width=Math.round(img.width*s);c.height=Math.round(img.height*s);c.getContext('2d').drawImage(img,0,0,c.width,c.height);resolve(c.toDataURL('image/jpeg',0.88));};img.onerror=reject;img.src=dataUrl;});}
 
@@ -140,6 +196,7 @@ buildConcepts();
 
 async function generate(){
   if(!state.photo||!state.concept){showErr('사진과 컨셉을 모두 선택해주세요.');return;}
+  if(!document.getElementById('consent-chk').checked){showErr('AI 이미지 서비스 이용약관에 동의해주세요.');return;}
   show('s-loading');
   try{
     var res=await KD.run({photo:state.photo,concept:state.concept});
