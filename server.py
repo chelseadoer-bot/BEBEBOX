@@ -368,6 +368,9 @@ class H(SimpleHTTPRequestHandler):
             user = ka.public_user(session)
             if not user:
                 return json_response(self, 401, {"error": "not_authenticated"})
+            # 이 카카오 계정에 묶인 정식 가족코드(있으면). 브라우저가 달라도 동일.
+            if user.get("kakaoId"):
+                user["familyCode"] = db.get_kakao_family(user["kakaoId"])
             return json_response(self, 200, user)
         if path == "/auth/kakao/login":
             if not ka.is_configured():
@@ -407,6 +410,19 @@ class H(SimpleHTTPRequestHandler):
             _, token = current_session(self)
             db.delete_session(token)
             return json_response(self, 200, {"ok": True}, [clear_session_cookie()])
+        if path == "/api/auth/link":
+            # 카카오 계정(kakaoId)에 가족코드를 묶어 '정식' 코드를 돌려준다.
+            # 이미 매핑돼 있으면 그걸(기존 우선), 없으면 클라이언트의 현재 코드를 등록.
+            session, _ = current_session(self)
+            user = ka.public_user(session)
+            if not user or not user.get("kakaoId"):
+                return json_response(self, 401, {"error": "not_authenticated"})
+            try:
+                body = read_json_body(self)
+            except json.JSONDecodeError:
+                body = {}
+            code = db.link_kakao_family(user["kakaoId"], (body.get("familyCode") or ""))
+            return json_response(self, 200, {"familyCode": code})
         if path == "/api/track":
             try:
                 body = read_json_body(self)
