@@ -74,6 +74,19 @@ CREATE TABLE IF NOT EXISTS site_config (
     value      TEXT,
     updated_at INTEGER
 );
+
+-- 고객 1:1 문의(비공개): 본인(가족코드) 것만 조회. 운영자가 답변.
+CREATE TABLE IF NOT EXISTS inquiries (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    family_id  TEXT NOT NULL,
+    category   TEXT DEFAULT '',
+    message    TEXT NOT NULL,
+    status     TEXT DEFAULT 'open',   -- open | answered
+    reply      TEXT DEFAULT '',
+    created_at INTEGER NOT NULL,
+    replied_at INTEGER
+);
+CREATE INDEX IF NOT EXISTS idx_inquiries_family ON inquiries (family_id, created_at DESC);
 """
 
 
@@ -528,6 +541,62 @@ def set_config(key, value):
             "INSERT INTO site_config(key, value, updated_at) VALUES(?,?,?) "
             "ON CONFLICT(key) DO UPDATE SET value=excluded.value, updated_at=excluded.updated_at",
             (key, json.dumps(value, ensure_ascii=False), now_ms()),
+        )
+    return True
+
+
+# ---------------------------------------------------------------- 고객 1:1 문의
+def _row_to_inquiry(row):
+    return {
+        "id": row["id"],
+        "family_id": row["family_id"],
+        "category": row["category"] or "",
+        "message": row["message"] or "",
+        "status": row["status"] or "open",
+        "reply": row["reply"] or "",
+        "created_at": row["created_at"],
+        "replied_at": row["replied_at"],
+    }
+
+
+def create_inquiry(family_id, category, message):
+    ts = now_ms()
+    with _conn() as conn:
+        cur = conn.execute(
+            "INSERT INTO inquiries(family_id, category, message, status, created_at) "
+            "VALUES(?,?,?, 'open', ?)",
+            (family_id, (category or "")[:40], (message or "")[:2000], ts),
+        )
+        rid = cur.lastrowid
+    return {
+        "id": rid, "family_id": family_id, "category": category or "",
+        "message": message or "", "status": "open", "reply": "",
+        "created_at": ts, "replied_at": None,
+    }
+
+
+def list_inquiries(family_id):
+    with _conn() as conn:
+        rows = conn.execute(
+            "SELECT * FROM inquiries WHERE family_id=? ORDER BY created_at DESC LIMIT 100",
+            (family_id,),
+        ).fetchall()
+    return [_row_to_inquiry(r) for r in rows]
+
+
+def list_all_inquiries(limit=300):
+    with _conn() as conn:
+        rows = conn.execute(
+            "SELECT * FROM inquiries ORDER BY created_at DESC LIMIT ?", (int(limit),)
+        ).fetchall()
+    return [_row_to_inquiry(r) for r in rows]
+
+
+def reply_inquiry(inquiry_id, reply_text):
+    with _conn() as conn:
+        conn.execute(
+            "UPDATE inquiries SET reply=?, status='answered', replied_at=? WHERE id=?",
+            ((reply_text or "")[:4000], now_ms(), int(inquiry_id)),
         )
     return True
 

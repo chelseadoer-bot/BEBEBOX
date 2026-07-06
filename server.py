@@ -342,6 +342,9 @@ class H(SimpleHTTPRequestHandler):
         if path == "/api/coupons":
             family = norm_family(self._query("family"))
             return json_response(self, 200, {"status": db.family_coupon_status(family)})
+        if path == "/api/inquiries":
+            family = norm_family(self._query("family"))
+            return json_response(self, 200, {"inquiries": db.list_inquiries(family)})
         if path == "/admin":
             return self._serve_html("admin.html")
         if path.startswith("/api/admin/"):
@@ -357,6 +360,8 @@ class H(SimpleHTTPRequestHandler):
                 return json_response(self, 200, {"coupons": db.coupon_queue()})
             if path == "/api/admin/referrals":
                 return json_response(self, 200, {"referrals": db.list_referrals()})
+            if path == "/api/admin/inquiries":
+                return json_response(self, 200, {"inquiries": db.list_all_inquiries()})
             return json_response(self, 404, {"error": "not_found"})
         if path == "/api/auth/me":
             session, _ = current_session(self)
@@ -429,6 +434,30 @@ class H(SimpleHTTPRequestHandler):
             res = db.redeem_referral(norm_family(body.get("family")),
                                      (body.get("code") or ""))
             return json_response(self, 200, res)
+        if path == "/api/inquiry":
+            # 고객 1:1 문의 등록(비공개)
+            try:
+                body = read_json_body(self)
+            except json.JSONDecodeError:
+                return json_response(self, 400, {"error": "invalid_json"})
+            msg = (body.get("message") or "").strip()
+            if not msg:
+                return json_response(self, 400, {"error": "empty_message"})
+            row = db.create_inquiry(
+                norm_family(body.get("family")),
+                (body.get("category") or "").strip(),
+                msg,
+            )
+            return json_response(self, 200, {"ok": True, "inquiry": row})
+        if path == "/api/admin/inquiry/reply":
+            if (self._query("key") or "") != ADMIN_KEY:
+                return json_response(self, 401, {"error": "unauthorized"})
+            try:
+                body = read_json_body(self)
+            except json.JSONDecodeError:
+                return json_response(self, 400, {"error": "invalid_json"})
+            db.reply_inquiry(body.get("id"), (body.get("reply") or "").strip())
+            return json_response(self, 200, {"ok": True})
         if path == "/api/family/delete":
             fam = norm_family(self._query("family"))
             stored = db.delete_family(fam)
