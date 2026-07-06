@@ -82,6 +82,28 @@ function ageLabelForMonth(m){
   if(m<24)return m+"개월";
   return Math.floor(m/12)+"세";
 }
+// 생일로부터 '생후 일수'(태어난 날=1일). 무효/미래면 null.
+function daysSinceBirth(str){
+  const m=/(\d{4})[.\-\/](\d{1,2})[.\-\/](\d{1,2})/.exec(String(str||""));
+  if(!m)return null;
+  const bdt=new Date(+m[1],+m[2]-1,+m[3]); if(isNaN(bdt.getTime()))return null;
+  bdt.setHours(0,0,0,0);
+  const t=new Date(); t.setHours(0,0,0,0);
+  if(bdt>t)return null;
+  return Math.floor((t-bdt)/86400000)+1;   // 태어난 날을 1일로 카운트
+}
+// 마이페이지 나이 뱃지: 36개월 미만 → N개월, 36개월 이상 → 만N세
+function ageBadgeLabel(months){
+  months=Math.max(0,months|0);
+  return months<36 ? months+"개월" : "만"+Math.floor(months/12)+"세";
+}
+// "태어난지 N일 (N개월/만N세)". 생일 없으면 기존 status 로 폴백.
+function birthDayLabel(){
+  const bstr=(state.profile&&(state.profile.birthdayISO||state.profile.birthday))||"";
+  const d=daysSinceBirth(bstr), mo=ageMonthsFromBirthday(bstr);
+  if(d==null||mo==null)return (state.profile&&state.profile.status)||`${(state.profile&&state.profile.currentAge)||0}개월`;
+  return `태어난지 ${d.toLocaleString("ko-KR")}일 (${ageBadgeLabel(mo)})`;
+}
 const AGE_TAB_CHIP_LIMIT=8; // (전체 포함) 칩이 이보다 많으면 드롭다운으로 표시
 function stepIndexForMonth(m){
   m=(m==null?0:m);
@@ -721,7 +743,7 @@ function reconcileLikePoints(){
 }
 function renderProfile(){
   $("#profile-name").textContent=state.profile.name;
-  $("#profile-status").textContent=state.profile.status||`${state.profile.currentAge}개월`;
+  $("#profile-status").textContent=birthDayLabel();
   $("#avatar-img").src=state.profile.avatar;
   $("#closet-avatar").src=state.profile.avatar;
   const bgEl=$(".bg-image");
@@ -2205,6 +2227,9 @@ function openAiApp(slug,label){
   let url=AI_APPS[slug];
   if(typeof track==="function")track("ai_app",{app:slug});
   if(!url){showToast(`${label||"앱"} 준비 중이에요`);return;}
+  // 가입 직후 추천 팝업 등 모달이 열린 채로 미니앱을 열면 그 위에 남아 흰 화면처럼
+  // 보일 수 있으므로, 미니앱을 열기 전 열려있는 모든 팝업을 먼저 닫는다.
+  try{ $$(".modal:not(.hidden)").forEach(m=>m.classList.add("hidden")); }catch(_){}
   _activeMiniApp={slug,label:label||slug};
   // 가족코드를 uid 로 넘겨 AI 앱 기록이 고객(USERID)별로 적치되게 한다.
   try{
@@ -2348,28 +2373,52 @@ function handleMiniAppEvent(data){
     return;
   }
 }
-// 게임 결과 이미지를 업로드해 일기 게시물로 저장한다.
+// 데이터URL 을 축소·JPEG 재인코딩(업로드/공유 속도 최적화).
+function _downscaleDataUrl(dataUrl,max,q){
+  return new Promise((res,rej)=>{
+    const im=new Image();
+    im.onload=()=>{ try{
+      const s=Math.min(1,(max||1080)/Math.max(im.width,im.height));
+      const c=document.createElement("canvas");
+      c.width=Math.max(1,Math.round(im.width*s)); c.height=Math.max(1,Math.round(im.height*s));
+      c.getContext("2d").drawImage(im,0,0,c.width,c.height);
+      res(c.toDataURL("image/jpeg",q||0.85));
+    }catch(e){res(dataUrl);} };
+    im.onerror=()=>res(dataUrl); im.src=dataUrl;
+  });
+}
+// 게임 결과 이미지를 업로드해 일기 게시물로 저장 + 카카오 공유.
+// UX 핵심: '공유하기'를 최대한 빨리 띄우고(업로드 직후 즉시), 일기 기록/동기화는
+// 백그라운드로 돌려 '왔다갔다 하다 갑툭튀' 하는 현상을 줄인다.
 async function saveMiniAppResultToDiary(data,app){
+  const img=data&&data.image;
+  const label=(app&&app.label)||"AI 게임";
+  if(!img||typeof uploadPhotoToServer!=="function")return;
+  // 즉시 피드백 — 공유가 곧 뜬다는 안내(리드타임 중 이탈로 인한 혼선 방지)
+  if(typeof showToast==="function")showToast("📤 카카오톡 공유를 준비하고 있어요…");
   try{
-    const img=data&&data.image;
-    if(!img||typeof uploadPhotoToServer!=="function")return;
-    const label=(app&&app.label)||"AI 게임";
-    const caption=(data&&data.caption)||`${label} 결과 🎮`;
-    const blob=await(await fetch(img)).blob();
-    const file=new File([blob],"game-result.png",{type:blob.type||"image/png"});
+    // 업로드/공유 속도를 위해 이미지를 축소·JPEG 재인코딩
+    let uploadUrl=img;
+    try{ uploadUrl=await _downscaleDataUrl(img,1080,0.85); }catch(_){}
+    const blob=await(await fetch(uploadUrl)).blob();
+    const file=new File([blob],"game-result.jpg",{type:blob.type||"image/jpeg"});
     const up=await uploadPhotoToServer(file);
     if(!up||!up.src)return;
-    const post=ensurePostMeta({id:"post"+Date.now(),text:caption,photos:[up.src],
-      ageMonth:state.profile.currentAge||9,createdAt:Date.now(),gauge:0,comments:[],
-      visibility:"all",fromGame:(app&&app.slug)||"game"});
-    state.posts.unshift(post);
-    save();
-    if(typeof pushFamilyDataToServerNow==="function")pushFamilyDataToServerNow().catch(()=>{});
-    if(typeof track==="function")track("record",{photos:1,fromGame:(app&&app.slug)||"game"});
-    if(typeof showToast==="function")showToast("게임 결과를 일기에 저장했어요 📔");
-    _syncProfileChange();
-    // 업로드된 게임 이미지(공개 URL)로 카카오톡 공유 띄우기 (게임별 화면 그대로)
+    // ① 업로드되자마자 카카오 공유부터 즉시 (기록 저장보다 우선)
     shareGameResultToKakao(up.src,data,label);
+    // ② 일기 기록·동기화는 백그라운드 (공유를 막지 않도록 이후에)
+    try{
+      const caption=(data&&data.caption)||`${label} 결과 🎮`;
+      const post=ensurePostMeta({id:"post"+Date.now(),text:caption,photos:[up.src],
+        ageMonth:state.profile.currentAge||9,createdAt:Date.now(),gauge:0,comments:[],
+        visibility:"all",fromGame:(app&&app.slug)||"game"});
+      state.posts.unshift(post);
+      save();
+      if(typeof pushFamilyDataToServerNow==="function")pushFamilyDataToServerNow().catch(()=>{});
+      if(typeof track==="function")track("record",{photos:1,fromGame:(app&&app.slug)||"game"});
+      if(typeof showToast==="function")showToast("게임 결과를 일기에 저장했어요 📔");
+      _syncProfileChange();
+    }catch(_){}
   }catch(_){}
 }
 // 게임별 결과 이미지를 카카오톡 카드(피드)로 공유. 이미지는 각자 사진/결과 그대로,
