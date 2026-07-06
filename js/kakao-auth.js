@@ -36,9 +36,38 @@ async function initKakaoAuth() {
   if (user?.kakaoId) {
     localStorage.setItem(KAKAO_SESSION_KEY, JSON.stringify(user));
     applyKakaoUserToProfile(user);
+    await linkKakaoFamily(user);   // 가족코드를 카카오 계정에 묶어 브라우저 간 동일 계정 유지
     return user;
   }
   return null;
+}
+
+// 카카오 계정에 '정식' 가족코드를 묶는다. 서버가 이미 매핑된 코드가 있으면 그걸 반환하고,
+// 로컬 코드가 다르면 그 정식 코드로 교체 → 이후 syncFamilyDataFromServer 가 해당 계정 로드.
+// (share 링크 ?family= / 지인(guest) 상태에선 내 계정에 묶으면 안 되므로 건너뛴다.)
+async function linkKakaoFamily(user) {
+  if (!user || !user.kakaoId) return;
+  try {
+    const params = new URLSearchParams(location.search);
+    if (params.has("family") || params.has("guest")) return;
+    if (typeof isGuest === "function" && isGuest()) return;
+  } catch (e) { /* noop */ }
+  try {
+    const localCode = (typeof getInviteCode === "function" && getInviteCode()) || "";
+    const r = await fetch("/api/auth/link", {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ familyCode: localCode }),
+    });
+    if (!r.ok) return;
+    const j = await r.json().catch(() => ({}));
+    const canonical = String((j && j.familyCode) || "").trim().toUpperCase();
+    if (canonical && canonical !== String(localCode || "").toUpperCase()) {
+      localStorage.setItem("photoShare_invite_code", canonical);
+      if (typeof state !== "undefined" && state && state.profile) state.profile.inviteCode = canonical;
+    }
+  } catch (e) { /* 실패 시 기존 로컬 코드 유지(안전 폴백) */ }
 }
 
 function getStoredKakaoUser() {

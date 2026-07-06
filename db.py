@@ -7,6 +7,7 @@
 """
 import json
 import os
+import random
 import sqlite3
 import time
 import uuid
@@ -87,6 +88,15 @@ CREATE TABLE IF NOT EXISTS inquiries (
     replied_at INTEGER
 );
 CREATE INDEX IF NOT EXISTS idx_inquiries_family ON inquiries (family_id, created_at DESC);
+
+-- 카카오 계정 ↔ 가족코드 매핑: 브라우저(카톡 인앱/사파리)가 달라도 같은 카카오 계정이면
+-- 같은 가족코드를 쓰게 해 중복 아이디(기록 분리)를 막는다.
+CREATE TABLE IF NOT EXISTS kakao_family (
+    kakao_id   TEXT PRIMARY KEY,
+    family_id  TEXT NOT NULL,
+    created_at INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_kakao_family_fam ON kakao_family (family_id);
 """
 
 
@@ -599,6 +609,61 @@ def reply_inquiry(inquiry_id, reply_text):
             ((reply_text or "")[:4000], now_ms(), int(inquiry_id)),
         )
     return True
+
+
+# ---------------------------------------------------------------- 카카오↔가족코드 매핑
+_FAMILY_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
+
+
+def _gen_family_code(conn):
+    for _ in range(30):
+        code = "".join(random.choice(_FAMILY_CHARS) for _ in range(6))
+        if not conn.execute("SELECT 1 FROM kakao_family WHERE family_id=?", (code,)).fetchone():
+            return code
+    return "".join(random.choice(_FAMILY_CHARS) for _ in range(6))
+
+
+def get_kakao_family(kakao_id):
+    kid = str(kakao_id or "").strip()
+    if not kid:
+        return None
+    with _conn() as conn:
+        row = conn.execute(
+            "SELECT family_id FROM kakao_family WHERE kakao_id=?", (kid,)
+        ).fetchone()
+    return row["family_id"] if row else None
+
+
+def link_kakao_family(kakao_id, family_code):
+    """카카오 계정의 '정식' 가족코드를 반환한다.
+    - 이미 매핑돼 있으면 그 코드(기존 우선 → 기존 기록 보존)
+    - 없으면 클라이언트가 보낸 현재 코드를 그 계정 것으로 등록(비었으면 새로 생성)
+    """
+    kid = str(kakao_id or "").strip()
+    if not kid:
+        return None
+    with _conn() as conn:
+        row = conn.execute(
+            "SELECT family_id FROM kakao_family WHERE kakao_id=?", (kid,)
+        ).fetchone()
+        if row:
+            return row["family_id"]
+        code = (family_code or "").strip().upper()
+        if not code or code == "BEBEBOX":
+            code = _gen_family_code(conn)
+        try:
+            conn.execute(
+                "INSERT INTO kakao_family(kakao_id, family_id, created_at) VALUES(?,?,?)",
+                (kid, code, now_ms()),
+            )
+        except sqlite3.IntegrityError:
+            # 동시 요청 경합: 다시 조회해 반환
+            row = conn.execute(
+                "SELECT family_id FROM kakao_family WHERE kakao_id=?", (kid,)
+            ).fetchone()
+            if row:
+                return row["family_id"]
+        return code
 
 
 # ------------------------------------------------ 추천인코드(리퍼럴) 캔디 지급
