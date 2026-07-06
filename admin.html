@@ -156,6 +156,12 @@ th{color:var(--sub);font-weight:700;font-size:12px;background:#faf7f3;white-spac
 </div>
 </div>
 
+<!-- 고객 1:1 문의 -->
+<div class="card">
+<div class="card-h"><span>💬 고객 1:1 문의</span><span class="muted">답변을 저장하면 회원 앱의 '1:1 문의'에서 확인돼요</span></div>
+<div id="inq-list" style="padding:16px;display:flex;flex-direction:column;gap:12px;max-height:60vh;overflow:auto">불러오는 중…</div>
+</div>
+
 <div class="topbar">
 <input class="search" id="search" placeholder="가족코드 · 아기 이름 · 키디 아이디로 검색"/>
 <button class="btn ghost" id="refresh">새로고침</button>
@@ -214,10 +220,42 @@ async function loadAll(){
     await loadCoupons();
     await loadBanner();
     await loadReferrals();
+    await loadInquiries();
     await loadMembers("");
     showApp();
   }catch(e){ alert("키가 올바르지 않습니다."); }
 }
+
+/* 고객 1:1 문의 */
+async function loadInquiries(){
+  var box = document.getElementById("inq-list");
+  try{
+    var j = await api("/api/admin/inquiries");
+    var list = j.inquiries||[];
+    if(!list.length){ box.innerHTML='<div class="empty">아직 문의가 없어요</div>'; return; }
+    box.innerHTML = list.map(function(q){
+      var answered = q.status==="answered";
+      return '<div style="border:1px solid var(--border,#e5e5e5);border-radius:10px;padding:12px">'
+        +'<div style="display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:6px">'
+        +'<span><b>'+esc(q.category||"문의")+'</b> <span class="muted" style="font-size:11px">· '+esc(q.family_id)+' · '+ymd(q.created_at)+'</span></span>'
+        +'<span class="tag '+(answered?"":"nokid")+'" style="font-size:11px">'+(answered?"답변완료":"미답변")+'</span></div>'
+        +'<div style="font-size:13px;white-space:pre-wrap;word-break:break-word;margin-bottom:8px">'+esc(q.message)+'</div>'
+        +'<textarea class="search" data-inq-reply="'+q.id+'" rows="2" placeholder="답변을 입력하세요" style="width:100%;box-sizing:border-box;resize:vertical">'+esc(q.reply||"")+'</textarea>'
+        +'<button class="btn sm ok" data-inq-send="'+q.id+'" style="margin-top:6px">'+(answered?"답변 수정":"답변 저장")+'</button>'
+        +'</div>';
+    }).join("");
+  }catch(e){ box.innerHTML='<div class="empty">불러오지 못했어요</div>'; }
+}
+document.addEventListener("click", function(e){
+  var b = e.target.closest && e.target.closest("[data-inq-send]");
+  if(!b) return;
+  var id = b.getAttribute("data-inq-send");
+  var ta = document.querySelector('[data-inq-reply="'+id+'"]');
+  var reply = (ta && ta.value || "").trim();
+  if(!reply){ alert("답변 내용을 입력하세요"); return; }
+  b.disabled = true; b.textContent = "저장 중…";
+  apiPost("/api/admin/inquiry/reply", {id:Number(id), reply:reply}).then(function(){ loadInquiries(); });
+});
 
 /* ① 쿠폰 지급 대기열 */
 async function loadCoupons(){

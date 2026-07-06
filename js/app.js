@@ -2907,6 +2907,16 @@ function bindEvents(){
   $("#concept-photo-tip")?.addEventListener("click",()=>$("#phototip-modal")?.classList.remove("hidden"));
   $("#phototip-close")?.addEventListener("click",()=>$("#phototip-modal")?.classList.add("hidden"));
   $("#phototip-backdrop")?.addEventListener("click",()=>$("#phototip-modal")?.classList.add("hidden"));
+  // 키디키디 아이디 찾는 법 안내(온보딩·설정 공용)
+  $("#ob-kd-guide")?.addEventListener("click",openKidikidiIdGuide);
+  $("#settings-kd-guide")?.addEventListener("click",openKidikidiIdGuide);
+  $("#kdguide-close")?.addEventListener("click",()=>$("#kdguide-modal")?.classList.add("hidden"));
+  $("#kdguide-backdrop")?.addEventListener("click",()=>$("#kdguide-modal")?.classList.add("hidden"));
+  // 고객 1:1 문의
+  $("#btn-open-inquiry")?.addEventListener("click",openInquiryModal);
+  $("#inquiry-close")?.addEventListener("click",()=>$("#inquiry-modal")?.classList.add("hidden"));
+  $("#inquiry-backdrop")?.addEventListener("click",()=>$("#inquiry-modal")?.classList.add("hidden"));
+  $("#inquiry-submit")?.addEventListener("click",submitInquiry);
   $("#concept-photo-file")?.addEventListener("change",e=>{onConceptPhotoPick(e.target.files&&e.target.files[0]);});
   $("#btn-concept-make")?.addEventListener("click",()=>{if(!$("#btn-concept-make").disabled)runConceptInline();});
   $("#concept-save-diary")?.addEventListener("click",()=>{
@@ -3080,6 +3090,60 @@ function openTerms(kind){
   $("#terms-modal")?.classList.remove("hidden");
 }
 window.openTerms=openTerms;
+// 키디키디 아이디 찾는 법 안내 모달(온보딩·설정 공용)
+function openKidikidiIdGuide(){ $("#kdguide-modal")?.classList.remove("hidden"); }
+window.openKidikidiIdGuide=openKidikidiIdGuide;
+
+/* ─── 고객 1:1 문의(비공개) ─────────────────────────────────────── */
+function _inqFamily(){
+  try{ return ((typeof ensureInviteCode==="function"&&ensureInviteCode(true))||(typeof getInviteCode==="function"&&getInviteCode())||"").toString().toUpperCase(); }
+  catch(_){ return ""; }
+}
+function _fmtInqDate(ms){ try{ const d=new Date(ms); return d.getFullYear()+"."+String(d.getMonth()+1).padStart(2,"0")+"."+String(d.getDate()).padStart(2,"0"); }catch(_){ return ""; } }
+function renderInquiryList(items){
+  const wrap=$("#inquiry-list"); if(!wrap)return;
+  if(!items||!items.length){ wrap.innerHTML='<p class="inquiry-empty">아직 남긴 문의가 없어요</p>'; return; }
+  wrap.innerHTML=items.map(it=>{
+    const answered=it.status==="answered";
+    const rep=(answered&&it.reply)?`<div class="inq-reply"><b>💬 답변</b>${esc(it.reply)}</div>`:"";
+    return `<div class="inq-item"><div class="inq-head"><span class="inq-cat">${esc(it.category||"문의")}</span>`
+      +`<span class="inq-status ${answered?"answered":"open"}">${answered?"답변완료":"접수됨"}</span></div>`
+      +`<div class="inq-msg">${esc(it.message||"")}</div>`
+      +`<div class="inq-date">${_fmtInqDate(it.created_at)}</div>${rep}</div>`;
+  }).join("");
+}
+async function loadMyInquiries(){
+  const wrap=$("#inquiry-list"); if(wrap)wrap.innerHTML='<p class="inquiry-empty">불러오는 중…</p>';
+  try{
+    const r=await fetch("/api/inquiries?family="+encodeURIComponent(_inqFamily()),{cache:"no-store"});
+    const j=await r.json().catch(()=>({}));
+    renderInquiryList((j&&j.inquiries)||[]);
+  }catch(_){ if(wrap)wrap.innerHTML='<p class="inquiry-empty">불러오지 못했어요. 잠시 후 다시 시도해주세요</p>'; }
+}
+function openInquiryModal(){
+  $("#inquiry-modal")?.classList.remove("hidden");
+  const t=$("#inquiry-message"); if(t)t.value="";
+  loadMyInquiries();
+}
+window.openInquiryModal=openInquiryModal;
+async function submitInquiry(){
+  const btn=$("#inquiry-submit");
+  const cat=($("#inquiry-category")&&$("#inquiry-category").value)||"기타";
+  const msg=(($("#inquiry-message")&&$("#inquiry-message").value)||"").trim();
+  if(!msg){ showToast("문의 내용을 입력해주세요"); return; }
+  if(btn){ btn.disabled=true; btn.textContent="접수 중…"; }
+  try{
+    const r=await fetch("/api/inquiry",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({family:_inqFamily(),category:cat,message:msg})});
+    const j=await r.json().catch(()=>({}));
+    if(!r.ok||!j.ok)throw new Error("fail");
+    const t=$("#inquiry-message"); if(t)t.value="";
+    if(typeof track==="function")track("inquiry",{category:cat});
+    showToast("문의가 접수됐어요. 답변을 기다려주세요 🙌");
+    loadMyInquiries();
+  }catch(_){ showToast("문의 접수에 실패했어요. 잠시 후 다시 시도해주세요"); }
+  finally{ if(btn){ btn.disabled=false; btn.textContent="문의 남기기"; } }
+}
 function _obLoadImg(src){
   return new Promise(res=>{
     const im=new Image();
