@@ -2907,6 +2907,11 @@ function bindEvents(){
   $("#concept-photo-tip")?.addEventListener("click",()=>$("#phototip-modal")?.classList.remove("hidden"));
   $("#phototip-close")?.addEventListener("click",()=>$("#phototip-modal")?.classList.add("hidden"));
   $("#phototip-backdrop")?.addEventListener("click",()=>$("#phototip-modal")?.classList.add("hidden"));
+  // 키디키디 아이디 찾는 법 안내(온보딩·설정 공용)
+  $("#ob-kd-guide")?.addEventListener("click",openKidikidiIdGuide);
+  $("#settings-kd-guide")?.addEventListener("click",openKidikidiIdGuide);
+  $("#kdguide-close")?.addEventListener("click",()=>$("#kdguide-modal")?.classList.add("hidden"));
+  $("#kdguide-backdrop")?.addEventListener("click",()=>$("#kdguide-modal")?.classList.add("hidden"));
   $("#concept-photo-file")?.addEventListener("change",e=>{onConceptPhotoPick(e.target.files&&e.target.files[0]);});
   $("#btn-concept-make")?.addEventListener("click",()=>{if(!$("#btn-concept-make").disabled)runConceptInline();});
   $("#concept-save-diary")?.addEventListener("click",()=>{
@@ -3080,6 +3085,9 @@ function openTerms(kind){
   $("#terms-modal")?.classList.remove("hidden");
 }
 window.openTerms=openTerms;
+// 키디키디 아이디 찾는 법 안내 모달(온보딩·설정 공용)
+function openKidikidiIdGuide(){ $("#kdguide-modal")?.classList.remove("hidden"); }
+window.openKidikidiIdGuide=openKidikidiIdGuide;
 function _obLoadImg(src){
   return new Promise(res=>{
     const im=new Image();
