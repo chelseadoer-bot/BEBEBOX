@@ -1790,7 +1790,29 @@ function stageIndexForBaby(){
   if(mo<13)return 6;         // 7-12개월 → s7
   return 7;                  // 돌 이후 → s8
 }
+// (A) 태어난 아이는 임신 스테이지(s1~s4)의 산모용품(target:mom, 예: 엽산·비타민C)을
+// 자동공개에서 내리고, 현재 월령 스테이지의 '필수' 품목을 기본 공개한다.
+// 계정당 1회만 적용(state._wishPubNormalized 저장)하여 이후 사용자 편집을 존중.
+function normalizeWishPublishForAge(){
+  if(!state||state._wishPubNormalized)return;
+  const mo=ageMonthsFromBirthday(state.profile&&(state.profile.birthdayISO||state.profile.birthday));
+  if(mo==null)return;                 // 임신 중/생일 미입력 → 기존 유지
+  state._wishPubNormalized=true;
+  state.published=state.published||{};
+  let changed=false;
+  ["s1","s2","s3","s4"].forEach(sid=>{
+    (state.wishlist[sid]||[]).forEach(it=>{
+      if(it.target==="mom" && state.published[it.id]){ delete state.published[it.id]; changed=true; }
+    });
+  });
+  const curStageId=STAGES[stageIndexForBaby()].id;
+  (state.wishlist[curStageId]||[]).forEach(it=>{
+    if(it.priority==="필수" && !state.published[it.id]){ state.published[it.id]=true; changed=true; }
+  });
+  if(changed && typeof save==="function")save();
+}
 function openWishlist(){
+  normalizeWishPublishForAge();   // (A) 안전망: 아직 정규화 안 됐으면 여기서도 1회 적용
   const t=$(".wishlist-title");if(t)t.textContent=`${babyName()} 옷장`;
   const ca=$("#closet-avatar");if(ca){ca.src=state.profile.avatar;ca.alt=babyName();}
   // 첫 진입 시 아이 나이에 맞는 스테이지로 자동 이동(이미 태어난 아이인데 임신용품부터
@@ -3355,6 +3377,7 @@ async function bootApp(){
       });
     }
   }
+  normalizeWishPublishForAge();   // (A) 태어난 아이 임신 산모용품 자동공개 정리
   await syncPhotosFromServer();
   migratePuzzleMissionImage();
   migratePhotoQuestLinks();
