@@ -943,6 +943,19 @@ body.is-guest .guest-only{display:block!important}
 .inq-date{font-size:10.5px;color:#aab0be;margin-top:6px}
 .inq-reply{margin-top:9px;background:#eef4ff;border-radius:10px;padding:10px;font-size:12.5px;color:#334;line-height:1.55;white-space:pre-wrap;word-break:break-word}
 .inq-reply b{color:#2456d6;display:block;margin-bottom:3px;font-size:11.5px}
+/* 받은 선물 기록 모달 */
+.gift-received-content{max-width:380px}
+.gift-received-title{font-size:18px;font-weight:800;text-align:center;margin:0 0 4px}
+.gift-received-item{font-size:14px;font-weight:700;color:#4a90e2;text-align:center;background:#eff6ff;border-radius:10px;padding:8px;margin:0 0 14px}
+.gr-field{display:block;margin-bottom:12px}
+.gr-field>span{display:block;font-size:13px;font-weight:700;color:#444;margin-bottom:6px}
+.gr-field>span em{font-style:normal;font-weight:500;color:#aab0be;font-size:11.5px}
+.gr-field input,.gr-field textarea{width:100%;box-sizing:border-box;border:1px solid #e2e4ea;border-radius:12px;padding:12px;font-size:14px;font-family:var(--font);color:#222;background:#fff}
+.gr-field textarea{resize:vertical;line-height:1.5}
+.gr-field input:focus,.gr-field textarea:focus{outline:none;border-color:#4a90e2}
+.gift-received-actions{display:flex;gap:8px;margin-top:6px}
+.gr-cancel{flex:0 0 34%;padding:14px;border:none;border-radius:12px;background:#eef1f7;color:#4a5568;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font)}
+.gr-save{flex:1;padding:14px;border:none;border-radius:12px;background:#191919;color:#fff;font-size:14.5px;font-weight:800;cursor:pointer;font-family:var(--font)}
 /* 메인 상단 선물 달성률 배너 */
 .gift-progress{display:block;width:calc(100% - 24px);margin:12px 12px 4px;padding:13px 15px;border:none;border-radius:16px;background:linear-gradient(135deg,#fff4ef,#ffe7db);box-shadow:0 4px 14px rgba(255,107,61,.13);cursor:pointer;font-family:var(--font);text-align:left}
 .gift-progress:active{transform:scale(.99)}

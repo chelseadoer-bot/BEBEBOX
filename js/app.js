@@ -1562,19 +1562,7 @@ function doWishAction(id,act){
   if(act==="message"){
     closeWishActionSheet();return openGiftMessageSheet(id);
   }else if(act==="received"){
-    const who=(prompt("누가 선물해 줬나요? (예: 체리이모)")||"").trim();
-    if(who){
-      const msg=(prompt(`${who}님이 남긴 인사말이 있나요? (없으면 비워두세요)`)||"").trim();
-      const already=!!state.owned[id];
-      state.owned[id]=true;state.giftedBy[id]=who;state.published[id]=true;
-      if(!state.giftedMsg)state.giftedMsg={};
-      if(msg)state.giftedMsg[id]=msg;else delete state.giftedMsg[id];
-      if(!already&&typeof addPoints==="function"){
-        addPoints(POINT_RULES.giftReceived,"gift_received");
-        if(typeof track==="function")track("gift_received",{item_id:id,giver:who});
-        showToast(`${who}님 선물로 기록 · +${POINT_RULES.giftReceived}캔디 🎁`);
-      }else{showToast(`${who}님 선물로 기록했어요 🎁`);}
-    }
+    closeWishActionSheet();return openGiftReceivedModal(id);   // prompt() 대신 인앱 모달
   }else if(act==="pub"){
     if(state.published[id])delete state.published[id];else state.published[id]=true;
   }else if(act==="products"){
@@ -1585,6 +1573,43 @@ function doWishAction(id,act){
     delete state.published[id];delete state.owned[id];delete state.giftedBy[id];if(state.giftedMsg)delete state.giftedMsg[id];showToast("삭제했어요");
   }
   save();renderWishlistGrid();closeWishActionSheet();
+}
+// 위시 품목을 전 스테이지에서 id 로 찾는다.
+function _findWishItem(id){
+  for(const sid of Object.keys(state.wishlist||{})){
+    const it=(state.wishlist[sid]||[]).find(x=>x.id===id);
+    if(it)return it;
+  }
+  return null;
+}
+// 받은 선물 기록 모달(누가·인사말) — 네이티브 prompt() 대체
+let _giftReceivedId=null;
+function openGiftReceivedModal(id){
+  _giftReceivedId=id;
+  const item=_findWishItem(id);
+  const itEl=$("#gift-received-item");if(itEl)itEl.textContent=item?`${item.emoji||"🎁"} ${item.name}`:"";
+  const who=$("#gift-received-who");if(who)who.value=state.giftedBy[id]||"";
+  const msg=$("#gift-received-msg");if(msg)msg.value=(state.giftedMsg&&state.giftedMsg[id])||"";
+  $("#gift-received-modal")?.classList.remove("hidden");
+  setTimeout(()=>{try{who&&who.focus();}catch(_){}} ,200);
+}
+function saveGiftReceived(){
+  const id=_giftReceivedId;if(!id)return;
+  const who=(($("#gift-received-who")||{}).value||"").trim();
+  if(!who){showToast("선물 준 분 이름을 적어주세요");($("#gift-received-who")||{}).focus&&$("#gift-received-who").focus();return;}
+  const msg=(($("#gift-received-msg")||{}).value||"").trim();
+  const already=!!state.owned[id];
+  state.owned[id]=true;state.giftedBy[id]=who;state.published[id]=true;
+  if(!state.giftedMsg)state.giftedMsg={};
+  if(msg)state.giftedMsg[id]=msg;else delete state.giftedMsg[id];
+  if(!already&&typeof addPoints==="function"){
+    addPoints(POINT_RULES.giftReceived,"gift_received");
+    if(typeof track==="function")track("gift_received",{item_id:id,giver:who});
+    showToast(`${who}님 선물로 기록 · +${POINT_RULES.giftReceived}캔디 🎁`);
+  }else{showToast(`${who}님 선물로 기록했어요 🎁`);}
+  $("#gift-received-modal")?.classList.add("hidden");
+  save();renderWishlistGrid();
+  if(typeof _syncProfileChange==="function")_syncProfileChange();
 }
 function updatePickerOwnedUI(owned){
   $("#picker-owned-check").checked=owned;
@@ -3004,6 +3029,10 @@ function bindEvents(){
   $("#inquiry-close")?.addEventListener("click",()=>$("#inquiry-modal")?.classList.add("hidden"));
   $("#inquiry-backdrop")?.addEventListener("click",()=>$("#inquiry-modal")?.classList.add("hidden"));
   $("#inquiry-submit")?.addEventListener("click",submitInquiry);
+  // 받은 선물 기록 모달
+  $("#gift-received-save")?.addEventListener("click",saveGiftReceived);
+  $("#gift-received-cancel")?.addEventListener("click",()=>$("#gift-received-modal")?.classList.add("hidden"));
+  $("#gift-received-backdrop")?.addEventListener("click",()=>$("#gift-received-modal")?.classList.add("hidden"));
   $("#concept-photo-file")?.addEventListener("change",e=>{onConceptPhotoPick(e.target.files&&e.target.files[0]);});
   $("#btn-concept-make")?.addEventListener("click",()=>{if(!$("#btn-concept-make").disabled)runConceptInline();});
   $("#concept-save-diary")?.addEventListener("click",()=>{
