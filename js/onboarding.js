@@ -295,6 +295,17 @@ function finishOnboarding(asGuest){
     at:Date.now()
   }));
   document.querySelectorAll(".ob-view").forEach(v=>v.classList.remove("active"));
+  // 초대/배우자 코드로 '실제 가족'에 합류한 경우: 검증된 링크(?family=) 경로로 재진입해
+  // 그 가족의 실제 데이터(아기 프로필·피드·위시리스트)를 확실히 불러온다.
+  // (부팅 때 이미 sync 가 끝난 뒤라, 코드만 바꾸고 enterMainApp 하면 빈 화면이 됨)
+  const joinCode=onboarding.joinedFamilyCode;
+  if(joinCode&&(onboarding.userType==="invited"||onboarding.path==="spouse")){
+    const u=new URL(location.href);
+    u.searchParams.set("family",joinCode);
+    if(asGuest)u.searchParams.set("guest","1");
+    location.replace(u.toString());
+    return;
+  }
   if(asGuest){
     const u=new URL(location.href);
     u.searchParams.set("guest","1");
@@ -446,20 +457,37 @@ function bindOnboarding(){
     if(onboarding.userType==="invited")obShow("#onboarding-welcome-view");
     else obShow("#onboarding-path-view");
   });
-  $("#btn-ob-code-submit")?.addEventListener("click",()=>{
-    const code=$("#ob-invite-code")?.value.trim().toUpperCase();
+  $("#btn-ob-code-submit")?.addEventListener("click",async ()=>{
+    const btn=$("#btn-ob-code-submit");
+    const code=($("#ob-invite-code")?.value||"").trim().toUpperCase();
     if(code.length<4){
       if(typeof showToast==="function")showToast("초대 코드를 입력해 주세요");
       return;
     }
-    const valid=typeof window.isValidInviteCode==="function"
-      ?window.isValidInviteCode(code)
-      :(code===DEMO_INVITE_CODE||code==="123456");
-    if(!valid){
-      if(typeof showToast==="function")showToast("코드를 확인해 주세요");
+    onboarding.joinedFamilyCode=null;
+    // 데모 코드는 예전처럼 즉시 통과(데모 가족 체험)
+    if(code===DEMO_INVITE_CODE||code==="123456"){
+      onboarding.babyName="다엘이";
+      openRoleView({preferFamily:onboarding.userType==="invited"});
       return;
     }
-    onboarding.babyName="다엘이";
+    // 실제 코드: 서버에 그 가족이 존재하는지 확인하고, 있으면 그 코드로 '합류'한다.
+    // (자기 로컬 코드와만 비교하던 예전 방식은 새 브라우저의 배우자·지인이 실제 코드로
+    //  들어올 수 없었음 → 서버 검증 + 마무리에서 ?family= 경로로 재진입해 실제 데이터 로드)
+    const origLabel=btn?btn.textContent:"";
+    if(btn){btn.disabled=true;btn.textContent="확인 중…";}
+    let data=null;
+    try{
+      const r=await fetch("/api/family-data?family="+encodeURIComponent(code));
+      if(r.ok){const j=await r.json().catch(()=>null);data=j&&j.data;}
+    }catch(_){}
+    if(btn){btn.disabled=false;btn.textContent=origLabel;}
+    if(!data||!Object.keys(data).length){
+      if(typeof showToast==="function")showToast("코드를 확인해 주세요 · 받은 코드가 맞는지 확인해 주세요");
+      return;
+    }
+    onboarding.joinedFamilyCode=code;
+    onboarding.babyName=(data.profile&&data.profile.babyName)||"우리 아기";
     openRoleView({preferFamily:onboarding.userType==="invited"});
   });
   $("#btn-ob-finish")?.addEventListener("click",()=>{
