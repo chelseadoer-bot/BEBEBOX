@@ -134,8 +134,51 @@ function goPhotoStep(){
   if(t)t.textContent=`${obBabyName()} 정보를 알려주세요`;
   applyOnboardingPhotoPreview();
   document.querySelectorAll("#onboarding-photo-view .ob-gender-btn").forEach(b=>b.classList.toggle("on",(b.dataset.gender||"")===(onboarding.gender||"")));
-  const bd=document.getElementById("ob-birthday");if(bd)bd.value=onboarding.birthday||"";
+  fillBirthSelects();
+  setBirthSelectsFromValue(onboarding.birthday);
   obShow("#onboarding-photo-view");
+}
+/* 생일 년/월/일 드롭다운(네이티브 date 대신 명시 선택으로 오기입 방지) */
+function _daysInMonth(y,m){ return new Date(y, m, 0).getDate(); }  // m=1..12
+function fillBirthSelects(){
+  const ySel=document.getElementById("ob-birth-year");
+  const mSel=document.getElementById("ob-birth-month");
+  const dSel=document.getElementById("ob-birth-day");
+  if(!ySel||!mSel||!dSel||ySel.dataset.filled)return;
+  const cy=new Date().getFullYear();
+  for(let y=cy;y>=cy-10;y--){ const o=document.createElement("option"); o.value=y; o.textContent=y+"년"; ySel.appendChild(o); }
+  for(let m=1;m<=12;m++){ const o=document.createElement("option"); o.value=m; o.textContent=m+"월"; mSel.appendChild(o); }
+  refreshBirthDays();
+  ySel.dataset.filled="1";
+  ySel.addEventListener("change",()=>{refreshBirthDays();syncBirthdayFromSelects();});
+  mSel.addEventListener("change",()=>{refreshBirthDays();syncBirthdayFromSelects();});
+  dSel.addEventListener("change",syncBirthdayFromSelects);
+}
+function refreshBirthDays(){
+  const ySel=document.getElementById("ob-birth-year");
+  const mSel=document.getElementById("ob-birth-month");
+  const dSel=document.getElementById("ob-birth-day");
+  if(!dSel)return;
+  const y=+ySel.value||new Date().getFullYear(), m=+mSel.value||1;
+  const max=_daysInMonth(y,m), cur=+dSel.value||0;
+  dSel.innerHTML='<option value="">일</option>';
+  for(let d=1;d<=max;d++){ const o=document.createElement("option"); o.value=d; o.textContent=d+"일"; dSel.appendChild(o); }
+  if(cur&&cur<=max)dSel.value=cur;
+}
+function syncBirthdayFromSelects(){
+  const y=document.getElementById("ob-birth-year")?.value;
+  const m=document.getElementById("ob-birth-month")?.value;
+  const d=document.getElementById("ob-birth-day")?.value;
+  onboarding.birthday=(y&&m&&d)?(y+"-"+String(m).padStart(2,"0")+"-"+String(d).padStart(2,"0")):"";
+}
+function setBirthSelectsFromValue(iso){
+  const mm=/(\d{4})-(\d{1,2})-(\d{1,2})/.exec(iso||"");
+  const ySel=document.getElementById("ob-birth-year");
+  const mSel=document.getElementById("ob-birth-month");
+  const dSel=document.getElementById("ob-birth-day");
+  if(!ySel||!mSel||!dSel)return;
+  if(mm){ ySel.value=+mm[1]; mSel.value=+mm[2]; refreshBirthDays(); dSel.value=+mm[3]; }
+  else { ySel.value=""; mSel.value=""; refreshBirthDays(); dSel.value=""; }
 }
 function formatBirthday(v){
   const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(v||"");
@@ -376,7 +419,7 @@ function bindOnboarding(){
     onboarding.gender=b.dataset.gender||"";
     document.querySelectorAll("#onboarding-photo-view .ob-gender-btn").forEach(x=>x.classList.toggle("on",x===b));
   }));
-  $("#ob-birthday")?.addEventListener("change",e=>{onboarding.birthday=e.target.value||"";});
+  // 생일 드롭다운은 fillBirthSelects() 안에서 change 리스너를 바인딩한다.
   $("#btn-ob-photo-next")?.addEventListener("click",()=>goFavsStep());
   $("#btn-ob-photo-skip")?.addEventListener("click",()=>goFavsStep());
   // 좋아하는 것 단계

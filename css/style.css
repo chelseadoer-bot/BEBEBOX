@@ -899,6 +899,14 @@ body.is-guest .guest-only{display:block!important}
 .phototip-list li{display:flex;align-items:center;gap:9px;font-size:13.5px;color:#3a3a3a;line-height:1.4}
 .phototip-list .pt-emoji{flex:0 0 auto;width:22px;text-align:center;font-size:15px}
 .phototip-close{width:100%;margin-top:18px;padding:14px;border:none;border-radius:12px;background:#191919;color:#fff;font-size:14.5px;font-weight:800;cursor:pointer;font-family:var(--font)}
+/* 생일 년/월/일 선택 (온보딩·설정 공용) */
+.birth-selects{display:flex;gap:8px}
+.birth-sel{flex:1;min-width:0;text-align:center;background:#fff;border:1px solid #d7dbe4;border-radius:10px;padding:11px 6px;font-size:14px;font-family:var(--font);color:#222}
+.birth-sel:focus{outline:none;border-color:#4a90e2}
+.settings-field--birth{display:block}
+.settings-field--birth>span{display:block;font-size:13px;color:#666;margin-bottom:7px}
+.settings-birth-readout{font-size:12px;color:#8a8a8a;margin:7px 2px 0}
+.settings-birth-readout b{color:#4a90e2;font-weight:700}
 /* 키디키디 아이디 찾는 법 안내 */
 .kd-guide-link{display:inline-block;background:none;border:none;color:#4a90e2;font-size:12.5px;font-weight:700;text-decoration:underline;cursor:pointer;font-family:var(--font);padding:4px 0;margin-top:6px}
 .kdguide-content{max-width:420px}
