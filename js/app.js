@@ -104,6 +104,47 @@ function birthDayLabel(){
   if(d==null||mo==null)return (state.profile&&state.profile.status)||`${(state.profile&&state.profile.currentAge)||0}개월`;
   return `태어난지 ${d.toLocaleString("ko-KR")}일 (${ageBadgeLabel(mo)})`;
 }
+/* 설정 화면 생일 편집(년/월/일 드롭다운) — 월령 숫자입력 대신 생일을 고쳐 오기입 정정 */
+function _setBirthEls(){ return {y:$("#settings-birth-year"),m:$("#settings-birth-month"),d:$("#settings-birth-day")}; }
+function fillSettingsBirth(){
+  const {y,m,d}=_setBirthEls(); if(!y||!m||!d||y.dataset.filled)return;
+  const cy=new Date().getFullYear();
+  for(let yy=cy;yy>=cy-10;yy--){const o=document.createElement("option");o.value=yy;o.textContent=yy+"년";y.appendChild(o);}
+  for(let mm=1;mm<=12;mm++){const o=document.createElement("option");o.value=mm;o.textContent=mm+"월";m.appendChild(o);}
+  refreshSettingsBirthDays();
+  y.dataset.filled="1";
+  const onCh=()=>{refreshSettingsBirthDays();updateSettingsBirthReadout();};
+  y.addEventListener("change",onCh); m.addEventListener("change",onCh); d.addEventListener("change",updateSettingsBirthReadout);
+}
+function refreshSettingsBirthDays(){
+  const {y,m,d}=_setBirthEls(); if(!d)return;
+  const yy=+y.value||new Date().getFullYear(), mm=+m.value||1, max=new Date(yy,mm,0).getDate(), cur=+d.value||0;
+  d.innerHTML='<option value="">일</option>';
+  for(let dd=1;dd<=max;dd++){const o=document.createElement("option");o.value=dd;o.textContent=dd+"일";d.appendChild(o);}
+  if(cur&&cur<=max)d.value=cur;
+}
+function settingsBirthISO(){
+  const {y,m,d}=_setBirthEls();
+  const yy=y&&y.value, mm=m&&m.value, dd=d&&d.value;
+  return (yy&&mm&&dd)?(yy+"-"+String(mm).padStart(2,"0")+"-"+String(dd).padStart(2,"0")):"";
+}
+function setSettingsBirthFromProfile(){
+  fillSettingsBirth();
+  const {y,m,d}=_setBirthEls(); if(!y)return;
+  const iso=(state.profile&&(state.profile.birthdayISO||state.profile.birthday))||"";
+  const mm=/(\d{4})[.\-\/](\d{1,2})[.\-\/](\d{1,2})/.exec(iso);
+  if(mm){ y.value=+mm[1]; m.value=+mm[2]; refreshSettingsBirthDays(); d.value=+mm[3]; }
+  else { y.value=""; m.value=""; refreshSettingsBirthDays(); d.value=""; }
+  updateSettingsBirthReadout();
+}
+function updateSettingsBirthReadout(){
+  const el=$("#settings-birth-readout"); if(!el)return;
+  const iso=settingsBirthISO();
+  if(!iso){ el.innerHTML="생일을 선택하면 <b>태어난지 며칠</b>인지 표시돼요"; return; }
+  const dd=daysSinceBirth(iso), mo=ageMonthsFromBirthday(iso);
+  if(dd==null||mo==null){ el.textContent="미래 날짜예요 · 다시 확인해 주세요"; return; }
+  el.innerHTML=`태어난지 <b>${dd.toLocaleString("ko-KR")}일</b> (${ageBadgeLabel(mo)})`;
+}
 const AGE_TAB_CHIP_LIMIT=8; // (전체 포함) 칩이 이보다 많으면 드롭다운으로 표시
 function stepIndexForMonth(m){
   m=(m==null?0:m);
@@ -623,7 +664,7 @@ function appDeleteAccount(){
 }
 function renderSettingsTab(){
   $("#settings-baby-name").value=state.profile.babyName||"";
-  $("#settings-baby-age").value=state.profile.currentAge??9;
+  setSettingsBirthFromProfile();
   $("#settings-kidikidi-id").value=state.profile.kidikidiId||"";
   const ap=$("#settings-avatar-preview");if(ap)ap.src=state.profile.avatar;
   const bp=$("#settings-bg-preview");
@@ -2788,13 +2829,17 @@ function bindEvents(){
   });
   $("#btn-settings-save")?.addEventListener("click",()=>{
     const name=$("#settings-baby-name").value.trim();
-    const age=parseInt($("#settings-baby-age").value,10);
+    const iso=settingsBirthISO();
     const kidikidiId=$("#settings-kidikidi-id")?.value.trim().replace(/\s+/g,"")||"";
     if(name)state.profile.babyName=name;
-    if(!Number.isNaN(age)){
-      state.profile.currentAge=age;
-      // 가입 시점보다 어린 월령으로 정정하면 시작 칩도 함께 내려준다.
-      if(state.profile.startAge==null||age<state.profile.startAge)state.profile.startAge=age;
+    if(iso){
+      const mo=ageMonthsFromBirthday(iso);
+      if(mo==null){showToast("생일이 미래 날짜예요. 다시 확인해 주세요");return;}
+      state.profile.birthdayISO=iso;
+      state.profile.birthday=iso.replace(/-/g,".");
+      state.profile.currentAge=mo;
+      state.profile.status=ageLabelForMonth(mo);
+      state.profile.startAge=0;   // 신생아부터 현재 월령까지 연령칩 구성
     }
     state.profile.kidikidiId=kidikidiId;
     state.profile.name=(state.profile.babyName||"다엘이")+"의 일기";
