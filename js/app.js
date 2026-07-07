@@ -1047,10 +1047,7 @@ function doPostAction(id,act){
     p.visibility=p.visibility==="me"?"all":"me";
     showToast(p.visibility==="me"?"나만 보기로 바꿨어요 🔒":"전체 공개로 바꿨어요 🌏");
   }else if(act==="edit"){
-    const t=prompt("글 내용 수정",p.text||"");
-    if(t===null)return;
-    p.text=t.trim();
-    showToast("글을 수정했어요");
+    closePostMenu();return openPostEditModal(id);   // prompt() 대신 인앱 모달
   }else if(act==="del"){
     if(!confirm("이 글을 삭제할까요?"))return;
     state.posts=state.posts.filter(x=>x.id!==id);
@@ -1610,6 +1607,24 @@ function saveGiftReceived(){
   $("#gift-received-modal")?.classList.add("hidden");
   save();renderWishlistGrid();
   if(typeof _syncProfileChange==="function")_syncProfileChange();
+}
+// 글(일기) 수정 모달 — 네이티브 prompt() 대체
+let _postEditId=null;
+function openPostEditModal(id){
+  _postEditId=id;
+  const p=getPost(id);if(!p)return;
+  const ta=$("#post-edit-text");if(ta)ta.value=p.text||"";
+  $("#post-edit-modal")?.classList.remove("hidden");
+  setTimeout(()=>{try{ta&&ta.focus();}catch(_){}} ,200);
+}
+function savePostEdit(){
+  const id=_postEditId;if(!id)return;
+  const p=getPost(id);if(!p){$("#post-edit-modal")?.classList.add("hidden");return;}
+  p.text=(($("#post-edit-text")||{}).value||"").trim();
+  $("#post-edit-modal")?.classList.add("hidden");
+  showToast("글을 수정했어요");
+  save();if(typeof renderFeed==="function")renderFeed();
+  if(typeof pushFamilyDataToServerNow==="function")pushFamilyDataToServerNow().catch(()=>{});
 }
 function updatePickerOwnedUI(owned){
   $("#picker-owned-check").checked=owned;
@@ -3033,6 +3048,10 @@ function bindEvents(){
   $("#gift-received-save")?.addEventListener("click",saveGiftReceived);
   $("#gift-received-cancel")?.addEventListener("click",()=>$("#gift-received-modal")?.classList.add("hidden"));
   $("#gift-received-backdrop")?.addEventListener("click",()=>$("#gift-received-modal")?.classList.add("hidden"));
+  // 글 수정 모달
+  $("#post-edit-save")?.addEventListener("click",savePostEdit);
+  $("#post-edit-cancel")?.addEventListener("click",()=>$("#post-edit-modal")?.classList.add("hidden"));
+  $("#post-edit-backdrop")?.addEventListener("click",()=>$("#post-edit-modal")?.classList.add("hidden"));
   $("#concept-photo-file")?.addEventListener("change",e=>{onConceptPhotoPick(e.target.files&&e.target.files[0]);});
   $("#btn-concept-make")?.addEventListener("click",()=>{if(!$("#btn-concept-make").disabled)runConceptInline();});
   $("#concept-save-diary")?.addEventListener("click",()=>{
