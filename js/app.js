@@ -2921,6 +2921,7 @@ function bindEvents(){
     setTimeout(()=>{if(typeof openMinigameModal==="function")openMinigameModal();},250);
   });
   $("#btn-settings-save")?.addEventListener("click",()=>{
+    if(typeof isGuest==="function"&&isGuest()){showToast("초대받은 분은 프로필을 바꿀 수 없어요");return;}
     const name=$("#settings-baby-name").value.trim();
     const iso=settingsBirthISO();
     const kidikidiId=$("#settings-kidikidi-id")?.value.trim().replace(/\s+/g,"")||"";
