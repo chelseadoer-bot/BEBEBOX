@@ -1497,10 +1497,13 @@ function openGiftMessageSheet(id){
 }
 function renderWishlistGrid(){
   const stage=STAGES[state.currentStage];
-  const items=state.wishlist[stage.id]||[];
+  const guest=(typeof isGuest==="function"&&isGuest());
+  // 게스트(초대·지인)에겐 부모가 '공개'했거나 이미 받은 품목만 보인다(비공개 품목 프라이버시).
+  let items=state.wishlist[stage.id]||[];
+  if(guest)items=items.filter(it=>state.published[it.id]||hasItem(it.id));
   const grid=$("#wishlist-grid");
   renderGiftShelf();
-  if(!items.length){grid.innerHTML='<div class="wish-empty">아직 등록된 위시리스트가 없어요</div>';return;}
+  if(!items.length){grid.innerHTML=`<div class="wish-empty">${guest?"아직 공개된 위시 품목이 없어요":"아직 등록된 위시리스트가 없어요"}</div>`;return;}
   grid.innerHTML=items.map(item=>{
     const pub=!!state.published[item.id];
     const has=hasItem(item.id);
@@ -1528,8 +1531,13 @@ function renderWishlistGrid(){
   grid.querySelectorAll(".wish-card").forEach(card=>{
     const id=card.dataset.id;
     card.oncontextmenu=e=>e.preventDefault();
-    // 탭 한 번이면 통합 시트가 열려 공개·받음·인사말·상품을 한 자리에서 설정한다.
-    card.onclick=()=>openWishActionSheet(id);
+    if(guest){
+      // 게스트는 편집 불가 — 인사말이 있으면 보여주고, 없으면 안내만 한다.
+      card.onclick=()=>{const gm=giftMessageFor(id);if(gm&&gm.message)return openGiftMessageSheet(id);showToast("부모님이 공개한 위시 품목이에요");};
+    }else{
+      // 탭 한 번이면 통합 시트가 열려 공개·받음·인사말·상품을 한 자리에서 설정한다.
+      card.onclick=()=>openWishActionSheet(id);
+    }
   });
 }
 function togglePublish(id){
@@ -1538,6 +1546,7 @@ function togglePublish(id){
   save();renderWishlistGrid();
 }
 function openWishActionSheet(id){
+  if(typeof isGuest==="function"&&isGuest())return;   // 게스트는 소유자 편집 시트를 열 수 없다
   const item=(state.wishlist[STAGES[state.currentStage].id]||[]).find(i=>i.id===id);
   if(!item)return;
   const has=hasItem(id),pub=!!state.published[id];
@@ -1795,6 +1804,7 @@ function saveOwnedFromPicker(){
 const WISH_EMOJIS=["🎁","🍼","🧸","👕","🧦","👟","📚","🍶","🛁","🪀","🎀","🧴","🍪","🪥","🧢","🚗"];
 let _wishEmoji="🎁";
 function openWishAdd(){
+  if(typeof isGuest==="function"&&isGuest()){showToast("초대받은 분은 위시리스트를 편집할 수 없어요");return;}
   _wishEmoji="🎁";
   const pick=$("#wish-emoji-pick");
   if(pick){
@@ -1807,6 +1817,7 @@ function openWishAdd(){
 }
 function closeWishAdd(){$("#wish-add-modal")?.classList.add("hidden");}
 function submitWishAdd(){
+  if(typeof isGuest==="function"&&isGuest()){closeWishAdd();return;}
   const name=($("#wish-add-name")?.value||"").trim();
   if(!name){showToast("상품 이름을 입력해 주세요");return;}
   const stage=STAGES[state.currentStage];
