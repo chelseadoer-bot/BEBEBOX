@@ -1781,10 +1781,30 @@ function submitWishAdd(){
   renderWishlistGrid();
   showToast("위시에 추가했어요 🎁");
 }
+// 아이 월령에 맞는 위시 스테이지 인덱스(생일 없으면 임신 초기). s1~s4=임신, s5~s8=출생후.
+function stageIndexForBaby(){
+  const mo=ageMonthsFromBirthday(state.profile&&(state.profile.birthdayISO||state.profile.birthday));
+  if(mo==null)return 0;      // 임신 중/생일 미입력 → 임신 초기
+  if(mo<4)return 4;          // 0-3개월 → s5
+  if(mo<7)return 5;          // 4-6개월 → s6
+  if(mo<13)return 6;         // 7-12개월 → s7
+  return 7;                  // 돌 이후 → s8
+}
 function openWishlist(){
   const t=$(".wishlist-title");if(t)t.textContent=`${babyName()} 옷장`;
   const ca=$("#closet-avatar");if(ca){ca.src=state.profile.avatar;ca.alt=babyName();}
+  // 첫 진입 시 아이 나이에 맞는 스테이지로 자동 이동(이미 태어난 아이인데 임신용품부터
+  // 보이는 어색함 방지). 사용자가 스테이지를 바꾸면 그 선택을 존중한다.
+  if(!state._wishStageAutoSet){
+    state._wishStageAutoSet=true;
+    const idx=stageIndexForBaby();
+    if(idx>0&&(state.currentStage==null||state.currentStage===0))state.currentStage=idx;
+  }
   renderStageNav();renderWishlistGrid();showView("#wishlist-view");
+  // 위시리스트는 개념상 '선물' 탭 → 하단 탭 하이라이트를 선물로 맞춰 위치 혼란 방지
+  currentMainTab="gift";
+  updateTabBarUI();
+  showTabBar();
 }
 function getGuideAge(){
   return currentTabMonth();
