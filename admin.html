@@ -347,12 +347,45 @@ async function loadDetail(fam){
     ? '<details class="drop"><summary>선물해준 사람 <b>'+d.givers.length+'</b>명</summary>'+giverList+'</details>'
     : '<div class="msg">아직 선물한 지인이 없어요</div>';
 
+  // 🍬 캔디 적립·소멸·행동 원장 (서버 이벤트 기반 추정)
+  var lg = d.ledger||{};
+  function ldate(ms){ if(!ms) return ""; var t=new Date(ms), p=function(n){return (n<10?"0":"")+n;};
+    return (t.getMonth()+1)+"/"+p(t.getDate())+" "+p(t.getHours())+":"+p(t.getMinutes()); }
+  var ledRows = (lg.entries||[]).map(function(e){
+    var dc = e.delta>0 ? '<span style="color:#2e9e5b;font-weight:700">+'+e.delta+'</span>'
+           : e.delta<0 ? '<span style="color:#d9534f;font-weight:700">'+e.delta+'</span>'
+           : '<span style="color:#c8c0b8">·</span>';
+    var who = e.actor==="guest" ? ' <span class="pill">지인</span>' : '';
+    return '<tr><td style="padding:4px 6px;border-bottom:1px solid #f3f0ec;color:#a8a098;white-space:nowrap">'+ldate(e.created_at)+'</td>'+
+      '<td style="padding:4px 6px;border-bottom:1px solid #f3f0ec">'+esc(e.label||e.type)+who+'</td>'+
+      '<td class="num" style="padding:4px 6px;border-bottom:1px solid #f3f0ec;white-space:nowrap">'+dc+' 🍬</td></tr>';
+  }).join("") || '<tr><td colspan="3"><div class="msg">기록된 행동이 없어요</div></td></tr>';
+  var untr = lg.untracked||0;
+  var untrHtml = untr!==0
+    ? '<div class="msg" style="margin-top:6px">※ 동기화 잔액과 <b>'+al(Math.abs(untr))+'</b> 차이 — 게임완주(+5)·좋아요(+10/200개)·오늘의 미션(+100)·최초기록 등 <b>이벤트로 남지 않는 적립</b>이나 클라이언트 동기화 차이예요.</div>'
+    : '';
+  var ledgerHtml =
+    '<div class="kv" style="margin-bottom:8px">'+
+      '<div class="b">총 적립 <b style="color:#2e9e5b">+'+al(lg.earned||0)+'</b> 🍬</div>'+
+      '<div class="b">총 소멸 <b style="color:#d9534f">−'+al(lg.spent||0)+'</b> 🍬</div>'+
+      '<div class="b">동기화 잔액 <b>'+al(lg.synced||0)+'</b> 🍬</div>'+
+    '</div>'+
+    '<details class="drop" open><summary>적립·소멸·행동 내역 <b>'+(lg.total_events||0)+'</b>건</summary>'+
+      '<table style="width:100%;border-collapse:collapse;font-size:12px;margin-top:6px">'+
+      '<thead><tr>'+
+        '<th style="text-align:left;color:#a8a098;font-weight:600;padding:4px 6px;border-bottom:1px solid #eee">시각</th>'+
+        '<th style="text-align:left;color:#a8a098;font-weight:600;padding:4px 6px;border-bottom:1px solid #eee">행동</th>'+
+        '<th class="num" style="color:#a8a098;font-weight:600;padding:4px 6px;border-bottom:1px solid #eee">캔디</th>'+
+      '</tr></thead><tbody>'+ledRows+'</tbody></table>'+
+    '</details>'+untrHtml;
+
   document.getElementById("detail").innerHTML =
     '<div class="sec"><div class="sec-title">회원 정보</div><div class="kv">'+
       '<div class="b">키디 아이디 '+kid+'</div>'+
       '<div class="b">보유 캔디 <b>'+al(d.points)+'</b> 🍬</div>'+
       '<div class="b">교환 쿠폰 <b>'+(d.coupons||[]).length+'</b>장</div>'+
     '</div></div>'+
+    '<div class="sec"><div class="sec-title">🍬 캔디 적립·소멸·행동 <span class="muted">(서버 이벤트 기반 추정)</span></div>'+ledgerHtml+'</div>'+
     '<div class="sec"><div class="sec-title">🎟️ 교환한 쿠폰 (발급 처리)</div>'+coupons+'</div>'+
     '<div class="sec"><div class="sec-title">선물 현황</div>'+wantedHtml+receivedHtml+'</div>'+
     '<div class="sec"><div class="sec-title">선물해준 사람</div>'+giversHtml+'</div>'+
