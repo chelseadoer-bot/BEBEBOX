@@ -358,6 +358,92 @@ def list_members(q=None):
     return out
 
 
+# ── 캔디(포인트) 원장: 이벤트 로그를 캔디 규칙(POINT_RULES 미러)으로 환산 ──
+# ⚠️ 캔디 잔액(data.points)은 클라이언트가 계산해 서버에 '동기화'하는 값이라,
+#    이 원장은 서버 이벤트로 재구성한 '추정치'다. run_finish(+5)/좋아요(+10/200)/
+#    미션보너스(+100)/최초기록 등 이벤트로 남지 않는 적립은 빠질 수 있어 동기화
+#    잔액(synced)과 차이(untracked)가 날 수 있다. (points.js POINT_RULES 참고)
+_CANDY_RULES = {
+    # 적립(earn)
+    "record":           ("earn",  "기록 올리기",        20),
+    "miniapp_share":    ("earn",  "AI 결과 공유",       30),
+    "share":            ("earn",  "사진첩·링크 공유",   30),
+    "gift_received":    ("earn",  "선물 받음",          50),
+    "miniapp_refund":   ("earn",  "생성 실패 환불",     None),   # meta.amount
+    "referral_redeem":  ("earn",  "추천·이벤트 코드",   None),   # 코드별 지급액
+    # 소멸(spend)
+    "miniapp_spend":    ("spend", "AI·게임 이용",       None),   # meta.amount(기본10)
+    "coupon":           ("spend", "쿠폰 교환",          100),
+    # 행동만(캔디 변동 없음)
+    "miniapp_generate": ("act",   "AI 결과 생성",       0),
+    "miniapp_request":  ("act",   "AI 생성 요청",       0),
+    "ai_app":           ("act",   "미니앱 진입",        0),
+    "ai_concept":       ("act",   "컨셉 선택",          0),
+    "concept_run":      ("act",   "컨셉 생성",          0),
+    "run_open":         ("act",   "게임 열기",          0),
+    "publish":          ("act",   "위시 공개",          0),
+    "wish_add":         ("act",   "위시 추가",          0),
+    "inquiry":          ("act",   "1:1 문의",           0),
+    "signup":           ("act",   "가입",               0),
+    "share_view":       ("act",   "지인: 공유 조회",    0),
+    "gift_click":       ("act",   "지인: 선물 클릭",    0),
+    "gift_done":        ("act",   "지인: 선물 완료",    0),
+    "heart":            ("act",   "지인: 하트",         0),
+    "comment":          ("act",   "지인: 댓글",         0),
+}
+
+
+def _referral_candy_map():
+    """추천·이벤트 코드 → 지급 캔디 {CODE: candy}."""
+    out = {}
+    for it in (get_config(_REFERRAL_KEY, []) or []):
+        if isinstance(it, dict) and it.get("code"):
+            out[_norm_code(it.get("code"))] = int(it.get("candy") or 0)
+    return out
+
+
+def candy_ledger(family_id, limit=150):
+    """한 가족의 캔디 적립·소멸·행동 원장(서버 이벤트 기반 추정)."""
+    fam = (family_id or "BEBEBOX").strip().upper()
+    refmap = _referral_candy_map()
+    with _conn() as conn:
+        rows = conn.execute(
+            "SELECT type, item_id, meta, actor, created_at FROM events "
+            "WHERE family_id=? ORDER BY created_at DESC", (fam,),
+        ).fetchall()
+    earned = spent = 0
+    entries = []
+    for r in rows:
+        typ = r["type"]
+        kind, label, fixed = _CANDY_RULES.get(typ, ("act", typ, 0))
+        try:
+            meta = json.loads(r["meta"] or "{}")
+        except (json.JSONDecodeError, TypeError):
+            meta = {}
+        if typ == "referral_redeem":
+            delta = refmap.get(_norm_code(r["item_id"]), 0)
+        elif typ == "miniapp_spend":
+            delta = -int(meta.get("amount") or 10)
+        elif typ == "miniapp_refund":
+            delta = int(meta.get("amount") or 0)
+        elif kind == "spend":
+            delta = -int(fixed or 0)
+        else:
+            delta = int(fixed or 0)
+        if delta > 0:
+            earned += delta
+        elif delta < 0:
+            spent += -delta
+        if len(entries) < limit:
+            entries.append({
+                "type": typ, "label": label, "kind": kind, "delta": delta,
+                "actor": r["actor"], "item_id": r["item_id"],
+                "created_at": r["created_at"],
+            })
+    return {"entries": entries, "total_events": len(rows),
+            "earned": earned, "spent": spent, "net": earned - spent}
+
+
 def member_detail(family_id):
     """회원 상세: 받아야/받은 선물, 누가 얼마나 조각을 썼는지, 타임라인."""
     fam = (family_id or "BEBEBOX").strip().upper()
@@ -416,10 +502,14 @@ def member_detail(family_id):
             "fulfilled_at": (ful or {}).get("fulfilled_at"),
         })
     coupons.sort(key=lambda c: (c["fulfilled"], -(c["created_at"] or 0)))
+    led = candy_ledger(fam)
+    led["synced"] = int(data.get("points") or 0)
+    led["untracked"] = led["synced"] - led["net"]
     return {
         "family_id": fam, "user_id": fam, "baby": baby,
         "kidikidi_id": (profile.get("kidikidiId") or "").strip(),
         "points": int(data.get("points") or 0),
+        "ledger": led,
         "coupons": coupons,
         "funnel": js["funnel"],
         "to_give": to_give,
